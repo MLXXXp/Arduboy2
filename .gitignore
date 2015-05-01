@@ -1,1 +1,15 @@
+# Ignore vim temp and swap files
+*~
 *.swp
+*.swo
+
+# Ignore working files
+.build
+Makefile
+ino.ini
+work
+*.eep
+
+# Ignore OS bookkeeping
+.DS_Store
+Thumbs.db
