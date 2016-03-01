@@ -6,6 +6,12 @@
 #include <Print.h>
 #include <limits.h>
 
+// Library version.
+// For a version number in the form of x.y.z the value of the define will be
+// ((x * 10000) + (y * 100) + (z)) as a decimal number.
+// So, it will read as xxxyyzz, with no leading zeros on x.
+#define ARDUBOY_LIB_VER 10200
+
 // EEPROM settings
 #define EEPROM_VERSION 0
 #define EEPROM_BRIGHTNESS 1
@@ -63,7 +69,7 @@ public:
    */
   // void boot(); // defined in core.cpp
 
-  void start() __attribute__ ((deprecated("use begin() instead")));
+  void start() __attribute__((deprecated)) __attribute__ ((warning("use begin() instead")));
 
   /// Scrolls in the Arduboy logo
   void bootLogo();
@@ -79,7 +85,7 @@ public:
 
   /// Clears display.
   void clear();
-  void clearDisplay() __attribute__ ((deprecated("use clear() instead")));
+  void clearDisplay() __attribute__((deprecated)) __attribute__ ((warning("use clear() instead")));
 
   /// Copies the contents of the screen buffer to the screen.
   /**
