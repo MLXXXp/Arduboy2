@@ -1,8 +1,12 @@
-#include "Arduboy.h"
-#include "glcdfont.c"
+#include "Arduboy2.h"
 #include "ab_logo.c"
+#include "glcdfont.c"
 
-Arduboy::Arduboy()
+//========================================
+//========== class Arduboy2Base ==========
+//========================================
+
+Arduboy2Base::Arduboy2Base()
 {
   // frame management
   setFrameRate(60);
@@ -15,7 +19,7 @@ Arduboy::Arduboy()
   // lastFrameDurationMs
 }
 
-void Arduboy::start() // deprecated
+void Arduboy2Base::start() // deprecated
 {
   begin();
 }
@@ -23,7 +27,7 @@ void Arduboy::start() // deprecated
 // functions called here should be public so users can create their
 // own init functions if they need different behavior than `begin`
 // provides by default
-void Arduboy::begin()
+void Arduboy2Base::begin()
 {
   boot(); // raw hardware
 
@@ -37,7 +41,7 @@ void Arduboy::begin()
   audio.begin();
 }
 
-void Arduboy::flashlight()
+void Arduboy2Base::flashlight()
 {
   // sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
   blank();
@@ -48,7 +52,7 @@ void Arduboy::flashlight()
   setRGBled(0,0,0);
 }
 
-void Arduboy::bootLogo()
+void Arduboy2Base::bootLogo()
 {
   // setRGBled(10,0,0);
   for(int8_t y = -18; y<=24; y++) {
@@ -71,18 +75,18 @@ void Arduboy::bootLogo()
 
 /* Frame management */
 
-void Arduboy::setFrameRate(uint8_t rate)
+void Arduboy2Base::setFrameRate(uint8_t rate)
 {
   frameRate = rate;
   eachFrameMillis = 1000/rate;
 }
 
-bool Arduboy::everyXFrames(uint8_t frames)
+bool Arduboy2Base::everyXFrames(uint8_t frames)
 {
   return frameCount % frames == 0;
 }
 
-bool Arduboy::nextFrame()
+bool Arduboy2Base::nextFrame()
 {
   long now = millis();
   uint8_t remaining;
@@ -129,19 +133,19 @@ bool Arduboy::nextFrame()
   return post_render;
 }
 
-int Arduboy::cpuLoad()
+int Arduboy2Base::cpuLoad()
 {
   return lastFrameDurationMs*100 / eachFrameMillis;
 }
 
-void Arduboy::initRandomSeed()
+void Arduboy2Base::initRandomSeed()
 {
   power_adc_enable(); // ADC on
   randomSeed(~rawADC(ADC_TEMP) * ~rawADC(ADC_VOLTAGE) * ~micros() + micros());
   power_adc_disable(); // ADC off
 }
 
-uint16_t Arduboy::rawADC(byte adc_bits)
+uint16_t Arduboy2Base::rawADC(byte adc_bits)
 {
   ADMUX = adc_bits;
   // we also need MUX5 for temperature check
@@ -158,17 +162,17 @@ uint16_t Arduboy::rawADC(byte adc_bits)
 
 /* Graphics */
 
-void Arduboy::clearDisplay() // deprecated
+void Arduboy2Base::clearDisplay() // deprecated
 {
   clear();
 }
 
-void Arduboy::clear()
+void Arduboy2Base::clear()
 {
   fillScreen(BLACK);
 }
 
-void Arduboy::drawPixel(int x, int y, uint8_t color)
+void Arduboy2Base::drawPixel(int x, int y, uint8_t color)
 {
   #ifdef PIXEL_SAFE_MODE
   if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
@@ -188,14 +192,14 @@ void Arduboy::drawPixel(int x, int y, uint8_t color)
   }
 }
 
-uint8_t Arduboy::getPixel(uint8_t x, uint8_t y)
+uint8_t Arduboy2Base::getPixel(uint8_t x, uint8_t y)
 {
   uint8_t row = y / 8;
   uint8_t bit_position = y % 8;
   return (sBuffer[(row*WIDTH) + x] & _BV(bit_position)) >> bit_position;
 }
 
-void Arduboy::drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
+void Arduboy2Base::drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
 {
   int16_t f = 1 - r;
   int16_t ddF_x = 1;
@@ -232,7 +236,7 @@ void Arduboy::drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
   }
 }
 
-void Arduboy::drawCircleHelper
+void Arduboy2Base::drawCircleHelper
 (int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, uint8_t color)
 {
   int16_t f = 1 - r;
@@ -277,13 +281,13 @@ void Arduboy::drawCircleHelper
   }
 }
 
-void Arduboy::fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
+void Arduboy2Base::fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
 {
   drawFastVLine(x0, y0-r, 2*r+1, color);
   fillCircleHelper(x0, y0, r, 3, 0, color);
 }
 
-void Arduboy::fillCircleHelper
+void Arduboy2Base::fillCircleHelper
 (int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, int16_t delta,
  uint8_t color)
 {
@@ -321,7 +325,7 @@ void Arduboy::fillCircleHelper
   }
 }
 
-void Arduboy::drawLine
+void Arduboy2Base::drawLine
 (int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color)
 {
   // bresenham's algorithm - thx wikpedia
@@ -372,7 +376,7 @@ void Arduboy::drawLine
   }
 }
 
-void Arduboy::drawRect
+void Arduboy2Base::drawRect
 (int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color)
 {
   drawFastHLine(x, y, w, color);
@@ -381,7 +385,7 @@ void Arduboy::drawRect
   drawFastVLine(x+w-1, y, h, color);
 }
 
-void Arduboy::drawFastVLine
+void Arduboy2Base::drawFastVLine
 (int16_t x, int16_t y, uint8_t h, uint8_t color)
 {
   int end = y+h;
@@ -391,7 +395,7 @@ void Arduboy::drawFastVLine
   }
 }
 
-void Arduboy::drawFastHLine
+void Arduboy2Base::drawFastHLine
 (int16_t x, int16_t y, uint8_t w, uint8_t color)
 {
   // Do bounds/limit checks
@@ -438,7 +442,7 @@ void Arduboy::drawFastHLine
   }
 }
 
-void Arduboy::fillRect
+void Arduboy2Base::fillRect
 (int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color)
 {
   // stupidest version - update in subclasses if desired!
@@ -448,7 +452,7 @@ void Arduboy::fillRect
   }
 }
 
-void Arduboy::fillScreen(uint8_t color)
+void Arduboy2Base::fillScreen(uint8_t color)
 {
   // C version :
   //
@@ -486,7 +490,7 @@ void Arduboy::fillScreen(uint8_t color)
   );
 }
 
-void Arduboy::drawRoundRect
+void Arduboy2Base::drawRoundRect
 (int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color)
 {
   // smarter version
@@ -501,7 +505,7 @@ void Arduboy::drawRoundRect
   drawCircleHelper(x+r, y+h-r-1, r, 8, color);
 }
 
-void Arduboy::fillRoundRect
+void Arduboy2Base::fillRoundRect
 (int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color)
 {
   // smarter version
@@ -512,7 +516,7 @@ void Arduboy::fillRoundRect
   fillCircleHelper(x+r, y+r, r, 2, h-2*r-1, color);
 }
 
-void Arduboy::drawTriangle
+void Arduboy2Base::drawTriangle
 (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color)
 {
   drawLine(x0, y0, x1, y1, color);
@@ -520,7 +524,7 @@ void Arduboy::drawTriangle
   drawLine(x2, y2, x0, y0, color);
 }
 
-void Arduboy::fillTriangle
+void Arduboy2Base::fillTriangle
 (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color)
 {
 
@@ -623,7 +627,7 @@ void Arduboy::fillTriangle
   }
 }
 
-void Arduboy::drawBitmap
+void Arduboy2Base::drawBitmap
 (int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h,
  uint8_t color)
 {
@@ -663,10 +667,10 @@ void Arduboy::drawBitmap
 }
 
 
-void Arduboy::drawSlowXYBitmap
+void Arduboy2Base::drawSlowXYBitmap
 (int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color)
 {
-  // no need to dar at all of we're offscreen
+  // no need to draw at all of we're offscreen
   if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
     return;
 
@@ -681,16 +685,82 @@ void Arduboy::drawSlowXYBitmap
 }
 
 
-void Arduboy::drawChar
-(int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size)
+void Arduboy2Base::display()
+{
+  this->paintScreen(sBuffer);
+}
+
+unsigned char* Arduboy2Base::getBuffer()
+{
+  return sBuffer;
+}
+
+boolean Arduboy2Base::pressed(uint8_t buttons)
+{
+  return (buttonsState() & buttons) == buttons;
+}
+
+boolean Arduboy2Base::notPressed(uint8_t buttons)
+{
+  return (buttonsState() & buttons) == 0;
+}
+
+void Arduboy2Base::swap(int16_t& a, int16_t& b)
+{
+  int temp = a;
+  a = b;
+  b = temp;
+}
+
+Arduboy2::Arduboy2()
+{
+  cursor_x = 0;
+  cursor_y = 0;
+  textColor = 1;
+  textBackground = 0;
+  textSize = 1;
+  textWrap = 0;
+}
+
+
+//====================================
+//========== class Arduboy2 ==========
+//====================================
+
+size_t Arduboy2::write(uint8_t c)
+{
+  if (c == '\n')
+  {
+    cursor_y += textSize * 8;
+    cursor_x = 0;
+  }
+  else if (c == '\r')
+  {
+    // skip em
+  }
+  else
+  {
+    drawChar(cursor_x, cursor_y, c, textColor, textBackground, textSize);
+    cursor_x += textSize * 6;
+    if (textWrap && (cursor_x > (WIDTH - textSize * 6)))
+    {
+      // calling ourselves recursively for 'newline' is
+      // 12 bytes smaller than doing the same math here
+      write('\n');
+    }
+  }
+}
+
+void Arduboy2::drawChar
+  (int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size)
 {
   boolean draw_background = bg != color;
 
-  if ((x >= WIDTH) ||         // Clip right
-    (y >= HEIGHT) ||        // Clip bottom
-    ((x + 5 * size - 1) < 0) ||   // Clip left
-    ((y + 8 * size - 1) < 0)    // Clip top
-  )
+  if ((x >= WIDTH) ||              // Clip right
+      (y >= HEIGHT) ||             // Clip bottom
+      ((x + 5 * size - 1) < 0) ||  // Clip left
+      ((y + 8 * size - 1) < 0)     // Clip top
+     )
   {
     return;
   }
@@ -723,30 +793,43 @@ void Arduboy::drawChar
   }
 }
 
-void Arduboy::display()
+void Arduboy2::setCursor(int16_t x, int16_t y)
 {
-  this->paintScreen(sBuffer);
+  cursor_x = x;
+  cursor_y = y;
 }
 
-unsigned char* Arduboy::getBuffer()
-{
-  return sBuffer;
+uint16_t Arduboy2::getCursorX() {
+  return cursor_x;
 }
 
-boolean Arduboy::pressed(uint8_t buttons)
-{
-  return (buttonsState() & buttons) == buttons;
+uint16_t Arduboy2::getCursorY() {
+  return cursor_y;
 }
 
-boolean Arduboy::notPressed(uint8_t buttons)
+void Arduboy2::setTextColor(uint8_t color)
 {
-  return (buttonsState() & buttons) == 0;
+  textColor = color;
 }
 
-void Arduboy::swap(int16_t& a, int16_t& b)
+void Arduboy2::setTextBackground(uint8_t bg)
 {
-  int temp = a;
-  a = b;
-  b = temp;
+  textBackground = bg;
+}
+
+void Arduboy2::setTextSize(uint8_t s)
+{
+  // size must always be 1 or higher
+  textSize = max(1, s);
+}
+
+void Arduboy2::setTextWrap(boolean w)
+{
+  textWrap = w;
+}
+
+void Arduboy2::clear() {
+    Arduboy2Base::clear();
+    cursor_x = cursor_y = 0;
 }
 

@@ -1,8 +1,7 @@
-#ifndef Arduboy_h
-#define Arduboy_h
+#ifndef Arduboy2_h
+#define Arduboy2_h
 
 #include "core/core.h"
-#include "ab_printer.h"
 #include <Print.h>
 #include <limits.h>
 
@@ -10,7 +9,7 @@
 // For a version number in the form of x.y.z the value of the define will be
 // ((x * 10000) + (y * 100) + (z)) as a decimal number.
 // So, it will read as xxxyyzz, with no leading zeros on x.
-#define ARDUBOY_LIB_VER 10200
+#define ARDUBOY_LIB_VER 20000
 
 // EEPROM settings
 #define EEPROM_VERSION 0
@@ -36,10 +35,16 @@
 #define ADC_TEMP (_BV(REFS0) | _BV(REFS1) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0))
 
 
-class Arduboy : public ArduboyCore
+//==================================
+//========== Arduboy2Base ==========
+//==================================
+
+class Arduboy2Base : public ArduboyCore
 {
 public:
-  Arduboy();
+  Arduboy2Base();
+
+  ArduboyAudio audio;
 
   /// Returns true if the button mask passed in is pressed.
   /**
@@ -54,21 +59,17 @@ public:
   boolean notPressed(uint8_t buttons);
 
   /// Initialize hardware, boot logo, boot utilities, etc.
-  void begin();
-
-  /// Init just hardware, no logo, no boot utilities.
   /**
-   * Look at the source for `begin()` and just rip out what you do not
-   * need and start there.  Calling just `boot()` might work also
-   * depending on your requirements.
-   *
-   * The minimum recommended `begin` replacement:
-   *
-   *   arduboy.boot()         // raw hardware init
-   *   arduboy.audio.begin()  // if you need audio
+   * To free up some code space for use by the sketch, you can use "boot()"
+   * instead of "begin()" to eliminate some of the some of the things that
+   * aren't really required, such as displaying the boot logo.
+   * 
+   * Look at the source for "begin()" and after calling "boot()" call
+   * whatever functions "begin()" does that you still want to keep.
+   * If your sketch uses the speaker, it's probably a good idea to at least
+   * call "audio.begin()".
    */
-  // void boot(); // defined in core.cpp
-
+  void begin();
   void start() __attribute__((deprecated, warning("use begin() instead")));
 
   /// Scrolls in the Arduboy logo
@@ -161,11 +162,8 @@ public:
    */
   void drawSlowXYBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color);
 
-  /// Draws an ASCII character at a point.
-  void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size);
-
+  /// Get a pointer to the display buffer.
   unsigned char* getBuffer();
-
 
   /// Seeds the random number generator with entropy from the temperature, voltage reading, and microseconds since boot.
   /**
@@ -177,8 +175,6 @@ public:
 
   /// Swap the references of two pointers.
   void swap(int16_t& a, int16_t& b);
-
-  ArduboyAudio audio;
 
   void setFrameRate(uint8_t rate);
   bool nextFrame();
@@ -205,13 +201,61 @@ public:
 
 protected:
   unsigned char sBuffer[(HEIGHT*WIDTH)/8];
+};
 
+
+//==============================
+//========== Arduboy2 ==========
+//==============================
+
+class Arduboy2 : public Print, public Arduboy2Base
+{
+public:
+  Arduboy2();
+
+  /// Writes a single ASCII character to the screen.
+  virtual size_t write(uint8_t);
+
+  /// Draws an ASCII character at a point.
+  void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size);
+
+  /// Sets the location of the text cursor.
+  void setCursor(int16_t x, int16_t y);
+
+  /// Get the text cursor X position
+  uint16_t getCursorX();
+
+  /// Get the text cursor Y position
+  uint16_t getCursorY();
+
+  /// Sets the text foreground color
+  void setTextColor(uint8_t color);
+
+  /// Sets the text background color
+  void setTextBackground(uint8_t bg);
+
+  /// Set the text size
+  /**
+   * Individual ASCII characters are 6x8 pixels
+   * (5x7 with spacing on two edges). The size is a pixel multiplier,
+   * so a size of 2 means each character will be 12x16, etc.
+   */
+  void setTextSize(uint8_t s);
+
+  /// Sets whether text will wrap at screen edges.
+  void setTextWrap(boolean w);
+
+  /// Clears the display and sets the cursor to 0, 0
+  void clear();
 
 protected:
   int16_t cursor_x;
   int16_t cursor_y;
-  uint8_t textsize;
-  boolean wrap; // If set, 'wrap' text at right edge of display
+  uint8_t textColor;
+  uint8_t textBackground;
+  uint8_t textSize;
+  boolean textWrap; // If set, 'wrap' text at right edge of display
 };
 
 #endif
+

@@ -1,4 +1,4 @@
-#include "Arduboy.h"
+#include "Arduboy2.h"
 #include "audio.h"
 
 bool ArduboyAudio::audio_enabled = false;

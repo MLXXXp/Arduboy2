@@ -255,7 +255,7 @@ public:
     void static sendLCDCommand(uint8_t command);
 
     /// set the light output of the RGB LEB
-    void setRGBled(uint8_t red, uint8_t green, uint8_t blue);
+    void static setRGBled(uint8_t red, uint8_t green, uint8_t blue);
 
     /// boots the hardware
     /**

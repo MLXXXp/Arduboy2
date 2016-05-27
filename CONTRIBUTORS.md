@@ -5,6 +5,7 @@
 - Ross (@rogosher)
 - Andrew (@ace-dent)
 - Josh Goebel (@yyyc514)
+- Scott Allen (@MLXXXp)
 
 
 # Included code from other open source projects
