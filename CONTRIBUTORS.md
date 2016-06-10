@@ -15,7 +15,3 @@
   BSD License
   Copyright (c) 2012, Adafruit Industries
 
-- arduino-playtune
-  https://github.com/LenShustek/arduino-playtune
-  GNU General Public License v3
-  (C) Copyright 2011, 2015, Len Shustek
