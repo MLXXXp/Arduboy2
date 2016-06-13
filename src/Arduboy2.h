@@ -72,9 +72,6 @@ public:
   void begin();
   void start() __attribute__((deprecated, warning("use begin() instead")));
 
-  /// Scrolls in the Arduboy logo
-  void bootLogo();
-
   /// Flashlight mode
   /**
    * Hold up key when booting to enable, press down key to exit
@@ -83,6 +80,20 @@ public:
    * down buttn is pressed.
    */
   void flashlight();
+
+  /// Handle buttons held on startup for system control
+  /**
+   * Hold the B button when booting to enter system control mode.
+   * The B button must be held continuously to remain in this mode.
+   * Pressing other buttons will perform system control functions:
+   *
+   * UP: Set "sound enabled" in EEPROM
+   * DOWN: Set "sound disabled" (mute) in EEPROM
+   */
+  void systemButtons();
+
+  /// Scrolls in the Arduboy logo
+  void bootLogo();
 
   /// Clears display.
   void clear();
@@ -200,6 +211,9 @@ public:
   uint16_t rawADC(byte adc_bits);
 
 protected:
+  // helper function for sound enable/disable system control
+  void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
+
   unsigned char sBuffer[(HEIGHT*WIDTH)/8];
 };
 

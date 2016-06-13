@@ -13,6 +13,16 @@ const uint8_t PROGMEM pinBootProgram[] = {
   PIN_A_BUTTON, INPUT_PULLUP,
   PIN_B_BUTTON, INPUT_PULLUP,
 
+  // RGB LED (or single blue LED on the DevKit)
+#ifdef ARDUBOY_10
+  RED_LED, INPUT_PULLUP,  // set INPUT_PULLUP to make the pin high when
+  RED_LED, OUTPUT,        //   set to OUTPUT
+  GREEN_LED, INPUT_PULLUP,
+  GREEN_LED, OUTPUT,
+#endif
+  BLUE_LED, INPUT_PULLUP,
+  BLUE_LED, OUTPUT,
+
   // audio is specifically not included here as those pins are handled
   // separately by `audio.begin()`, `audio.on()` and `audio.off()` in order
   // to respect the EEPROM audio settings

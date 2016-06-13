@@ -31,10 +31,15 @@ void Arduboy2Base::begin()
 {
   boot(); // raw hardware
 
+  blank(); // blank the display
+
   // utils
   if(pressed(UP_BUTTON)) {
     flashlight();
   }
+
+  // check for and handle buttons held during start up for system control
+  systemButtons();
 
   bootLogo();
 
@@ -44,12 +49,35 @@ void Arduboy2Base::begin()
 void Arduboy2Base::flashlight()
 {
   // sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
-  blank();
   setRGBled(255,255,255);
   while(!pressed(DOWN_BUTTON)) {
     idle();
   }
   setRGBled(0,0,0);
+}
+
+void Arduboy2Base::systemButtons() {
+  while (pressed(B_BUTTON)) {
+    digitalWrite(BLUE_LED, LOW); // turn on blue LED
+    sysCtrlSound(UP_BUTTON + B_BUTTON, GREEN_LED, 0xff);
+    sysCtrlSound(DOWN_BUTTON + B_BUTTON, RED_LED, 0);
+    delay(200);
+  }
+
+  digitalWrite(BLUE_LED, HIGH); // turn off blue LED
+}
+
+void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal) {
+  if (pressed(buttons)) {
+    digitalWrite(BLUE_LED, HIGH); // turn off blue LED
+    delay(200);
+    digitalWrite(led, LOW); // turn on "acknowledge" LED
+    EEPROM.update(EEPROM_AUDIO_ON_OFF, eeVal);
+    delay(500);
+    digitalWrite(led, HIGH); // turn off "acknowledge" LED
+
+    while (pressed(buttons)) {} // Wait for button release
+  }
 }
 
 void Arduboy2Base::bootLogo()
