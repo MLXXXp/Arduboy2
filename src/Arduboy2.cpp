@@ -49,32 +49,32 @@ void Arduboy2Base::begin()
 void Arduboy2Base::flashlight()
 {
   // sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
-  setRGBled(255,255,255);
+  digitalWriteRGB(RGB_ON, RGB_ON, RGB_ON);
   while(!pressed(DOWN_BUTTON)) {
     idle();
   }
-  setRGBled(0,0,0);
+  digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
 }
 
 void Arduboy2Base::systemButtons() {
   while (pressed(B_BUTTON)) {
-    digitalWrite(BLUE_LED, LOW); // turn on blue LED
+    digitalWrite(BLUE_LED, RGB_ON); // turn on blue LED
     sysCtrlSound(UP_BUTTON + B_BUTTON, GREEN_LED, 0xff);
     sysCtrlSound(DOWN_BUTTON + B_BUTTON, RED_LED, 0);
     delay(200);
   }
 
-  digitalWrite(BLUE_LED, HIGH); // turn off blue LED
+  digitalWrite(BLUE_LED, RGB_OFF); // turn off blue LED
 }
 
 void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal) {
   if (pressed(buttons)) {
-    digitalWrite(BLUE_LED, HIGH); // turn off blue LED
+    digitalWrite(BLUE_LED, RGB_OFF); // turn off blue LED
     delay(200);
-    digitalWrite(led, LOW); // turn on "acknowledge" LED
+    digitalWrite(led, RGB_ON); // turn on "acknowledge" LED
     EEPROM.update(EEPROM_AUDIO_ON_OFF, eeVal);
     delay(500);
-    digitalWrite(led, HIGH); // turn off "acknowledge" LED
+    digitalWrite(led, RGB_OFF); // turn off "acknowledge" LED
 
     while (pressed(buttons)) {} // Wait for button release
   }
@@ -82,12 +82,18 @@ void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal) {
 
 void Arduboy2Base::bootLogo()
 {
-  // setRGBled(10,0,0);
-  for(int8_t y = -18; y<=24; y++) {
-    setRGBled(24-y, 0, 0);
+  digitalWrite(RED_LED, RGB_ON);
+
+  for(int8_t y = -18; y <= 24; y++) {
+    if (y == -4) {
+      digitalWriteRGB(RGB_OFF, RGB_ON, RGB_OFF); // green LED on
+    }
+    else if (y == 24) {
+      digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_ON); // blue LED on
+    }
 
     clear();
-    drawBitmap(20,y, arduboy_logo, 88, 16, WHITE);
+    drawBitmap(20, y, arduboy_logo, 88, 16, WHITE);
     display();
     delay(27);
     // longer delay post boot, we put it inside the loop to
@@ -98,7 +104,7 @@ void Arduboy2Base::bootLogo()
   }
 
   delay(750);
-  setRGBled(0,0,0);
+  digitalWrite(BLUE_LED, RGB_OFF);
 }
 
 /* Frame management */

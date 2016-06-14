@@ -32,6 +32,8 @@
 #define SAFE_MODE    //< include safe mode (44 bytes)
 #endif
 
+#define RGB_ON LOW   // for digitially setting an RGB LED on
+#define RGB_OFF HIGH // for digitially setting an RGB LED off
 
 #ifdef ARDUBOY_10
 
@@ -254,8 +256,18 @@ public:
     /// send a single byte command to the OLED
     void static sendLCDCommand(uint8_t command);
 
-    /// set the light output of the RGB LEB
+    /// set the light output of the RGB LED
+    /**
+     * The brightness of each LED can be set to a value from
+     * 0 (fully off) to 255 (fully on).
+     */
     void static setRGBled(uint8_t red, uint8_t green, uint8_t blue);
+
+    /// set the RGB LEDs digitally, to either fully on or fully off
+    /**
+     * Use value RGB_ON or RGB_OFF for each color of LED.
+     */
+    void static digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue);
 
     /// boots the hardware
     /**

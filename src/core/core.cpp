@@ -314,6 +314,17 @@ void ArduboyCore::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
 #endif
 }
 
+  void ArduboyCore::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
+{
+#ifdef ARDUBOY_10
+  digitalWrite(RED_LED, red);
+  digitalWrite(GREEN_LED, green);
+  digitalWrite(BLUE_LED, blue);
+#elif defined(AB_DEVKIT)
+  digitalWrite(BLUE_LED, blue);
+#endif
+}
+
 /* Buttons */
 
 uint8_t ArduboyCore::getInput()
