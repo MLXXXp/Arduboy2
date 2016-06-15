@@ -183,7 +183,6 @@ public:
      * LEFT_BUTTON, A_BUTTON, UP_BUTTON, etc.
      */
 
-    uint8_t static getInput() __attribute__((deprecated, warning("use buttonsState() instead")));
     uint8_t static buttonsState();
 
     // paints 8 pixels (vertically) from a single byte

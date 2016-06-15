@@ -70,7 +70,6 @@ public:
    * call "audio.begin()".
    */
   void begin();
-  void start() __attribute__((deprecated, warning("use begin() instead")));
 
   /// Flashlight mode
   /**
@@ -98,7 +97,6 @@ public:
 
   /// Clears display.
   void clear();
-  void clearDisplay() __attribute__((deprecated, warning("use clear() instead")));
 
   /// Copies the contents of the screen buffer to the screen.
   /**

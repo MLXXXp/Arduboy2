@@ -19,11 +19,6 @@ Arduboy2Base::Arduboy2Base()
   // lastFrameDurationMs
 }
 
-void Arduboy2Base::start() // deprecated
-{
-  begin();
-}
-
 // functions called here should be public so users can create their
 // own init functions if they need different behavior than `begin`
 // provides by default
@@ -199,11 +194,6 @@ uint16_t Arduboy2Base::rawADC(uint8_t adc_bits)
 }
 
 /* Graphics */
-
-void Arduboy2Base::clearDisplay() // deprecated
-{
-  clear();
-}
 
 void Arduboy2Base::clear()
 {
