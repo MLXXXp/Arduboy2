@@ -33,10 +33,7 @@ void Arduboy2Base::begin()
 
   blank(); // blank the display
 
-  // utils
-  if(pressed(UP_BUTTON)) {
-    flashlight();
-  }
+  flashlight(); // light the RGB LED and screen if UP button is being held.
 
   // check for and handle buttons held during start up for system control
   systemButtons();
@@ -48,12 +45,19 @@ void Arduboy2Base::begin()
 
 void Arduboy2Base::flashlight()
 {
-  // sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
+  if(!pressed(UP_BUTTON)) {
+    return;
+  }
+
+  sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
   digitalWriteRGB(RGB_ON, RGB_ON, RGB_ON);
+
   while(!pressed(DOWN_BUTTON)) {
     idle();
   }
+
   digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
+  sendLCDCommand(OLED_PIXELS_FROM_RAM);
 }
 
 void Arduboy2Base::systemButtons() {

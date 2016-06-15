@@ -74,10 +74,11 @@ public:
 
   /// Flashlight mode
   /**
-   * Hold up key when booting to enable, press down key to exit
-   * or simply turn off your Arduboy.  Your sketches can also
-   * call this at any time.  It goes into a tight loop until the
-   * down buttn is pressed.
+   * Turn the RGB LED and screen fully on. Called in the begin() function.
+   *
+   * Hold the UP button when booting to enable. Press the DOWN button to exit
+   * or simply turn off your Arduboy. It goes into a tight loop until the
+   * DOWN button is pressed.
    */
   void flashlight();
 
