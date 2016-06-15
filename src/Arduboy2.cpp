@@ -183,7 +183,7 @@ void Arduboy2Base::initRandomSeed()
   power_adc_disable(); // ADC off
 }
 
-uint16_t Arduboy2Base::rawADC(byte adc_bits)
+uint16_t Arduboy2Base::rawADC(uint8_t adc_bits)
 {
   ADMUX = adc_bits;
   // we also need MUX5 for temperature check
@@ -367,7 +367,7 @@ void Arduboy2Base::drawLine
 (int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color)
 {
   // bresenham's algorithm - thx wikpedia
-  boolean steep = abs(y1 - y0) > abs(x1 - x0);
+  bool steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
     swap(x0, y0);
     swap(x1, y1);
@@ -733,12 +733,12 @@ unsigned char* Arduboy2Base::getBuffer()
   return sBuffer;
 }
 
-boolean Arduboy2Base::pressed(uint8_t buttons)
+bool Arduboy2Base::pressed(uint8_t buttons)
 {
   return (buttonsState() & buttons) == buttons;
 }
 
-boolean Arduboy2Base::notPressed(uint8_t buttons)
+bool Arduboy2Base::notPressed(uint8_t buttons)
 {
   return (buttonsState() & buttons) == 0;
 }
@@ -792,7 +792,7 @@ size_t Arduboy2::write(uint8_t c)
 void Arduboy2::drawChar
   (int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size)
 {
-  boolean draw_background = bg != color;
+  bool draw_background = bg != color;
 
   if ((x >= WIDTH) ||              // Clip right
       (y >= HEIGHT) ||             // Clip bottom
@@ -861,7 +861,7 @@ void Arduboy2::setTextSize(uint8_t s)
   textSize = max(1, s);
 }
 
-void Arduboy2::setTextWrap(boolean w)
+void Arduboy2::setTextWrap(bool w)
 {
   textWrap = w;
 }

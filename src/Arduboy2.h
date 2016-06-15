@@ -50,13 +50,13 @@ public:
   /**
    * if (pressed(LEFT_BUTTON + A_BUTTON))
    */
-  boolean pressed(uint8_t buttons);
+  bool pressed(uint8_t buttons);
 
   /// Returns true if the button mask passed in not pressed.
   /**
    * if (notPressed(LEFT_BUTTON))
    */
-  boolean notPressed(uint8_t buttons);
+  bool notPressed(uint8_t buttons);
 
   /// Initialize hardware, boot logo, boot utilities, etc.
   /**
@@ -209,7 +209,7 @@ public:
   uint8_t lastFrameDurationMs;
 
   /// useful for getting raw approximate voltage values
-  uint16_t rawADC(byte adc_bits);
+  uint16_t rawADC(uint8_t adc_bits);
 
 protected:
   // helper function for sound enable/disable system control
@@ -258,7 +258,7 @@ public:
   void setTextSize(uint8_t s);
 
   /// Sets whether text will wrap at screen edges.
-  void setTextWrap(boolean w);
+  void setTextWrap(bool w);
 
   /// Clears the display and sets the cursor to 0, 0
   void clear();
@@ -269,7 +269,7 @@ protected:
   uint8_t textColor;
   uint8_t textBackground;
   uint8_t textSize;
-  boolean textWrap; // If set, 'wrap' text at right edge of display
+  bool textWrap; // If set, 'wrap' text at right edge of display
 };
 
 #endif
