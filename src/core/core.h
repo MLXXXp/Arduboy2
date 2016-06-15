@@ -28,7 +28,6 @@
 
 
 #ifdef AB_DEVKIT
-#define DEVKIT       //< for compatibilty with older sketches
 #define SAFE_MODE    //< include safe mode (44 bytes)
 #endif
 
