@@ -15,21 +15,16 @@ void ArduboyAudio::on()
   audio_enabled = true;
 }
 
-bool ArduboyAudio::enabled()
-{
-  return audio_enabled;
-}
-
 void ArduboyAudio::off()
 {
   audio_enabled = false;
   // shut off audio pins
-  #ifdef ARDUBOY_10
-    pinMode(PIN_SPEAKER_1, INPUT);
-    pinMode(PIN_SPEAKER_2, INPUT);
-  #else
-    pinMode(PIN_SPEAKER_1, INPUT);
-  #endif
+#ifdef ARDUBOY_10
+  pinMode(PIN_SPEAKER_1, INPUT);
+  pinMode(PIN_SPEAKER_2, INPUT);
+#else
+  pinMode(PIN_SPEAKER_1, INPUT);
+#endif
 }
 
 void ArduboyAudio::saveOnOff()
@@ -43,3 +38,7 @@ void ArduboyAudio::begin()
     on();
 }
 
+bool ArduboyAudio::enabled()
+{
+  return audio_enabled;
+}
