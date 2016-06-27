@@ -3,8 +3,6 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <avr/pgmspace.h>
-#include <avr/power.h>
 
 class ArduboyAudio
 {
