@@ -1,5 +1,5 @@
-#ifndef ArduboyAudio_h
-#define ArduboyAudio_h
+#ifndef ARDUBOY_AUDIO_H
+#define ARDUBOY_AUDIO_H
 
 #include <Arduino.h>
 #include <EEPROM.h>

@@ -1,4 +1,4 @@
-#include "core.h"
+#include "ArduboyCore.h"
 
 // need to redeclare these here since we declare them static in .h
 volatile uint8_t *ArduboyCore::csport, *ArduboyCore::dcport;

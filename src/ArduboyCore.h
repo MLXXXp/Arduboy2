@@ -1,5 +1,5 @@
-#ifndef ArduboyCore_h
-#define ArduboyCore_h
+#ifndef ARDUBOY_CORE_H
+#define ARDUBOY_CORE_H
 
 #include <avr/power.h>
 #include <SPI.h>
