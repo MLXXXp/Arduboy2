@@ -232,7 +232,7 @@ void ArduboyCore::paint8Pixels(uint8_t pixels)
   SPI.transfer(pixels);
 }
 
-void ArduboyCore::paintScreen(const unsigned char *image)
+void ArduboyCore::paintScreen(const uint8_t *image)
 {
   for (int i = 0; i < (HEIGHT*WIDTH)/8; i++)
   {
@@ -242,7 +242,7 @@ void ArduboyCore::paintScreen(const unsigned char *image)
 
 // paint from a memory buffer, this should be FAST as it's likely what
 // will be used by any buffer based subclass
-void ArduboyCore::paintScreen(unsigned char image[])
+void ArduboyCore::paintScreen(uint8_t image[])
 {
   for (int i = 0; i < (HEIGHT*WIDTH)/8; i++)
   {

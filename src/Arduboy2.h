@@ -108,60 +108,64 @@ public:
   void display();
 
   /// Sets a single pixel on the screen buffer to white or black.
-  void drawPixel(int x, int y, uint8_t color);
+  void drawPixel(int x, int y, uint8_t color = WHITE);
 
+  /// Returns the state of the given pixel in the screen buffer.
+  /**
+   * Return value will be 1 if the pixel is on (white) or 0 if the pixel is off (black).
+   */
   uint8_t getPixel(uint8_t x, uint8_t y);
 
   /// Draw a circle of a defined radius.
   /**
    * Draws a circle in white or black. X and Y are the center point of the circle.
    */
-  void drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color);
+  void drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
 
   /// Draws one or more "corners" of a circle.
-  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, uint8_t color);
+  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, uint8_t color = WHITE);
 
   /// Draws a filled-in circle.
-  void fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color);
+  void fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
 
    /// Draws one or both vertical halves of a filled-in circle.
-  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, int16_t delta, uint8_t color);
+  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, int16_t delta, uint8_t color = WHITE);
 
   /// Draws a line between two points.
   /**
    * Uses Bresenham's algorithm.
    */
-  void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
+  void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color = WHITE);
 
   /// Draws a rectangle of a width and height.
-  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color);
+  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
   /// Draws vertical line.
-  void drawFastVLine(int16_t x, int16_t y, uint8_t h, uint8_t color);
+  void drawFastVLine(int16_t x, int16_t y, uint8_t h, uint8_t color = WHITE);
 
   /// Draws a horizontal line.
-  void drawFastHLine(int16_t x, int16_t y, uint8_t w, uint8_t color);
+  void drawFastHLine(int16_t x, int16_t y, uint8_t w, uint8_t color = WHITE);
 
   /// Draws a filled-in rectangle.
-  void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color);
+  void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
   /// Fills the screen buffer with white or black.
-  void fillScreen(uint8_t color);
+  void fillScreen(uint8_t color = WHITE);
 
   /// Draws a rectangle with rounded edges.
-  void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color);
+  void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color = WHITE);
 
   /// Draws a filled-in rectangle with rounded edges.
-  void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color);
+  void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color = WHITE);
 
    /// Draws the outline of a triangle.
-  void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color);
+  void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
 
   /// Draws a filled-in triangle.
-  void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color);
+  void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
 
   /// Draws a bitmap from program memory to a specific X/Y
-  void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color);
+  void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
   /// Draws images that are bit-oriented horizontally.
   /**
@@ -170,7 +174,7 @@ public:
    * allows them to be directly written to the screen. It is
    * recommended you use drawBitmap when possible.
    */
-  void drawSlowXYBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color);
+  void drawSlowXYBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
   /// Get a pointer to the display buffer.
   unsigned char* getBuffer();
@@ -186,13 +190,22 @@ public:
   /// Swap the references of two pointers.
   void swap(int16_t& a, int16_t& b);
 
+  /// Sets the frame rate in frames per second.
   void setFrameRate(uint8_t rate);
+
+  /// Returns "true" if it's time for the next frame.
   bool nextFrame();
+
+  /// Returns "true" if the current frame number is evenly divisible by the specified number.
+  /**
+   * If called with the same value each time, will return "true" if the given
+   * number of frames has elapsed since the last frame in which it was "true".
+   */
   bool everyXFrames(uint8_t frames);
 
   /// Returns the load on the CPU as a percentage.
   /**
-   * This is based on how much of the time your app is spends rendering
+   * This is based on how much of the time your app is spending rendering
    * frames.  This number can be higher than 100 if your app is rendering
    * really slowly.
    */
@@ -213,7 +226,8 @@ protected:
   // helper function for sound enable/disable system control
   void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
 
-  unsigned char sBuffer[(HEIGHT*WIDTH)/8];
+  // Screen buffer
+  uint8_t sBuffer[(HEIGHT*WIDTH)/8];
 };
 
 
@@ -267,7 +281,7 @@ protected:
   uint8_t textColor;
   uint8_t textBackground;
   uint8_t textSize;
-  bool textWrap; // If set, 'wrap' text at right edge of display
+  bool textWrap;
 };
 
 #endif

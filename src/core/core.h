@@ -220,14 +220,14 @@ public:
      * Each byte will be 8 vertical pixels, painted in the same order as
      * explained above in paint8Pixels.
      */
-    void static paintScreen(const unsigned char *image);
+    void static paintScreen(const uint8_t *image);
 
     /// paints an entire image directly to hardware (from RAM)
     /*
      * Each byte will be 8 vertical pixels, painted in the same order as
      * explained above in paint8Pixels.
      */
-    void static paintScreen(unsigned char image[]);
+    void static paintScreen(uint8_t image[]);
 
     /// paints a blank (black) screen to hardware
     void static blank();
