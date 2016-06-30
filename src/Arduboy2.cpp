@@ -6,6 +6,8 @@
 //========== class Arduboy2Base ==========
 //========================================
 
+uint8_t Arduboy2Base::sBuffer[(HEIGHT*WIDTH)/8];
+
 Arduboy2Base::Arduboy2Base()
 {
   // frame management

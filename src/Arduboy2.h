@@ -211,14 +211,6 @@ public:
    */
   int cpuLoad();
 
-  uint8_t frameRate;
-  uint16_t frameCount;
-  uint8_t eachFrameMillis;
-  long lastFrameStart;
-  long nextFrameStart;
-  bool post_render;
-  uint8_t lastFrameDurationMs;
-
   /// useful for getting raw approximate voltage values
   uint16_t rawADC(uint8_t adc_bits);
 
@@ -227,7 +219,16 @@ protected:
   void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
 
   // Screen buffer
-  uint8_t sBuffer[(HEIGHT*WIDTH)/8];
+  static uint8_t sBuffer[(HEIGHT*WIDTH)/8];
+
+  // For frame funcions
+  uint8_t frameRate;
+  uint16_t frameCount;
+  uint8_t eachFrameMillis;
+  long lastFrameStart;
+  long nextFrameStart;
+  bool post_render;
+  uint8_t lastFrameDurationMs;
 };
 
 
