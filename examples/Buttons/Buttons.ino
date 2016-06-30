@@ -12,11 +12,10 @@ License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
 */
 
-#include <Arduboy.h>
+#include <Arduboy2.h>
 
 // Make an instance of arduboy used for many functions
-Arduboy arduboy;
-AbPrinter text(arduboy);
+Arduboy2 arduboy;
 
 // Variables for your game go here.
 char title[] = "Press Buttons!";
@@ -97,10 +96,10 @@ void loop() {
   arduboy.clear();
 
   // we set our cursor x pixels to the right and y down from the top
-  text.setCursor(x, y);
+  arduboy.setCursor(x, y);
 
-  // then we print to screen what is stored in our text variable we declared earlier
-  text.print(title);
+  // then we print to screen what is stored in our title variable we declared earlier
+  arduboy.print(title);
 
   // then we finaly we tell the arduboy to display what we just wrote to the display.
   arduboy.display();

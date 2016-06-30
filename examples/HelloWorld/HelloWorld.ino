@@ -11,11 +11,10 @@ License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
 */
 
-#include <Arduboy.h>
+#include <Arduboy2.h>
 
 // make an instance of arduboy used for many functions
-Arduboy arduboy;
-AbPrinter text(arduboy);
+Arduboy2 arduboy;
 
 
 // This function runs once in your game.
@@ -42,10 +41,10 @@ void loop() {
 
   // we set our cursor 5 pixels to the right and 10 down from the top
   // (positions start at 0, 0)
-  text.setCursor(4, 9);
+  arduboy.setCursor(4, 9);
 
   // then we print to screen what is in the Quotation marks ""
-  text.print(F("Hello, world!"));
+  arduboy.print(F("Hello, world!"));
 
   // then we finaly we tell the arduboy to display what we just wrote to the display
   arduboy.display();
