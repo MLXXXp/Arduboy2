@@ -1,0 +1,14 @@
+{
+    "name": "Arduboy2",
+    "keywords": "arduboy, game",
+    "description": "An alternative library for content creation on the Arduboy miniature gaming platform",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/MLXXXp/Arduboy2.git"
+    },
+    "version": "2.0.0",
+    "exclude": "extras",
+    "frameworks": "arduino",
+    "platforms": "atmelavr"
+}
