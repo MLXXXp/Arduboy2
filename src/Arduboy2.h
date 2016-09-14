@@ -9,7 +9,7 @@
 // For a version number in the form of x.y.z the value of the define will be
 // ((x * 10000) + (y * 100) + (z)) as a decimal number.
 // So, it will read as xxxyyzz, with no leading zeros on x.
-#define ARDUBOY_LIB_VER 20001
+#define ARDUBOY_LIB_VER 20002
 
 // EEPROM settings
 #define EEPROM_VERSION 0
@@ -108,7 +108,7 @@ public:
   void display();
 
   /// Sets a single pixel on the screen buffer to white or black.
-  void drawPixel(int x, int y, uint8_t color = WHITE);
+  void drawPixel(int16_t x, int16_t y, uint8_t color = WHITE);
 
   /// Returns the state of the given pixel in the screen buffer.
   /**
