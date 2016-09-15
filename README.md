@@ -185,10 +185,6 @@ The same thing has to be done with creating the library object. (If the object n
 
 If the sketch doesn't use any *"tunes"* functions, there's a good chance this is all that has to be done to make it compile.
 
-### Sketch now runs too fast
-
-If the sketch uses the *nextFrame()* function to maintain a steady speed, you may find that it now runs too fast (because of a bug in Arduboy V1.1 that has been fixed in Arduboy2). The solution may be to just specify a lower value in the call to *setFrameRate()*. Otherwise, the changes required will depend on the particular sketch, based on the fact that frame rates now work properly.
-
 ### Sketch uses only *tunes.tone()* for sound
 
 If the sketch has sound but only uses *tunes.tone()*, solutions are:
