@@ -9,7 +9,7 @@
 // For a version number in the form of x.y.z the value of the define will be
 // ((x * 10000) + (y * 100) + (z)) as a decimal number.
 // So, it will read as xxxyyzz, with no leading zeros on x.
-#define ARDUBOY_LIB_VER 20002
+#define ARDUBOY_LIB_VER 20004
 
 // EEPROM settings
 #define EEPROM_VERSION 0
