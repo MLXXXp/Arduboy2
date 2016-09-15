@@ -112,8 +112,7 @@ void Arduboy2Base::bootLogo()
 
 void Arduboy2Base::setFrameRate(uint8_t rate)
 {
-  frameRate = rate;
-  eachFrameMillis = 1000/rate;
+  eachFrameMillis = 1000 / rate;
 }
 
 bool Arduboy2Base::everyXFrames(uint8_t frames)
@@ -123,7 +122,7 @@ bool Arduboy2Base::everyXFrames(uint8_t frames)
 
 bool Arduboy2Base::nextFrame()
 {
-  long now = millis();
+  unsigned long now = millis();
   uint8_t remaining;
 
   // post render
@@ -144,26 +143,8 @@ bool Arduboy2Base::nextFrame()
   }
 
   // pre-render
-
-  // next frame should start from last frame start + frame duration
-  nextFrameStart = lastFrameStart + eachFrameMillis;
-  // If we're running CPU at 100%+ (too slow to complete each loop within
-  // the frame duration) then it's possible that we get "behind"... Say we
-  // took 5ms too long, resulting in nextFrameStart being 5ms in the PAST.
-  // In that case we simply schedule the next frame to start immediately.
-  //
-  // If we were to let the nextFrameStart slide further and further into
-  // the past AND eventually the CPU usage dropped then frame management
-  // would try to "catch up" (by speeding up the game) to make up for all
-  // that lost time.  That would not be good.  We allow frames to take too
-  // long (what choice do we have?), but we do not allow super-fast frames
-  // to make up for slow frames in the past.
-  if (nextFrameStart < now) {
-    nextFrameStart = now;
-  }
-
+  nextFrameStart = now + eachFrameMillis;
   lastFrameStart = now;
-
   post_render = true;
   return post_render;
 }
@@ -783,6 +764,7 @@ size_t Arduboy2::write(uint8_t c)
       write('\n');
     }
   }
+  return 1;
 }
 
 void Arduboy2::drawChar

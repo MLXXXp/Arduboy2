@@ -222,11 +222,10 @@ protected:
   static uint8_t sBuffer[(HEIGHT*WIDTH)/8];
 
   // For frame funcions
-  uint8_t frameRate;
   uint16_t frameCount;
   uint8_t eachFrameMillis;
-  long lastFrameStart;
-  long nextFrameStart;
+  unsigned long lastFrameStart;
+  unsigned long nextFrameStart;
   bool post_render;
   uint8_t lastFrameDurationMs;
 };
