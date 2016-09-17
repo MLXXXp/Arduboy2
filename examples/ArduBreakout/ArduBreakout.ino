@@ -3,6 +3,8 @@
  Copyright (C) 2011 Sebastian Goscik
  All rights reserved.
 
+ Modifications by Scott Allen 2016 (after previous changes by ???)
+
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
@@ -10,7 +12,9 @@
  */
 
 #include <Arduboy2.h>
-#include "breakout_bitmaps.h"
+
+// block in EEPROM to save high scores
+#define EE_FILE 2
 
 Arduboy2 arduboy;
 
@@ -29,8 +33,8 @@ byte lives = 3;       //Amount of lives
 byte level = 1;       //Current level
 unsigned int score=0;   //Score for the game
 unsigned int brickCount;  //Amount of bricks hit
-byte pad,pad2,pad3;     //Button press buffer used to stop pause repeating
-byte oldpad,oldpad2,oldpad3;
+boolean pad, pad2, pad3;  //Button press buffer used to stop pause repeating
+boolean oldpad, oldpad2, oldpad3;
 char text_buffer[16];      //General string buffer
 boolean start=false;    //If in menu or in game
 boolean initialDraw=false;//If the inital draw has happened
@@ -53,7 +57,8 @@ byte tick;
 void setup()
 {
   arduboy.begin();
-  arduboy.setFrameRate(25);
+  arduboy.setFrameRate(40);
+  arduboy.initRandomSeed();
 }
 
 void loop()
@@ -69,7 +74,7 @@ void loop()
     start = titleScreen();
     if (!start)
     {
-      start = displayHighScores(2);
+      start = displayHighScores(EE_FILE);
     }
   }
 
@@ -80,7 +85,9 @@ void loop()
     arduboy.clear();
     //Selects Font
     //Draws the new level
+    level = 1;
     newLevel();
+    score = 0;
     initialDraw=true;
   }
 
@@ -91,13 +98,13 @@ void loop()
     //Pause game if FIRE pressed
     pad = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
 
-    if(pad >1 && oldpad==0 && released)
+    if(pad == true && oldpad == false && released)
     {
-      oldpad2=0; //Forces pad loop 2 to run once
+      oldpad2 = false; //Forces pad loop 2 to run once
       pause();
     }
 
-    oldpad=pad;
+    oldpad = pad;
     drawBall();
 
     if(brickCount == ROWS * COLUMNS)
@@ -111,14 +118,13 @@ void loop()
     drawGameOver();
     if (score > 0)
     {
-      enterHighScore(2);
+      enterHighScore(EE_FILE);
     }
 
     arduboy.clear();
     initialDraw=false;
     start=false;
     lives=3;
-    score=0;
     newLevel();
   }
 
@@ -184,7 +190,6 @@ void moveBall()
       yb=60;
       released = false;
       lives--;
-      drawLives();
       playTone(175, 250);
       if (random(0, 2) == 0)
       {
@@ -285,9 +290,9 @@ void moveBall()
 
     //Release ball if FIRE pressed
     pad3 = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
-    if (pad3 == 1 && oldpad3 == 0)
+    if (pad3 == true && oldpad3 == false)
     {
-      released=true;
+      released = true;
 
       //Apply random direction to ball on release
       if (random(0, 2) == 0)
@@ -330,23 +335,17 @@ void drawPaddle()
   arduboy.drawRect(xPaddle, 63, 11, 1, 1);
 }
 
-void drawLives()
-{
-  sprintf(text_buffer, "LIVES:%u", lives);
-  arduboy.setCursor(0, 90);
-  arduboy.print(text_buffer);
-}
-
 void drawGameOver()
 {
   arduboy.drawPixel(xb,   yb,   0);
   arduboy.drawPixel(xb+1, yb,   0);
   arduboy.drawPixel(xb,   yb+1, 0);
   arduboy.drawPixel(xb+1, yb+1, 0);
-  arduboy.setCursor(52, 42);
-  arduboy.print( "Game");
-  arduboy.setCursor(52, 54);
-  arduboy.print("Over");
+  arduboy.setCursor(37, 42);
+  arduboy.print("Game Over");
+  arduboy.setCursor(31, 56);
+  arduboy.print("Score: ");
+  arduboy.print(score);
   arduboy.display();
   delay(4000);
 }
@@ -363,22 +362,19 @@ void pause()
     delay(150);
     //Unpause if FIRE is pressed
     pad2 = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
-    if (pad2 > 1 && oldpad2 == 0 && released)
+    if (pad2 == true && oldpad2 == false && released)
     {
         arduboy.fillRect(52, 45, 30, 11, 0);
 
         paused=false;
     }
-    oldpad2=pad2;
+    oldpad2 = pad2;
   }
 }
 
 void Score()
 {
   score += (level*10);
-  sprintf(text_buffer, "SCORE:%u", score);
-  arduboy.setCursor(80, 90);
-  arduboy.print(text_buffer);
 }
 
 void newLevel(){
@@ -406,13 +402,7 @@ void newLevel(){
     }
   }
 
-  //Draws the initial lives
-  drawLives();
-
-  //Draws the initial score
-  sprintf(text_buffer, "SCORE:%u", score);
-  arduboy.setCursor(80, 90);
-  arduboy.print(text_buffer);
+  arduboy.display();
 }
 
 //Used to delay images while reading button input
@@ -422,9 +412,9 @@ boolean pollFireButton(int n)
   {
     delay(15);
     pad = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
-    if(pad == 1 && oldpad == 0)
+    if(pad == true && oldpad == false)
     {
-      oldpad3 = 1; //Forces pad loop 3 to run once
+      oldpad3 = true; //Forces pad loop 3 to run once
       return true;
     }
     oldpad = pad;
@@ -435,18 +425,18 @@ boolean pollFireButton(int n)
 //Function by nootropic design to display highscores
 boolean displayHighScores(byte file)
 {
-  byte y = 10;
+  byte y = 8;
   byte x = 24;
-  // Each block of EEPROM has 10 high scores, and each high score entry
+  // Each block of EEPROM has 7 high scores, and each high score entry
   // is 5 bytes long:  3 bytes for initials and two bytes for score.
-  int address = file*10*5;
+  int address = file * 7 * 5 + EEPROM_STORAGE_SPACE_START;
   byte hi, lo;
   arduboy.clear();
   arduboy.setCursor(32, 0);
   arduboy.print("HIGH SCORES");
   arduboy.display();
 
-  for(int i = 0; i < 10; i++)
+  for(int i = 0; i < 7; i++)
   {
     sprintf(text_buffer, "%2d", i+1);
     arduboy.setCursor(x,y+(i*8));
@@ -490,7 +480,7 @@ boolean titleScreen()
   arduboy.clear();
   arduboy.setCursor(16,22);
   arduboy.setTextSize(2);
-  arduboy.print("ARAKNOID");
+  arduboy.print("BREAKOUT");
   arduboy.setTextSize(1);
   arduboy.display();
   if (pollFireButton(25))
@@ -502,7 +492,6 @@ boolean titleScreen()
   for(byte i = 0; i < 5; i++)
   {
     //Draws "Press FIRE"
-    //arduboy.bitmap(31, 53, fire);  arduboy.display();
     arduboy.setCursor(31, 53);
     arduboy.print("PRESS FIRE!");
     arduboy.display();
@@ -511,15 +500,12 @@ boolean titleScreen()
     {
       return true;
     }
+
     //Removes "Press FIRE"
-    arduboy.clear();
-    arduboy.setCursor(16,22);
-    arduboy.setTextSize(2);
-    arduboy.print("ARAKNOID");
-    arduboy.setTextSize(1);
+    arduboy.setCursor(31, 53);
+    arduboy.print("           ");
     arduboy.display();
 
-    arduboy.display();
     if (pollFireButton(25))
     {
       return true;
@@ -532,7 +518,7 @@ boolean titleScreen()
 //Function by nootropic design to add high scores
 void enterInitials()
 {
-  char index = 0;
+  byte index = 0;
 
   arduboy.clear();
 
@@ -566,23 +552,18 @@ void enterInitials()
 
     if (arduboy.pressed(LEFT_BUTTON) || arduboy.pressed(B_BUTTON))
     {
-      index--;
-      if (index < 0)
+      if (index > 0)
       {
-        index = 0;
-      } else
-      {
+        index--;
         playTone(1046, 250);
       }
     }
 
     if (arduboy.pressed(RIGHT_BUTTON))
     {
-      index++;
-      if (index > 2)
+      if (index < 2)
       {
-        index = 2;
-      }  else {
+        index++;
         playTone(1046, 250);
       }
     }
@@ -645,15 +626,15 @@ void enterInitials()
 
 void enterHighScore(byte file)
 {
-  // Each block of EEPROM has 10 high scores, and each high score entry
+  // Each block of EEPROM has 7 high scores, and each high score entry
   // is 5 bytes long:  3 bytes for initials and two bytes for score.
-  int address = file * 10 * 5;
+  int address = file * 7 * 5 + EEPROM_STORAGE_SPACE_START;
   byte hi, lo;
   char tmpInitials[3];
   unsigned int tmpScore = 0;
 
   // High score processing
-  for(byte i = 0; i < 10; i++)
+  for(byte i = 0; i < 7; i++)
   {
     hi = EEPROM.read(address + (5*i));
     lo = EEPROM.read(address + (5*i) + 1);
@@ -669,7 +650,7 @@ void enterHighScore(byte file)
     if (score > tmpScore)
     {
       enterInitials();
-      for(byte j=i;j<10;j++)
+      for(byte j = i; j < 7; j++)
       {
         hi = EEPROM.read(address + (5*j));
         lo = EEPROM.read(address + (5*j) + 1);
@@ -688,11 +669,11 @@ void enterHighScore(byte file)
         tmpInitials[2] = (char)EEPROM.read(address + (5*j) + 4);
 
         // write score and initials to current slot
-        EEPROM.write(address + (5*j), ((score >> 8) & 0xFF));
-        EEPROM.write(address + (5*j) + 1, (score & 0xFF));
-        EEPROM.write(address + (5*j) + 2, initials[0]);
-        EEPROM.write(address + (5*j) + 3, initials[1]);
-        EEPROM.write(address + (5*j) + 4, initials[2]);
+        EEPROM.update(address + (5*j), ((score >> 8) & 0xFF));
+        EEPROM.update(address + (5*j) + 1, (score & 0xFF));
+        EEPROM.update(address + (5*j) + 2, initials[0]);
+        EEPROM.update(address + (5*j) + 3, initials[1]);
+        EEPROM.update(address + (5*j) + 4, initials[2]);
 
         // tmpScore and tmpInitials now hold what we want to
         //write in the next slot.

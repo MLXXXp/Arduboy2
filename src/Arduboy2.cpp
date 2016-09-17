@@ -123,7 +123,6 @@ bool Arduboy2Base::everyXFrames(uint8_t frames)
 bool Arduboy2Base::nextFrame()
 {
   unsigned long now = millis();
-  uint8_t remaining;
 
   // post render
   if (post_render) {
@@ -134,10 +133,9 @@ bool Arduboy2Base::nextFrame()
 
   // if it's not time for the next frame yet
   if (now < nextFrameStart) {
-    remaining = nextFrameStart - now;
     // if we have more than 1ms to spare, lets sleep
     // we should be woken up by timer0 every 1ms, so this should be ok
-    if (remaining > 1)
+    if ((uint8_t)(nextFrameStart - now) > 1)
       idle();
     return false;
   }
