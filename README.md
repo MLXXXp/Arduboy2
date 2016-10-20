@@ -38,7 +38,7 @@ Main differences between Arduboy2 and Arduboy V1.1 are:
 
 As of version 2.1.0 functionality from the [Team A.R.G.](http://www.team-arg.org/) *Arglib* library has been added:
 
-- The sprite drawing functions, collision detection functions, and button handling functions that Team A.R.G. incorporated from the [ArduboyExtra](https://github.com/yyyc514/ArduboyExtra) project. The *poll()* function was renamed *pollButtons()* for clarity.
+- The sprite drawing functions, collision detection functions, and button handling functions that Team A.R.G. incorporated from the [ArduboyExtra](https://github.com/yyyc514/ArduboyExtra) project. The *poll()* function was renamed *pollButtons()* for clarity. The *Sprites* class doesn't require a parameter for the constructor, whereas in *Arglib* a pointer to an Arduboy class object is required.
 - The *drawCompressed()* function, which allows compressed bitmaps to be drawn. Saving bitmaps in compressed form may reduce overall sketch size. 
 
 ## Start up features
@@ -97,6 +97,12 @@ void setup() {
 ```
 
 The rest of the Arduboy2 functions will now be available for use.
+
+If you wish to use the Sprites class functions you must create a Sprites object:
+
+```cpp
+Sprites sprites;
+```
 
 Sample sketches have been included with the library as examples of how to use it. To load an example, for examination and uploading to the Arduboy, using the Arduino IDE menus select:
 

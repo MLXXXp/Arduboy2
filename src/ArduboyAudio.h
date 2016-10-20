@@ -6,14 +6,14 @@
 
 class ArduboyAudio
 {
-public:
+ public:
   void static begin();
   void static on();
   void static off();
   void static saveOnOff();
   bool static enabled();
 
-protected:
+ protected:
   bool static audio_enabled;
 };
 

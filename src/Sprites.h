@@ -14,12 +14,6 @@
 class Sprites
 {
   public:
-    /// The class constructor.
-    /// `buffer` is a pointer to the screen buffer where the draw functions
-    /// will write to.
-    ///
-    Sprites(uint8_t* buffer);
-    
     /// drawExternalMask() uses a separate mask to mask image (MASKED)
     ///
     ///      image  mask   before  after
@@ -130,9 +124,6 @@ class Sprites
     void drawBitmap(int16_t x, int16_t y,
                     const uint8_t *bitmap, const uint8_t *mask,
                     int8_t w, int8_t h, uint8_t draw_mode);
-
-  private:
-    unsigned char *sBuffer;
 };
 
 #endif

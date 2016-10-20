@@ -136,7 +136,7 @@
 
 class ArduboyCore
 {
-public:
+  public:
     ArduboyCore();
 
     /// allows the CPU to idle between frames
@@ -278,8 +278,7 @@ public:
      */
     void static boot();
 
-protected:
-
+  protected:
     /// Safe mode
     /**
      * Safe Mode is engaged by holding down both the LEFT button and UP button
@@ -300,7 +299,7 @@ protected:
     void static inline bootPowerSaving() __attribute__((always_inline));
 
 
-private:
+  private:
     volatile static uint8_t *csport, *dcport;
     uint8_t static cspinmask, dcpinmask;
 

@@ -59,7 +59,9 @@ struct Point
 
 class Arduboy2Base : public ArduboyCore
 {
-public:
+ friend class Sprites;
+
+ public:
   Arduboy2Base();
 
   ArduboyAudio audio;
@@ -285,7 +287,7 @@ public:
    */
   bool collide(Rect rect1, Rect rect2);
 
-protected:
+ protected:
   // helper function for sound enable/disable system control
   void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
 
@@ -312,7 +314,7 @@ protected:
 
 class Arduboy2 : public Print, public Arduboy2Base
 {
-public:
+ public:
   Arduboy2();
 
   /// Writes a single ASCII character to the screen.
@@ -350,7 +352,7 @@ public:
   /// Clears the display and sets the cursor to 0, 0
   void clear();
 
-protected:
+ protected:
   int16_t cursor_x;
   int16_t cursor_y;
   uint8_t textColor;

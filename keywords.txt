@@ -8,6 +8,7 @@
 
 Arduboy2	KEYWORD1
 Arduboy2Base	KEYWORD1
+Sprites	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -20,6 +21,7 @@ boot	KEYWORD2
 bootLogo	KEYWORD2
 buttonsState	KEYWORD2
 clear	KEYWORD2
+collide	KEYWORD2
 cpuLoad	KEYWORD2
 digitalWriteRGB	KEYWORD2
 display	KEYWORD2
@@ -51,12 +53,15 @@ height	KEYWORD2
 idle	KEYWORD2
 initRandomSeed	KEYWORD2
 invert	KEYWORD2
+justPressed	KEYWORD2
+justReleased	KEYWORD2
 nextFrame	KEYWORD2
 notPressed	KEYWORD2
 off	KEYWORD2
 on	KEYWORD2
 paint8Pixels	KEYWORD2
 paintScreen	KEYWORD2
+pollButtons	KEYWORD2
 pressed	KEYWORD2
 saveOnOff	KEYWORD2
 setCursor	KEYWORD2
@@ -68,6 +73,13 @@ setTextSize	KEYWORD2
 setTextWrap	KEYWORD2
 systemButtons	KEYWORD2
 width	KEYWORD2
+
+# Sprites class
+drawErase	KEYWORD2
+drawExternalMask	KEYWORD2
+drawOverwrite	KEYWORD2
+drawPlusMask	KEYWORD2
+drawSelfMasked	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
