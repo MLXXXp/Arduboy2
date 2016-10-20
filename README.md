@@ -186,9 +186,9 @@ The Arduboy2 library, for the most part, is compatible with Arduboy library V1.1
 
 The first thing to do is change the *#include* for the library header file:
 
-`#include <Arduboy.h>` becomes `#include <Ardbuoy2.h>`
+`#include <Arduboy.h>` becomes `#include <Arduboy2.h>`
 
-(If it was *"Arduboy.h"* in quotes, it's still better to change it to *&lt;Ardbuoy2.h&gt;* in angle brackets).
+(If it was *"Arduboy.h"* in quotes, it's still better to change it to *&lt;Arduboy2.h&gt;* in angle brackets).
 
 The same thing has to be done with creating the library object. (If the object name isn't *arduboy*, keep whatever name is used.):
 
@@ -277,6 +277,17 @@ See the [*ArduboyPlaytune* library](https://github.com/Arduboy/ArduboyPlayTune) 
 If you don't need to play scores containing two parts, and don't require tones to be played in parallel with a score that's playing, then as an alternative to using *ArduboyPlaytune* you may wish to consider switching to *ArduboyTones*. This may require a bit of work because any *ArduboyPlaytune* scores would have to be converted to *ArduboyTones* format. It would involve changing note numbers to frequencies. This could be simplified by using the provided *NOTE_* defines. Also, durations would have to be converted, including adding silent "rest" tones as necessary.
 
 The benefit of using *ArduboyTones* would be reduced code size and possibly easier addition of new sequences without the need of a MIDI to Playtune format converter.
+
+### Sketch uses the *beginNoLogo()* function instead of *begin()*
+
+The *beginNoLogo()* function has been removed. Instead, *boot()* can be used with additional functions following it to add back in desired boot functionality. See the information above under the heading *Remove boot up features* for more details. Assuming the object is named *arduboy*, a direct replacement for *beginNoLogo()* would be:
+
+```cpp
+  arduboy.boot();
+  arduboy.blank();
+  arduboy.flashlight();
+  arduboy.audio.begin();
+```
 
 ----------
 
