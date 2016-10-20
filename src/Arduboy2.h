@@ -1,7 +1,9 @@
 #ifndef ARDUBOY2_H
 #define ARDUBOY2_H
 
+#include <Arduino.h>
 #include "ArduboyCore.h"
+#include "Sprites.h"
 #include <Print.h>
 #include <limits.h>
 
@@ -9,7 +11,7 @@
 // For a version number in the form of x.y.z the value of the define will be
 // ((x * 10000) + (y * 100) + (z)) as a decimal number.
 // So, it will read as xxxyyzz, with no leading zeros on x.
-#define ARDUBOY_LIB_VER 20005
+#define ARDUBOY_LIB_VER 20100
 
 // EEPROM settings
 #define EEPROM_VERSION 0
@@ -35,6 +37,22 @@
 #define ADC_TEMP (_BV(REFS0) | _BV(REFS1) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0))
 
 
+/// Rectangle for collision functions
+struct Rect
+{
+  int16_t x;
+  int16_t y;
+  uint8_t width;
+  uint8_t height;
+};
+
+/// Point for collision functions
+struct Point
+{
+  int16_t x;
+  int16_t y;
+};
+
 //==================================
 //========== Arduboy2Base ==========
 //==================================
@@ -45,18 +63,6 @@ public:
   Arduboy2Base();
 
   ArduboyAudio audio;
-
-  /// Returns true if the button mask passed in is pressed.
-  /**
-   * if (pressed(LEFT_BUTTON + A_BUTTON))
-   */
-  bool pressed(uint8_t buttons);
-
-  /// Returns true if the button mask passed in not pressed.
-  /**
-   * if (notPressed(LEFT_BUTTON))
-   */
-  bool notPressed(uint8_t buttons);
 
   /// Initialize hardware, boot logo, boot utilities, etc.
   /**
@@ -176,6 +182,16 @@ public:
    */
   void drawSlowXYBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
+  /// Draw a compressed bitmap
+  /**
+   * Draws a bitmap starting at the given coordinates that has been compressed
+   * using an algorthm implemented by Team A.R.G.
+   * For more information see:
+   * https://github.com/TEAMarg/drawCompressed
+   * https://github.com/TEAMarg/Cabi
+   */
+  void drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color = WHITE);
+
   /// Get a pointer to the display buffer.
   unsigned char* getBuffer();
 
@@ -214,12 +230,71 @@ public:
   /// useful for getting raw approximate voltage values
   uint16_t rawADC(uint8_t adc_bits);
 
+  /// Test if the specified buttons are pressed
+  /**
+   * Returns "true" if all the buttons in the provided mask are currently pressed.
+   * (Can be a single button)
+   * E.g. `if (pressed(LEFT_BUTTON + A_BUTTON))`
+   */
+  bool pressed(uint8_t buttons);
+
+  /// Test if the specified buttons are not pressed
+  /**
+   * Returns "true" if all the buttons in the provided mask are currently released.
+   * (Can be a single button)
+   * E.g. `if (notPressed(LEFT_BUTTON))`
+   */
+  bool notPressed(uint8_t buttons);
+
+  /// Poll the hardware buttons and track state over time.
+  /**
+   * Should be called either in the main `loop()` or as part of the
+   * frame system at the start of rendering a frame.
+   *
+   * The `justPressed()` and `justReleased()` functions rely on this function.
+   */
+  void pollButtons();
+
+  /// Check if a button has just been pressed
+  /**
+   * Will return "true" if the given button was pressed between the latest
+   * call to `pollButtons()` and previous call to `pollButtons()`.
+   * If the button has been held down over multiple polls this function will
+   * return "false". This function should only be used to test a single button.
+   */
+  bool justPressed(uint8_t button);
+
+  /// Check if a button has just been released
+  /**
+   * Will return "true" if the given button was released between the latest
+   * call to `pollButtons()` and previous call to `pollButtons()`.
+   * If the button has been released over multiple polls this function will
+   * return "false". This function should only be used to test a single button.
+   */
+  bool justReleased(uint8_t button);
+
+  /// Test if a point is within a rectangle
+  /**
+   * Returns "true" if the point is within the rectangle.
+   */
+  bool collide(Point point, Rect rect);
+
+  /// Test if a rectangle is intersecting with another rectangle.
+  /**
+   * Returns "true" if the first rectangle is intersecting the second.
+   */
+  bool collide(Rect rect1, Rect rect2);
+
 protected:
   // helper function for sound enable/disable system control
   void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
 
   // Screen buffer
   static uint8_t sBuffer[(HEIGHT*WIDTH)/8];
+
+  // For button handling
+  uint8_t currentButtonState;
+  uint8_t previousButtonState;
 
   // For frame funcions
   uint16_t frameCount;

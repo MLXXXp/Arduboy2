@@ -10,12 +10,13 @@ uint8_t Arduboy2Base::sBuffer[];
 
 Arduboy2Base::Arduboy2Base()
 {
+  currentButtonState = 0;
+  previousButtonState = 0;
   // frame management
   setFrameRate(60);
   frameCount = 0;
   nextFrameStart = 0;
   post_render = false;
-
   // init not necessary, will be reset after first use
   // lastFrameStart
   // lastFrameDurationMs
@@ -644,7 +645,7 @@ void Arduboy2Base::drawBitmap
 (int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h,
  uint8_t color)
 {
-  // no need to dar at all of we're offscreen
+  // no need to draw at all if we're offscreen
   if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
     return;
 
@@ -664,14 +665,20 @@ void Arduboy2Base::drawBitmap
         if (iCol + x > (WIDTH-1)) break;
         if (iCol + x >= 0) {
           if (bRow >= 0) {
-            if      (color == WHITE) this->sBuffer[ (bRow*WIDTH) + x + iCol ] |= pgm_read_byte(bitmap+(a*w)+iCol) << yOffset;
-            else if (color == BLACK) this->sBuffer[ (bRow*WIDTH) + x + iCol ] &= ~(pgm_read_byte(bitmap+(a*w)+iCol) << yOffset);
-            else                     this->sBuffer[ (bRow*WIDTH) + x + iCol ] ^= pgm_read_byte(bitmap+(a*w)+iCol) << yOffset;
+            if (color == WHITE)
+              sBuffer[(bRow*WIDTH) + x + iCol] |= pgm_read_byte(bitmap+(a*w)+iCol) << yOffset;
+            else if (color == BLACK)
+              sBuffer[(bRow*WIDTH) + x + iCol] &= ~(pgm_read_byte(bitmap+(a*w)+iCol) << yOffset);
+            else
+              sBuffer[(bRow*WIDTH) + x + iCol] ^= pgm_read_byte(bitmap+(a*w)+iCol) << yOffset;
           }
           if (yOffset && bRow<(HEIGHT/8)-1 && bRow > -2) {
-            if      (color == WHITE) this->sBuffer[ ((bRow+1)*WIDTH) + x + iCol ] |= pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset);
-            else if (color == BLACK) this->sBuffer[ ((bRow+1)*WIDTH) + x + iCol ] &= ~(pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset));
-            else                     this->sBuffer[ ((bRow+1)*WIDTH) + x + iCol ] ^= pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset);
+            if (color == WHITE)
+              sBuffer[((bRow+1)*WIDTH) + x + iCol] |= pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset);
+            else if (color == BLACK)
+              sBuffer[((bRow+1)*WIDTH) + x + iCol] &= ~(pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset));
+            else
+              sBuffer[((bRow+1)*WIDTH) + x + iCol] ^= pgm_read_byte(bitmap+(a*w)+iCol) >> (8-yOffset);
           }
         }
       }
@@ -697,10 +704,141 @@ void Arduboy2Base::drawSlowXYBitmap
   }
 }
 
+typedef struct CSESSION {
+  int byte;
+  int bit;
+  const uint8_t *src;
+  int src_pos;
+} CSESSION;
+static CSESSION cs;
+
+static int getval(int bits)
+{
+  int val = 0;
+  int i;
+  for (i = 0; i < bits; i++)
+  {
+    if (cs.bit == 0x100)
+    {
+      cs.bit = 0x1;
+      cs.byte = pgm_read_byte(&cs.src[cs.src_pos]);
+      cs.src_pos ++;
+    }
+    if (cs.byte & cs.bit)
+      val += (1 << i);
+    cs.bit <<= 1;
+  }
+  return val;
+}
+
+void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color)
+{
+  int bl, len;
+  int col;
+  int i;
+  int a, iCol;
+  int byte = 0;
+  int bit = 0;
+  int w, h;
+
+  // set up decompress state
+
+  cs.src = bitmap;
+  cs.bit = 0x100;
+  cs.byte = 0;
+  cs.src_pos = 0;
+
+  // read header
+
+  w = getval(8) + 1;
+  h = getval(8) + 1;
+
+  col = getval(1); // starting colour
+
+  // no need to draw at all if we're offscreen
+  if (sx + w < 0 || sx > WIDTH - 1 || sy + h < 0 || sy > HEIGHT - 1)
+    return;
+
+  // sy = sy - (frame*h);
+
+  int yOffset = abs(sy) % 8;
+  int sRow = sy / 8;
+  if (sy < 0) {
+    sRow--;
+    yOffset = 8 - yOffset;
+  }
+  int rows = h / 8;
+  if (h % 8 != 0) rows++;
+
+  a = 0; // +(frame*rows);
+  iCol = 0;
+
+  byte = 0; bit = 1;
+  while (a < rows) // + (frame*rows))
+  {
+    bl = 1;
+    while (!getval(1))
+      bl += 2;
+
+    len = getval(bl) + 1; // span length
+
+    // draw the span
+
+
+    for (i = 0; i < len; i++)
+    {
+      if (col)
+        byte |= bit;
+      bit <<= 1;
+
+      if (bit == 0x100) // reached end of byte
+      {
+        // draw
+
+        int bRow = sRow + a;
+
+        //if (byte) // possible optimisation
+        if (bRow <= (HEIGHT / 8) - 1)
+          if (bRow > -2)
+            if (iCol + sx <= (WIDTH - 1))
+              if (iCol + sx >= 0) {
+
+                if (bRow >= 0)
+                {
+                  if (color)
+                    sBuffer[(bRow * WIDTH) + sx + iCol] |= byte << yOffset;
+                  else
+                    sBuffer[(bRow * WIDTH) + sx + iCol] &= ~(byte << yOffset);
+                }
+                if (yOffset && bRow < (HEIGHT / 8) - 1 && bRow > -2)
+                {
+                  if (color)
+                    sBuffer[((bRow + 1)*WIDTH) + sx + iCol] |= byte >> (8 - yOffset);
+                  else
+                    sBuffer[((bRow + 1)*WIDTH) + sx + iCol] &= ~(byte >> (8 - yOffset));
+                }
+              }
+
+        // iterate
+        iCol ++;
+        if (iCol >= w)
+        {
+          iCol = 0;
+          a ++;
+        }
+
+        // reset byte
+        byte = 0; bit = 1;
+      }
+    }
+
+    col = 1 - col; // toggle colour for next span
+  }
+}
 
 void Arduboy2Base::display()
 {
-  this->paintScreen(sBuffer);
+  paintScreen(sBuffer);
 }
 
 unsigned char* Arduboy2Base::getBuffer()
@@ -718,12 +856,47 @@ bool Arduboy2Base::notPressed(uint8_t buttons)
   return (buttonsState() & buttons) == 0;
 }
 
+void Arduboy2Base::pollButtons()
+{
+  previousButtonState = currentButtonState;
+  currentButtonState = buttonsState();
+}
+
+bool Arduboy2Base::justPressed(uint8_t button)
+{
+  return (!(previousButtonState & button) && (currentButtonState & button));
+}
+
+bool Arduboy2Base::justReleased(uint8_t button)
+{
+  return ((previousButtonState & button) && !(currentButtonState & button));
+}
+
+bool Arduboy2Base::collide(Point point, Rect rect)
+{
+  return ((point.x >= rect.x) && (point.x < rect.x + rect.width) &&
+      (point.y >= rect.y) && (point.y < rect.y + rect.height));
+}
+
+bool Arduboy2Base::collide(Rect rect1, Rect rect2)
+{
+  return !(rect2.x                >= rect1.x + rect1.width  ||
+           rect2.x + rect2.width  <= rect1.x                ||
+           rect2.y                >= rect1.y + rect1.height ||
+           rect2.y + rect2.height <= rect1.y);
+}
+
 void Arduboy2Base::swap(int16_t& a, int16_t& b)
 {
-  int temp = a;
+  int16_t temp = a;
   a = b;
   b = temp;
 }
+
+
+//====================================
+//========== class Arduboy2 ==========
+//====================================
 
 Arduboy2::Arduboy2()
 {
@@ -734,11 +907,6 @@ Arduboy2::Arduboy2()
   textSize = 1;
   textWrap = 0;
 }
-
-
-//====================================
-//========== class Arduboy2 ==========
-//====================================
 
 size_t Arduboy2::write(uint8_t c)
 {

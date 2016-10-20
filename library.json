@@ -7,7 +7,7 @@
         "type": "git",
         "url": "https://github.com/MLXXXp/Arduboy2.git"
     },
-    "version": "2.0.5",
+    "version": "2.1.0",
     "exclude": "extras",
     "frameworks": "arduino",
     "platforms": "atmelavr"
