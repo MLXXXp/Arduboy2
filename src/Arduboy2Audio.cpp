@@ -1,9 +1,9 @@
 #include "Arduboy2.h"
-#include "ArduboyAudio.h"
+#include "Arduboy2Audio.h"
 
-bool ArduboyAudio::audio_enabled = false;
+bool Arduboy2Audio::audio_enabled = false;
 
-void ArduboyAudio::on()
+void Arduboy2Audio::on()
 {
   // fire up audio pins
 #ifdef ARDUBOY_10
@@ -15,7 +15,7 @@ void ArduboyAudio::on()
   audio_enabled = true;
 }
 
-void ArduboyAudio::off()
+void Arduboy2Audio::off()
 {
   audio_enabled = false;
   // shut off audio pins
@@ -27,18 +27,18 @@ void ArduboyAudio::off()
 #endif
 }
 
-void ArduboyAudio::saveOnOff()
+void Arduboy2Audio::saveOnOff()
 {
   EEPROM.update(EEPROM_AUDIO_ON_OFF, audio_enabled);
 }
 
-void ArduboyAudio::begin()
+void Arduboy2Audio::begin()
 {
   if (EEPROM.read(EEPROM_AUDIO_ON_OFF))
     on();
 }
 
-bool ArduboyAudio::enabled()
+bool Arduboy2Audio::enabled()
 {
   return audio_enabled;
 }

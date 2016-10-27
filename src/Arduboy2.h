@@ -2,7 +2,7 @@
 #define ARDUBOY2_H
 
 #include <Arduino.h>
-#include "ArduboyCore.h"
+#include "Arduboy2Core.h"
 #include "Sprites.h"
 #include <Print.h>
 #include <limits.h>
@@ -11,7 +11,7 @@
 // For a version number in the form of x.y.z the value of the define will be
 // ((x * 10000) + (y * 100) + (z)) as a decimal number.
 // So, it will read as xxxyyzz, with no leading zeros on x.
-#define ARDUBOY_LIB_VER 20100
+#define ARDUBOY_LIB_VER 30000
 
 // EEPROM settings
 #define EEPROM_VERSION 0
@@ -22,7 +22,7 @@
 #define EEPROM_STORAGE_SPACE_START 16 // and onward
 
 // eeprom settings above are neded for audio
-#include "ArduboyAudio.h"
+#include "Arduboy2Audio.h"
 
 #define PIXEL_SAFE_MODE
 
@@ -57,14 +57,14 @@ struct Point
 //========== Arduboy2Base ==========
 //==================================
 
-class Arduboy2Base : public ArduboyCore
+class Arduboy2Base : public Arduboy2Core
 {
  friend class Sprites;
 
  public:
   Arduboy2Base();
 
-  ArduboyAudio audio;
+  Arduboy2Audio audio;
 
   /// Initialize hardware, boot logo, boot utilities, etc.
   /**

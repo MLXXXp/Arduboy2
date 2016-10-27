@@ -1,8 +1,8 @@
-#include "ArduboyCore.h"
+#include "Arduboy2Core.h"
 
 // need to redeclare these here since we declare them static in .h
-volatile uint8_t *ArduboyCore::csport, *ArduboyCore::dcport;
-uint8_t ArduboyCore::cspinmask, ArduboyCore::dcpinmask;
+volatile uint8_t *Arduboy2Core::csport, *Arduboy2Core::dcport;
+uint8_t Arduboy2Core::cspinmask, Arduboy2Core::dcpinmask;
 
 const uint8_t PROGMEM pinBootProgram[] = {
   // buttons
@@ -99,9 +99,9 @@ const uint8_t PROGMEM lcdBootProgram[] = {
 };
 
 
-ArduboyCore::ArduboyCore() {}
+Arduboy2Core::Arduboy2Core() {}
 
-void ArduboyCore::boot()
+void Arduboy2Core::boot()
 {
   #ifdef ARDUBOY_SET_CPU_8MHZ
   // ARDUBOY_SET_CPU_8MHZ will be set by the IDE using boards.txt
@@ -125,7 +125,7 @@ void ArduboyCore::boot()
 // hardware clock on the Arduboy is 16MHz.
 // We also need to readjust the PLL prescaler because the Arduino USB code
 // likely will have incorrectly set it for an 8MHz hardware clock.
-void ArduboyCore::setCPUSpeed8MHz()
+void Arduboy2Core::setCPUSpeed8MHz()
 {
   uint8_t oldSREG = SREG;
   cli();                // suspend interrupts
@@ -137,7 +137,7 @@ void ArduboyCore::setCPUSpeed8MHz()
 }
 #endif
 
-void ArduboyCore::bootPins()
+void Arduboy2Core::bootPins()
 {
   uint8_t pin, mode;
   const uint8_t *i = pinBootProgram;
@@ -156,7 +156,7 @@ void ArduboyCore::bootPins()
   digitalWrite(RST, HIGH);  // bring out of reset
 }
 
-void ArduboyCore::bootOLED()
+void Arduboy2Core::bootOLED()
 {
   // setup the ports we need to talk to the OLED
   csport = portOutputRegister(digitalPinToPort(CS));
@@ -175,13 +175,13 @@ void ArduboyCore::bootOLED()
   LCDDataMode();
 }
 
-void ArduboyCore::LCDDataMode()
+void Arduboy2Core::LCDDataMode()
 {
   *dcport |= dcpinmask;
   *csport &= ~cspinmask;
 }
 
-void ArduboyCore::LCDCommandMode()
+void Arduboy2Core::LCDCommandMode()
 {
   *csport |= cspinmask;
   *dcport &= ~dcpinmask;
@@ -190,7 +190,7 @@ void ArduboyCore::LCDCommandMode()
 
 
 
-void ArduboyCore::safeMode()
+void Arduboy2Core::safeMode()
 {
   blank(); // too avoid random gibberish
   while (true) {
@@ -201,13 +201,13 @@ void ArduboyCore::safeMode()
 
 /* Power Management */
 
-void ArduboyCore::idle()
+void Arduboy2Core::idle()
 {
   set_sleep_mode(SLEEP_MODE_IDLE);
   sleep_mode();
 }
 
-void ArduboyCore::bootPowerSaving()
+void Arduboy2Core::bootPowerSaving()
 {
   power_adc_disable();
   power_usart0_disable();
@@ -220,19 +220,19 @@ void ArduboyCore::bootPowerSaving()
   // power_usb_disable()
 }
 
-uint8_t ArduboyCore::width() { return WIDTH; }
+uint8_t Arduboy2Core::width() { return WIDTH; }
 
-uint8_t ArduboyCore::height() { return HEIGHT; }
+uint8_t Arduboy2Core::height() { return HEIGHT; }
 
 
 /* Drawing */
 
-void ArduboyCore::paint8Pixels(uint8_t pixels)
+void Arduboy2Core::paint8Pixels(uint8_t pixels)
 {
   SPI.transfer(pixels);
 }
 
-void ArduboyCore::paintScreen(const uint8_t *image)
+void Arduboy2Core::paintScreen(const uint8_t *image)
 {
   for (int i = 0; i < (HEIGHT*WIDTH)/8; i++)
   {
@@ -242,7 +242,7 @@ void ArduboyCore::paintScreen(const uint8_t *image)
 
 // paint from a memory buffer, this should be FAST as it's likely what
 // will be used by any buffer based subclass
-void ArduboyCore::paintScreen(uint8_t image[])
+void Arduboy2Core::paintScreen(uint8_t image[])
 {
   uint8_t c;
   int i = 0;
@@ -266,13 +266,13 @@ void ArduboyCore::paintScreen(uint8_t image[])
   while (!(SPSR & _BV(SPIF))) { } // wait for the last byte to be sent
 }
 
-void ArduboyCore::blank()
+void Arduboy2Core::blank()
 {
   for (int i = 0; i < (HEIGHT*WIDTH)/8; i++)
     SPI.transfer(0x00);
 }
 
-void ArduboyCore::sendLCDCommand(uint8_t command)
+void Arduboy2Core::sendLCDCommand(uint8_t command)
 {
   LCDCommandMode();
   SPI.transfer(command);
@@ -281,33 +281,33 @@ void ArduboyCore::sendLCDCommand(uint8_t command)
 
 // invert the display or set to normal
 // when inverted, a pixel set to 0 will be on
-void ArduboyCore::invert(bool inverse)
+void Arduboy2Core::invert(bool inverse)
 {
   sendLCDCommand(inverse ? OLED_PIXELS_INVERTED : OLED_PIXELS_NORMAL);
 }
 
 // turn all display pixels on, ignoring buffer contents
 // or set to normal buffer display
-void ArduboyCore::allPixelsOn(bool on)
+void Arduboy2Core::allPixelsOn(bool on)
 {
   sendLCDCommand(on ? OLED_ALL_PIXELS_ON : OLED_PIXELS_FROM_RAM);
 }
 
 // flip the display vertically or set to normal
-void ArduboyCore::flipVertical(bool flipped)
+void Arduboy2Core::flipVertical(bool flipped)
 {
   sendLCDCommand(flipped ? OLED_VERTICAL_FLIPPED : OLED_VERTICAL_NORMAL);
 }
 
 // flip the display horizontally or set to normal
-void ArduboyCore::flipHorizontal(bool flipped)
+void Arduboy2Core::flipHorizontal(bool flipped)
 {
   sendLCDCommand(flipped ? OLED_HORIZ_FLIPPED : OLED_HORIZ_NORMAL);
 }
 
 /* RGB LED */
 
-void ArduboyCore::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
+void Arduboy2Core::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
 {
 #ifdef ARDUBOY_10 // RGB, all the pretty colors
   // inversion is necessary because these are common annode LEDs
@@ -320,7 +320,7 @@ void ArduboyCore::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
 #endif
 }
 
-  void ArduboyCore::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
+  void Arduboy2Core::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
 #ifdef ARDUBOY_10
   digitalWrite(RED_LED, red);
@@ -333,7 +333,7 @@ void ArduboyCore::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
 
 /* Buttons */
 
-uint8_t ArduboyCore::buttonsState()
+uint8_t Arduboy2Core::buttonsState()
 {
   uint8_t buttons;
 

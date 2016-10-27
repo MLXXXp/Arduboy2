@@ -1,5 +1,5 @@
-#ifndef ARDUBOY_CORE_H
-#define ARDUBOY_CORE_H
+#ifndef ARDUBOY2_CORE_H
+#define ARDUBOY2_CORE_H
 
 #include <Arduino.h>
 #include <avr/power.h>
@@ -134,10 +134,10 @@
 #define PAGE_ADDRESS_END ((HEIGHT/8)-1) & 7    // 8 pages high
 
 
-class ArduboyCore
+class Arduboy2Core
 {
   public:
-    ArduboyCore();
+    Arduboy2Core();
 
     /// allows the CPU to idle between frames
     /**

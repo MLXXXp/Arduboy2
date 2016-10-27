@@ -1,10 +1,10 @@
-#ifndef ARDUBOY_AUDIO_H
-#define ARDUBOY_AUDIO_H
+#ifndef ARDUBOY2_AUDIO_H
+#define ARDUBOY2_AUDIO_H
 
 #include <Arduino.h>
 #include <EEPROM.h>
 
-class ArduboyAudio
+class Arduboy2Audio
 {
  public:
   void static begin();
