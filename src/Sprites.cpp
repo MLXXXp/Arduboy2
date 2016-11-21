@@ -1,3 +1,9 @@
+/**
+ * @file Sprites.cpp
+ * \brief
+ * A class for drawing animated sprites from image and mask bitmaps.
+ */
+
 #include "Sprites.h"
 
 void Sprites::drawExternalMask(int16_t x, int16_t y, const uint8_t *bitmap,

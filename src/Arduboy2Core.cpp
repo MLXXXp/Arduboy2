@@ -1,3 +1,9 @@
+/**
+ * @file Arduboy2Core.cpp
+ * \brief
+ * The Arduboy2Core class for Arduboy hardware initilization and control.
+ */
+
 #include "Arduboy2Core.h"
 
 // need to redeclare these here since we declare them static in .h
@@ -35,7 +41,7 @@ const uint8_t PROGMEM pinBootProgram[] = {
 };
 
 const uint8_t PROGMEM lcdBootProgram[] = {
-  // boot defaults are commented out but left here incase they
+  // boot defaults are commented out but left here in case they
   // might prove useful for reference
   //
   // Further reading: https://www.adafruit.com/datasheets/SSD1306.pdf
@@ -320,7 +326,7 @@ void Arduboy2Core::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
 #endif
 }
 
-  void Arduboy2Core::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
+void Arduboy2Core::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
 #ifdef ARDUBOY_10
   digitalWrite(RED_LED, red);

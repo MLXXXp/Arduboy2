@@ -1,3 +1,9 @@
+/**
+ * @file Arduboy2Audio.cpp
+ * \brief
+ * The Arduboy2Audio class for speaker and sound control.
+ */
+
 #include "Arduboy2.h"
 #include "Arduboy2Audio.h"
 

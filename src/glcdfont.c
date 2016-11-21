@@ -1,3 +1,9 @@
+/**
+ * @file glcdfont.c
+ * \brief
+ * The font definitions used to display text characters.
+ */
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 

@@ -1,31 +1,30 @@
-#Arduboy2 Library
+# Arduboy2 Library
 
 The **Arduboy2** library is a fork of the [Arduboy library](https://github.com/Arduboy/Arduboy) which provides a standard *application programming interface* (API) to the display, buttons and other hardware of the Arduino based [Arduboy miniature game system](https://www.arduboy.com/).
 
-The name *Arduboy2* doesn't indicate that it's for a new "next generation" of the Arduboy hardware. The name was changed so it can coexist in the Arduino IDE with the current Arduboy library, without conflict. This way, existing sketches can continue to use the *Arduboy* library and class, without changes, while new sketches can be written (or old ones modified) to use and take advantage of the capabilities of the *Arduboy2* class and library.
+The name *Arduboy2* doesn't indicate that it's for a new "next generation" of the Arduboy hardware. The name was changed so it can coexist in the Arduino IDE with the current *Arduboy* library, without conflict. This way, existing sketches can continue to use the *Arduboy* library and class, without changes, while new sketches can be written (or old ones modified) to use and take advantage of the capabilities of the *Arduboy2* class and library.
 
 ## Installation
 
-At the moment, probably the easiest way to install the Arduboy2 library is to use the *Add .ZIP Library...* feature of the Arduino IDE. A properly formatted *.zip* file containing the latest stable release of the library can be obtained from
-https://mlxxxp.github.io/downloads/Arduboy2/
+The Arduboy2 library can be installed using the Arduino IDE Library Manager:
 
-- Download *Arduboy2.zip* to a folder on your computer, such as *Downloads*. The folder you put it in doesn't matter as long as you know how to find the file later. Don't unzip the file.
-- In the Arduino IDE select from the menus: `Sketch > Include Library > Add .ZIP Library...`
-- Locate and select the *Arduboy2.zip* file then click on the *OK* button. The library should now be installed and ready to use.
-- Once the library is installed, you can delete the *Arduboy2.zip* file, if desired.
+- In the Arduino IDE select from the menus: `Sketch > Include Library > Manage Libraries...`
+- In the Library Manager *Filter your search...* field enter *arduboy2*.
+- Click somewhere within the Arduboy2 entry.
+- Click on the *Install* button.
 
 For more library installation information see
 
-[Installing Additional Arduino Libraries - Importing a .zip Library](https://www.arduino.cc/en/Guide/Libraries#toc4)
+[Installing Additional Arduino Libraries - Using the Library Manager](https://www.arduino.cc/en/Guide/Libraries#toc3)
 
 ## What's different from Arduboy V1.1
 
-A main goal of Arduboy2 is to provide ways in which more code space can be freed for use by large sketches. Another goal is to allow methods other than the *"tunes"* functions to be used to produce sounds. Arduboy2 remains substantially compatible with [Arduboy library V1.1](https://github.com/Arduboy/Arduboy/releases/tag/v1.1), which was the latest stable release at the time of the fork. Arduboy2 is based on the code targeted for Arduboy library V1.2, which was still in development and unreleased at the time it was forked.
+A main goal of Arduboy2 is to provide ways in which more code space can be freed for use by large sketches. Another goal is to allow methods other than the *tunes* functions to be used to produce sounds. Arduboy2 remains substantially compatible with [Arduboy library V1.1](https://github.com/Arduboy/Arduboy/releases/tag/v1.1), which was the latest stable release at the time of the fork. Arduboy2 is based on the code targeted for Arduboy library V1.2, which was still in development and unreleased at the time it was forked.
 
 Main differences between Arduboy2 and Arduboy V1.1 are:
 
-- The *ArduboyTunes* subclass, which provided the *tunes.xxx()* functions, has been removed. It's functionality is available in a separate [*ArduboyPlaytune* library](https://github.com/Arduboy/ArduboyPlayTune). By removing these functions, more code space may become available because interrupt routines and other support code was being compiled in even if a sketch didn't make use them. Another benefit is that without the automatic installation of timer interrupt service routines, other audio generating functions and libraries, that need access to the same interrupts, can now be used. Removal of the *"tunes"* functions is the main API incompatibility with Arduboy V1.1. Sketches written to use *"tunes"* functions will need some minor modifications in order to make them work with Arduboy2 plus ArduboyPlaytune, [ArduboyTones](https://github.com/MLXXXp/ArduboyTones), or some other audio library.
-- Arduboy library V1.1 uses timer 1 for the *"tunes"* functions. This causes problems when attempting to control the Arduboy's RGB LED using PWM, such as with *setRGBled()*, because it also requires timer 1. Since the *"tunes"* functionality has been removed from Arduboy2, there are no problems with using the RGB LED (except those caused by the RGB LED being incorrectly installed). Of course, using an external library that uses timer 1, such as *ArduboyPlaytune*, may reintroduce the problems. However, using a library that doesn't use timer 1, such as *ArduboyTones*, is now an option.
+- The *ArduboyTunes* subclass, which provided the *tunes.xxx()* functions, has been removed. It's functionality is available in a separate [*ArduboyPlaytune* library](https://github.com/Arduboy/ArduboyPlayTune). By removing these functions, more code space may become available because interrupt routines and other support code was being compiled in even if a sketch didn't make use them. Another benefit is that without the automatic installation of timer interrupt service routines, other audio generating functions and libraries, that need access to the same interrupts, can now be used. Removal of the *tunes* functions is the main API incompatibility with Arduboy V1.1. Sketches written to use *tunes* functions will need some minor modifications in order to make them work with Arduboy2 plus ArduboyPlaytune, [ArduboyTones](https://github.com/MLXXXp/ArduboyTones), or some other audio library.
+- Arduboy library V1.1 uses timer 1 for the *tunes* functions. This causes problems when attempting to control the Arduboy's RGB LED using PWM, such as with *setRGBled()*, because it also requires timer 1. Since the *tunes* functionality has been removed from Arduboy2, there are no problems with using the RGB LED (except those caused by the RGB LED being incorrectly installed). Of course, using an external library that uses timer 1, such as *ArduboyPlaytune*, may reintroduce the problems. However, using a library that doesn't use timer 1, such as *ArduboyTones*, is now an option.
 - The code to generate text output, using *setCursor()*, *print()*, etc., can be removed to free up code space, if a sketch doesn't use any text functions. The *Arduboy2* class includes the text functions but using the *Arduboy2Base* class instead will eliminate them. With text functions included, the font table and some support functions are always compiled in even if not used. The API for using text functions is the same as Arduboy V1.1 with some additional functions added:
  - *setTextColor()* and *setTextBackground()* allow for printing black text on a white background.
  - *getCursorX()* and *getCursorY()* allow for determining the current text cursor position.
@@ -79,18 +78,23 @@ Note that the audio control feature only sets a flag in EEPROM. Whatever code ac
 
 As with most libraries, to use Arduboy2 in your sketch you must include its header file at the start:
 
-`#include <Arduboy2.h>`
+```cpp
+#include <Arduboy2.h>
+```
 
 You must then create an Arduboy2 class object:
 
-`Arduboy2 arduboy;`
+```cpp
+Arduboy2 arduboy;
+```
 
 Naming the object *arduboy* has become somewhat of a standard, but you can use a different name if you wish.
 
 To initialize the library, you must call its *begin()* function. This is usually done at the start of the sketch's *setup()* function:
 
 ```cpp
-void setup() {
+void setup()
+{
   arduboy.begin();
   // more setup code follows, if required
 }
@@ -110,6 +114,24 @@ Sample sketches have been included with the library as examples of how to use it
 
 More information on writing sketches for the Arduboy can be found in the [Arduboy Community Forum](http://community.arduboy.com/).
 
+### Audio control functions
+
+The library includes an Arduboy2Audio class. This class provides functions to enable and disable (mute) sound and also save the current mute state so that it remains in effect over power cycles and after loading a different sketch. It doesn't contain anything to actually produce sound.
+
+The Arduboy2Base class, and thus the Arduboy2 class, creates an Arduboy2Audio class object named *audio*, so a sketch doesn't need to create its own Arduboy2Audio object.
+
+Example:
+
+```cpp
+#include <Arduboy2.h>
+
+Arduboy2 arduboy;
+
+// Arduboy2Audio functions can be called as follows:
+  arduboy.audio.on();
+  arduboy.audio.off();
+```
+
 ### Ways to make more code space available to sketches
 
 #### Sound effects and music
@@ -124,9 +146,17 @@ To eliminate text capability in your sketch, when creating the library object si
 
 For example, if the object will be named *arduboy*:
 
-replace `Arduboy2 arduboy;`
+Replace
 
-with `Arduboy2Base arduboy;`
+```cpp
+Arduboy2 arduboy;
+```
+
+with
+
+```cpp
+Arduboy2Base arduboy;
+```
 
 #### Remove boot up features
 
@@ -180,21 +210,37 @@ This saves whatever code *blank()*, *systemButtons()* and *bootLogo()* would use
 
 Since the Arduboy2 library can coexist in the Arduino IDE alongside the Arduboy library V1.1, a currently working sketch that uses Arduboy V1.1 doesn't have to be migrated to Arduboy2. However, if you want to switch a sketch to Arduboy2 for further development, in order to take advantage of any of the changes and enhancements, it's generally relatively easy.
 
-The Arduboy2 library, for the most part, is compatible with Arduboy library V1.1 but migrating a sketch to Arduboy2 will require some small changes, and more so if it uses the *"tunes"* functions, such as *tunes.tone()* or *tunes.playScore()*.
+The Arduboy2 library, for the most part, is compatible with Arduboy library V1.1 but migrating a sketch to Arduboy2 will require some small changes, and more so if it uses the *tunes* functions, such as *tunes.tone()* or *tunes.playScore()*.
 
 ### Required changes
 
-The first thing to do is change the *#include* for the library header file:
+The first thing to do is change the `include` for the library header file:
 
-`#include <Arduboy.h>` becomes `#include <Arduboy2.h>`
+```cpp
+#include <Arduboy.h>
+```
 
-(If it was *"Arduboy.h"* in quotes, it's still better to change it to *&lt;Arduboy2.h&gt;* in angle brackets).
+becomes
+
+```cpp
+#include <Arduboy2.h>
+```
+
+If it was "Arduboy.h" (in quotes), it's still better to change it to &lt;Arduboy2.h&gt; (in angle brackets).
 
 The same thing has to be done with creating the library object. (If the object name isn't *arduboy*, keep whatever name is used.):
 
-`Arduboy arduboy;` becomes `Arduboy2 arduboy;`
+```cpp
+Arduboy arduboy;
+```
 
-If the sketch doesn't use any *"tunes"* functions, there's a good chance this is all that has to be done to make it compile.
+becomes
+
+```cpp
+Arduboy2 arduboy;
+```
+
+If the sketch doesn't use any *tunes* functions, there's a good chance this is all that has to be done to make it compile.
 
 ### Sketch uses only *tunes.tone()* for sound
 
@@ -218,7 +264,15 @@ void playTone(unsigned int frequency, unsigned long duration)
 
 You then change all *tunes.tone()* calls to *playTone()* calls using the same parameter values. For example:
 
-`arduboy.tunes.tone(1000, 250);` becomes `playTone(1000, 250);`
+```cpp
+  arduboy.tunes.tone(1000, 250);
+```
+
+becomes
+
+```cpp
+  playTone(1000, 250);
+```
 
 #### Solution 2: Switch to using the ArduboyTones library
 
@@ -226,7 +280,9 @@ Changing to the *ArduboyTones* library is slightly more complicated. The advanta
 
 You have to add an include for the ArduboyTones header file:
 
-`#include <ArduboyTones.h>`
+```cpp
+#include <ArduboyTones.h>
+```
 
 You then have to create an object for the *ArduboyTones* class and pass it a pointer to the Arduboy2 *audio.enabled()* function. This must go after the creation of the Arduboy2 object, like so:
 
@@ -237,9 +293,17 @@ ArduboyTones sound(arduboy.audio.enabled);
 
 You then change all Arduboy *tunes.tone()* calls to ArduboyTones *tone()* calls using the same parameter values. For example:
 
-`arduboy.tunes.tone(1000, 250);` becomes `sound.tone(1000, 250);`
+```cpp
+  arduboy.tunes.tone(1000, 250);
+```
 
-See the [ArduboyTones](https://github.com/MLXXXp/ArduboyTones) README.md file for more information on installing and using it.
+becomes
+
+```cpp
+  sound.tone(1000, 250);
+```
+
+See the [ArduboyTones](https://github.com/MLXXXp/ArduboyTones) README file for more information on installing and using it.
 
 #### Solution 3: Switch to using the ArduboyPlaytune library.
 
@@ -251,7 +315,9 @@ If the sketch uses *tunes.playScore()*, probably the easiest solution is to use 
 
 You have to add an include for the ArduboyPlaytune header file:
 
-`#include <ArduboyPlaytune.h>`
+```cpp
+#include <ArduboyPlaytune.h>
+```
 
 You then have to create an object for the *ArduboyPlaytune* class and pass it a pointer to the Arduboy2 *audio.enabled()* function. This must go after the creation of the Arduboy2 object, like so:
 
@@ -260,7 +326,7 @@ Arduboy2 arduboy;
 ArduboyPlaytune tunes(arduboy.audio.enabled);
 ```
 
-The sound channels must the be initialzed and assigned to the speaker pins. This code would go in the *setup()* function:
+The sound channels must then be initialzed and assigned to the speaker pins. This code would go in the *setup()* function:
 
 ```cpp
   // audio setup
@@ -270,7 +336,15 @@ The sound channels must the be initialzed and assigned to the speaker pins. This
 
 If you name the ArduboyPlaytune object *tunes* as shown above, then you just have to remove the Arduboy object name from any *tunes* calls. For example:
 
-`arduboy.tunes.playScore(mySong);` becomes `tunes.playScore(mySong);`
+```cpp
+  arduboy.tunes.playScore(mySong);
+```
+
+becomes
+
+```cpp
+  tunes.playScore(mySong);
+```
 
 See the [*ArduboyPlaytune* library](https://github.com/Arduboy/ArduboyPlayTune) documentation for more information.
 

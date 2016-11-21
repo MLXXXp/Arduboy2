@@ -1,3 +1,9 @@
+/**
+ * @file ab_logo.c
+ * \brief
+ * The ARDUBOY logo bitmap.
+ */
+
 #include <avr/pgmspace.h>
 
 #ifndef ARDUBOY_LOGO_CREATED

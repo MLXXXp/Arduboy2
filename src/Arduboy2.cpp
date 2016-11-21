@@ -1,3 +1,9 @@
+/**
+ * @file Arduboy2.cpp
+ * \brief
+ * The Arduboy2Base and Arduboy2 classes and support objects and definitions.
+ */
+
 #include "Arduboy2.h"
 #include "ab_logo.c"
 #include "glcdfont.c"
@@ -247,7 +253,7 @@ void Arduboy2Base::drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
 }
 
 void Arduboy2Base::drawCircleHelper
-(int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, uint8_t color)
+(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, uint8_t color)
 {
   int16_t f = 1 - r;
   int16_t ddF_x = 1;
@@ -268,22 +274,22 @@ void Arduboy2Base::drawCircleHelper
     ddF_x += 2;
     f += ddF_x;
 
-    if (cornername & 0x4)
+    if (corners & 0x4) // lower right
     {
       drawPixel(x0 + x, y0 + y, color);
       drawPixel(x0 + y, y0 + x, color);
     }
-    if (cornername & 0x2)
+    if (corners & 0x2) // upper right
     {
       drawPixel(x0 + x, y0 - y, color);
       drawPixel(x0 + y, y0 - x, color);
     }
-    if (cornername & 0x8)
+    if (corners & 0x8) // lower left
     {
       drawPixel(x0 - y, y0 + x, color);
       drawPixel(x0 - x, y0 + y, color);
     }
-    if (cornername & 0x1)
+    if (corners & 0x1) // upper left
     {
       drawPixel(x0 - y, y0 - x, color);
       drawPixel(x0 - x, y0 - y, color);
@@ -298,10 +304,9 @@ void Arduboy2Base::fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
 }
 
 void Arduboy2Base::fillCircleHelper
-(int16_t x0, int16_t y0, uint8_t r, uint8_t cornername, int16_t delta,
+(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta,
  uint8_t color)
 {
-  // used to do circles and roundrects!
   int16_t f = 1 - r;
   int16_t ddF_x = 1;
   int16_t ddF_y = -2 * r;
@@ -321,13 +326,13 @@ void Arduboy2Base::fillCircleHelper
     ddF_x += 2;
     f += ddF_x;
 
-    if (cornername & 0x1)
+    if (sides & 0x1) // right side
     {
       drawFastVLine(x0+x, y0-y, 2*y+1+delta, color);
       drawFastVLine(x0+y, y0-x, 2*x+1+delta, color);
     }
 
-    if (cornername & 0x2)
+    if (sides & 0x2) // left side
     {
       drawFastVLine(x0-x, y0-y, 2*y+1+delta, color);
       drawFastVLine(x0-y, y0-x, 2*x+1+delta, color);
@@ -841,7 +846,7 @@ void Arduboy2Base::display()
   paintScreen(sBuffer);
 }
 
-unsigned char* Arduboy2Base::getBuffer()
+uint8_t* Arduboy2Base::getBuffer()
 {
   return sBuffer;
 }
@@ -981,11 +986,11 @@ void Arduboy2::setCursor(int16_t x, int16_t y)
   cursor_y = y;
 }
 
-uint16_t Arduboy2::getCursorX() {
+int16_t Arduboy2::getCursorX() {
   return cursor_x;
 }
 
-uint16_t Arduboy2::getCursorY() {
+int16_t Arduboy2::getCursorY() {
   return cursor_y;
 }
 
