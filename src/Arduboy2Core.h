@@ -145,9 +145,18 @@
  * \details
  * This class is inherited by Arduboy2Base and thus also Arduboy2, so wouldn't
  * normally be used directly by a sketch.
+ *
+ * \note
+ * A friend class named _Arduboy2Ex_ is declared by this class. The intention
+ * is to allow a sketch to create an _Arduboy2Ex_ class which would have access
+ * to the private and protected members of the Arduboy2Core class. It is hoped
+ * that this may eliminate the need to create an entire local copy of the
+ * library, in order to extend the functionality, in most circumstances.
  */
 class Arduboy2Core
 {
+  friend class Arduboy2Ex;
+
   public:
     Arduboy2Core();
 
@@ -422,18 +431,22 @@ class Arduboy2Core
      * to 255 (fully on).
      *
      * \note
+     * \parblock
      * Certain libraries that take control of the hardware timers may interfere
      * with the ability of this function to properly control the RGB LED.
      *_ArduboyPlaytune_ is one such library known to do this.
      * The digitalWriteRGB() function will still work properly in this case.
+     * \endparblock
      *
      * \note
+     * \parblock
      * Many of the Kickstarter Arduboys were accidentally shipped with the
      * RGB LED installed incorrectly. For these units, the green LED cannot be
      * lit. As long as the green led is set to off, setting the red LED will
      * actually control the blue LED and setting the blue LED will actually
      * control the red LED. If the green LED is turned fully on, none of the
      * LEDs will light.
+     * \endparblock
      *
      * \see digitalWriteRGB()
      */

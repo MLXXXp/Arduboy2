@@ -60,9 +60,20 @@
  * ArduboyTones sound(arduboy.audio.enabled);
  * \endcode
  * \endparblock
+ *
+ * \note
+ * \parblock
+ * A friend class named _Arduboy2Ex_ is declared by this class. The intention
+ * is to allow a sketch to create an _Arduboy2Ex_ class which would have access
+ * to the private and protected members of the Arduboy2Audio class. It is hoped
+ * that this may eliminate the need to create an entire local copy of the
+ * library, in order to extend the functionality, in most circumstances.
+ * \endparblock
  */
 class Arduboy2Audio
 {
+ friend class Arduboy2Ex;
+
  public:
   /** \brief
    * Initialize the speaker based on the current mute setting.

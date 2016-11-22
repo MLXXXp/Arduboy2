@@ -117,7 +117,7 @@ struct Point
  * _minus_ text output.
  *
  * This class in inherited by Arduboy2, so if text output functions are
- * requred Arduboy2 should be used instead.
+ * required Arduboy2 should be used instead.
  *
  * \note
  * \parblock
@@ -139,10 +139,20 @@ struct Point
  * \endcode
  * \endparblock
  *
+ * \note
+ * \parblock
+ * A friend class named _Arduboy2Ex_ is declared by this class. The intention
+ * is to allow a sketch to create an _Arduboy2Ex_ class which would have access
+ * to the private and protected members of the Arduboy2Base class. It is hoped
+ * that this may eliminate the need to create an entire local copy of the
+ * library, in order to extend the functionality, in most circumstances.
+ * \endparblock
+ *
  * \see Arduboy2
  */
 class Arduboy2Base : public Arduboy2Core
 {
+ friend class Arduboy2Ex;
  friend class Sprites;
 
  public:
@@ -819,10 +829,19 @@ class Arduboy2Base : public Arduboy2Core
  * This class is derived from Arduboy2Base. It provides text output functions
  * in addition to all the functions inherited from Arduboy2Base.
  *
+ * \note
+ * A friend class named _Arduboy2Ex_ is declared by this class. The intention
+ * is to allow a sketch to create an _Arduboy2Ex_ class which would have access
+ * to the private and protected members of the Arduboy2 class. It is hoped
+ * that this may eliminate the need to create an entire local copy of the
+ * library, in order to extend the functionality, in most circumstances.
+ *
  * \see Arduboy2Base
  */
 class Arduboy2 : public Print, public Arduboy2Base
 {
+ friend class Arduboy2Ex;
+
  public:
   Arduboy2();
 
