@@ -248,12 +248,18 @@ void Arduboy2Core::paintScreen(const uint8_t *image)
 
 // paint from a memory buffer, this should be FAST as it's likely what
 // will be used by any buffer based subclass
-void Arduboy2Core::paintScreen(uint8_t image[])
+void Arduboy2Core::paintScreen(uint8_t image[], bool clear)
 {
   uint8_t c;
   int i = 0;
 
-  SPDR = image[i++]; // set the first SPI data byte to get things started
+  if (clear)
+  {
+    SPDR = image[i]; // set the first SPI data byte to get things started
+    image[i++] = 0;  // clear the first image byte
+  }
+  else
+    SPDR = image[i++];
 
   // the code to iterate the loop and get the next byte from the buffer is
   // executed while the previous byte is being sent out by the SPI controller
@@ -261,7 +267,14 @@ void Arduboy2Core::paintScreen(uint8_t image[])
   {
     // get the next byte. It's put in a local variable so it can be sent as
     // as soon as possible after the sending of the previous byte has completed
-    c = image[i++];
+    if (clear)
+    {
+      c = image[i];
+      // clear the byte in the image buffer
+      image[i++] = 0;
+    }
+    else
+      c = image[i++];
 
     while (!(SPSR & _BV(SPIF))) { } // wait for the previous byte to be sent
 

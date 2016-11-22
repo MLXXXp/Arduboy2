@@ -208,7 +208,7 @@ class Arduboy2Core
      *
      * \note
      * In most cases, the defined value `WIDTH` would be better to use instead
-     * of this function. 
+     * of this function.
      */
     uint8_t static width();
 
@@ -219,7 +219,7 @@ class Arduboy2Core
      *
      * \note
      * In most cases, the defined value `HEIGHT` would be better to use instead
-     * of this function. 
+     * of this function.
      */
     uint8_t static height();
 
@@ -293,6 +293,9 @@ class Arduboy2Core
      *
      * \param image A byte array in RAM representing the entire contents of
      * the display.
+     * \param clear If `true` the array in RAM will be cleared to zeros upon
+     * return from this function. If `false` the RAM buffer will remain
+     * unchanged. (optional; defaults to `false`)
      *
      * \details
      * The contents of the specified array in RAM is written to the display.
@@ -302,9 +305,12 @@ class Arduboy2Core
      * each row, to the bottom right. The size of the array must exactly
      * match the number of pixels in the entire display.
      *
+     * If parameter `clear` is set to `true` the RAM array will be cleared to
+     * zeros after its contents are written to the display.
+     *
      * \see paint8Pixels()
      */
-    void static paintScreen(uint8_t image[]);
+    void static paintScreen(uint8_t image[], bool clear = false);
 
     /** \brief
      * Blank the display screen by setting all pixels off.

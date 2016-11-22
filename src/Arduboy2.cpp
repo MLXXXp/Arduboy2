@@ -846,6 +846,11 @@ void Arduboy2Base::display()
   paintScreen(sBuffer);
 }
 
+void Arduboy2Base::display(bool clear)
+{
+  paintScreen(sBuffer, clear);
+}
+
 uint8_t* Arduboy2Base::getBuffer()
 {
   return sBuffer;

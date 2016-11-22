@@ -30,7 +30,7 @@
  *
  * \code
  * #include <Arduboy2.h>
- * 
+ *
  * Arduboy2 arduboy;
  *
  * // Arduboy2Audio functions can be called as follows:

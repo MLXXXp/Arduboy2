@@ -69,6 +69,8 @@
  */
 #define INVERT 2
 
+#define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
+
 // compare Vcc to 1.1 bandgap
 #define ADC_VOLTAGE (_BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1))
 // compare temperature to 2.5 internal reference and _BV(MUX5)
@@ -128,7 +130,7 @@ struct Point
  *
  * \code
  * #include <Arduboy2.h>
- * 
+ *
  * Arduboy2 arduboy;
  *
  * // Arduboy2Audio functions can be called as follows:
@@ -226,6 +228,8 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \details
    * The entire contents of the screen buffer are cleared to BLACK.
+   *
+   * \see display(bool)
    */
   void clear();
 
@@ -235,8 +239,30 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * The contents of the display buffer in RAM are copied to the display and
    * will appear on the screen.
+   *
+   * \see display(bool)
    */
   void display();
+
+  /** \brief
+   * Copy the contents of the display buffer to the display. The display buffer
+   * can optionally be cleared.
+   *
+   * \param clear If `true` the display buffer will be cleared to zero.
+   * The defined value `CLEAR_BUFFER` should be used instead of `true` to make
+   * it more meaningful.
+   *
+   * \details
+   * Operation is the same as calling `display()` without parameters except
+   * additionally the display buffer will be cleared if the parameter evaluates
+   * to `true`. (The defined value `CLEAR_BUFFER` can be used for this)
+   *
+   * Using `display(CLEAR_BUFFER)` is faster and produces less code than
+   * calling `display()` followed by `clear()`.
+   *
+   * \see display() clear()
+   */
+  void display(bool clear);
 
   /** \brief
    * Set a single pixel in the display buffer to the specified color.
@@ -386,7 +412,7 @@ class Arduboy2Base : public Arduboy2Core
    * \param color The triangle's color (optional; defaults to WHITE).
    *
    * \details
-   * A triangle is drawn by specifying each of the three corner locations. 
+   * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to the others.
    */
   void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
@@ -399,7 +425,7 @@ class Arduboy2Base : public Arduboy2Core
    * \param color The triangle's color (optional; defaults to WHITE).
    *
    * \details
-   * A triangle is drawn by specifying each of the three corner locations. 
+   * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to the others.
    */
   void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
@@ -553,10 +579,9 @@ class Arduboy2Base : public Arduboy2Core
    */
   bool nextFrame();
 
-  
   /** \brief
    * Indicate if the specified number of frames has elapsed.
-   * 
+   *
    * \param frames The desired number of elapsed frames.
    *
    * \return `true` if the specified number of frames has elapsed.
