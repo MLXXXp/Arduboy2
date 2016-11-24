@@ -74,6 +74,16 @@ Releasing the *B* button will exit *system control* mode and the sketch will con
 
 Note that the audio control feature only sets a flag in EEPROM. Whatever code actually produces the sound must use the *audio.enabled()* function to check and honor the mute state. Audio libraries written with the Arduboy system in mind, such as the available *ArduboyPlaytune* and *ArduboyTones*, should do this. However, be aware that for some sketches, which don't use the Arduboy2 or other compliant library and generate sounds in their own way, this method of muting sound may not work.
 
+## Library documentation
+
+Comments in the library header files are formatted for the [Doxygen](http://www.doxygen.org) document generation system. The HTML files generated using the configuration file _extras/Doxyfile_ can be found at:
+
+https://MLXXXp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/html/index.html
+
+A generated PDF file can be found at:
+
+https://MLXXXp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/pdf/Arduboy2.pdf
+
 ## Using the library in a sketch
 
 As with most libraries, to use Arduboy2 in your sketch you must include its header file at the start:
