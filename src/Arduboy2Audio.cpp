@@ -33,6 +33,14 @@ void Arduboy2Audio::off()
 #endif
 }
 
+void Arduboy2Audio::toggle()
+{
+  if (audio_enabled)
+    off();
+  else
+    on();
+}
+
 void Arduboy2Audio::saveOnOff()
 {
   EEPROM.update(EEPROM_AUDIO_ON_OFF, audio_enabled);
