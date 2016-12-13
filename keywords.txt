@@ -28,6 +28,7 @@ display	KEYWORD2
 drawBitmap	KEYWORD2
 drawChar	KEYWORD2
 drawCircle	KEYWORD2
+drawCompressed	KEYWORD2
 drawFastHLine	KEYWORD2
 drawFastVLine	KEYWORD2
 drawLine	KEYWORD2
