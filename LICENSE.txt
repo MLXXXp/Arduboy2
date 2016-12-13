@@ -7,7 +7,7 @@ Arduboy2 library:
 Copyright (c) 2016, Scott Allen
 All rights reserved.
 
-The Arduboy 2 library was forked from the Arduboy library:
+The Arduboy2 library was forked from the Arduboy library:
 https://github.com/Arduboy/Arduboy
 Copyright (c) 2016, Kevin "Arduboy" Bates
 Copyright (c) 2016, Chris Martinez
@@ -42,7 +42,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------------------------
-Licensed under the 2-clause BSD license:
+Licensed under the BSD 2-clause license:
 
 Portions of the Arduboy library, and thus the Arduboy2 library, based on
 the Adafruit-GFX library:
