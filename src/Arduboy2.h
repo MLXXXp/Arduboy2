@@ -153,7 +153,6 @@ struct Point
 class Arduboy2Base : public Arduboy2Core
 {
  friend class Arduboy2Ex;
- friend class Sprites;
 
  public:
   Arduboy2Base();
@@ -519,12 +518,19 @@ class Arduboy2Base : public Arduboy2Core
   /** \brief
    * Get a pointer to the display buffer in RAM.
    *
-   * \return A pointer to the display buffer array in RAM
+   * \return A pointer to the display buffer array in RAM.
    *
    * \details
    * The location of the display buffer in RAM, which is displayed using
    * `display()`, can be gotten using this function. The buffer can then be
    *  read and directly manipulated.
+   *
+   * \note
+   * The display buffer array, `sBuffer`, is public. A sketch can access it
+   * directly. Doing so may be more efficient than accessing it via the
+   * pointer returned by `getBuffer()`.
+   *
+   * \see sBuffer
    */
   uint8_t* getBuffer();
 
@@ -766,7 +772,7 @@ class Arduboy2Base : public Arduboy2Core
   bool justReleased(uint8_t button);
 
   /** \brief
-   * Test if a point falls within a rectangle
+   * Test if a point falls within a rectangle.
    *
    * \param point A structure describing the location of the point.
    * \param rect A structure describing the location and size of the rectangle.
@@ -796,12 +802,22 @@ class Arduboy2Base : public Arduboy2Core
    */
   bool collide(Rect rect1, Rect rect2);
 
+  /** \brief
+   * The display buffer array in RAM.
+   *
+   * The display buffer (also known as the screen buffer) contains an
+   * image bitmap of the desired contents of the display, which is written
+   * to the display using the `display()` function. The drawing functions of
+   * this library manipulate the contents of the display buffer. A sketch can
+   * also access the display buffer directly.
+   *
+   * \see getBuffer()
+   */
+  static uint8_t sBuffer[(HEIGHT*WIDTH)/8];
+
  protected:
   // helper function for sound enable/disable system control
   void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
-
-  // Screen buffer
-  static uint8_t sBuffer[(HEIGHT*WIDTH)/8];
 
   // For button handling
   uint8_t currentButtonState;
