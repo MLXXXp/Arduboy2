@@ -116,6 +116,7 @@ struct Point
  * The main functions provided for writing sketches for the Arduboy,
  * _minus_ text output.
  *
+ * \details
  * This class in inherited by Arduboy2, so if text output functions are
  * required Arduboy2 should be used instead.
  *
@@ -556,6 +557,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \param rate The desired frame rate in frames per second.
    *
+   * \details
    * Set the frame rate, in frames per second, used by `nextFrame()` to update
    * frames at a given rate. If this function isn't used, the default rate will
    * be 60.
@@ -602,6 +604,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \return `true` if the specified number of frames has elapsed.
    *
+   * \details
    * This function should be called with the same value each time for a given
    * event. It will return `true` if the given number of frames has elapsed
    * since the previous frame in which it returned `true`.
@@ -779,6 +782,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \return `true` if the specified point is within the specified rectangle.
    *
+   * \details
    * This function is intended to detemine if an object, whose boundaries are
    * are defined by the given rectangle, is in contact with the given point.
    *
@@ -794,6 +798,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \return `true1 if the first rectangle is intersecting the second.
    *
+   * \details
    * This function is intended to detemine if an object, whose boundaries are
    * are defined by the given rectangle, is in contact with another rectangular
    * object.
@@ -805,6 +810,7 @@ class Arduboy2Base : public Arduboy2Core
   /** \brief
    * The display buffer array in RAM.
    *
+   * \details
    * The display buffer (also known as the screen buffer) contains an
    * image bitmap of the desired contents of the display, which is written
    * to the display using the `display()` function. The drawing functions of

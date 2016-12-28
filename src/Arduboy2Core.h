@@ -336,6 +336,7 @@ class Arduboy2Core
      * \param inverse `true` will invert the display. `false` will set the
      * display to no-inverted.
      *
+     * \details
      * Calling this function with a value of `true` will set the display to
      * inverted mode. A pixel with a value of 0 will be on and a pixel set to 1
      * will be off.
@@ -408,6 +409,7 @@ class Arduboy2Core
      *
      * \param command The command byte to send to the display.
      *
+     * \details
      * The display will be set to command mode then the specified command
      * byte will be sent. The display will then be set to data mode.
      * Multi-byte commands can be sent by calling this function multiple times.
