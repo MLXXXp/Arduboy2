@@ -808,6 +808,41 @@ class Arduboy2Base : public Arduboy2Core
   bool collide(Rect rect1, Rect rect2);
 
   /** \brief
+   * A counter which is incremented once per frame.
+   *
+   * \details
+   * This counter is incremented once per frame when using the `nextFrame()`
+   * function. It will wrap to zero when it reaches its maximum value.
+   *
+   * It could be used to have an event occur for a given number of frames, or
+   * a given number of frames later, in a way that wouldn't be quantized the
+   * way that using `everyXFrames()` might.
+   *
+   * example:
+   * \code
+   * // move for 10 frames when right button is pressed, if not already moving
+   * if (!moving) {
+   *   if (arduboy.justPressed(RIGHT_BUTTON)) {
+   *     endMoving = arduboy.frameCount + 10;
+   *     moving = true;
+   *   }
+   * } else {
+   *   movePlayer();
+   *   if (arduboy.frameCount == endMoving) {
+   *     moving = false;
+   *   }
+   * }
+   * \endcode
+   *
+   * This counter could also be used to determine the number of frames that
+   * have elapsed between events but the possibility of the counter wrapping
+   * would have to be accounted for.
+   *
+   * \see nextFrame() everyXFrames()
+   */
+  uint16_t frameCount;
+
+  /** \brief
    * The display buffer array in RAM.
    *
    * \details
@@ -830,7 +865,6 @@ class Arduboy2Base : public Arduboy2Core
   uint8_t previousButtonState;
 
   // For frame funcions
-  uint16_t frameCount;
   uint8_t eachFrameMillis;
   unsigned long lastFrameStart;
   unsigned long nextFrameStart;
