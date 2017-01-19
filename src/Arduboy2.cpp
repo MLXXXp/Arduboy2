@@ -20,9 +20,9 @@ Arduboy2Base::Arduboy2Base()
   previousButtonState = 0;
   // frame management
   setFrameRate(60);
-  frameCount = 0;
+  frameCount = -1;
   nextFrameStart = 0;
-  post_render = false;
+  justRendered = false;
   // init not necessary, will be reset after first use
   // lastFrameStart
   // lastFrameDurationMs
@@ -145,28 +145,40 @@ bool Arduboy2Base::everyXFrames(uint8_t frames)
 bool Arduboy2Base::nextFrame()
 {
   unsigned long now = millis();
+  bool tooSoonForNextFrame = now < nextFrameStart;
 
-  // post render
-  if (post_render) {
+  if (justRendered) {
     lastFrameDurationMs = now - lastFrameStart;
-    frameCount++;
-    post_render = false;
+    justRendered = false;
+    return false;
   }
+  else if (tooSoonForNextFrame) {
+    // if we have MORE than 1ms to spare (hence our comparison with 2),
+    // lets sleep for power savings.  We don't compare against 1 to avoid
+    // potential rounding errors - say we're actually 0.5 ms away, but a 1
+    // is returned if we go to sleep we might sleep a full 1ms and then
+    // we'd be running the frame slighly late.  So the last 1ms we stay
+    // awake for perfect timing.
 
-  // if it's not time for the next frame yet
-  if (now < nextFrameStart) {
-    // if we have more than 1ms to spare, lets sleep
-    // we should be woken up by timer0 every 1ms, so this should be ok
-    if ((uint8_t)(nextFrameStart - now) > 1)
+    // This is likely trading power savings for absolute timing precision
+    // and the power savings might be the better goal. At 60 FPS trusting
+    // chance here might actually achieve a "truer" 60 FPS than the 16ms
+    // frame duration we get due to integer math.
+
+    // We should be woken up by timer0 every 1ms, so it's ok to sleep.
+    if ((uint8_t)(nextFrameStart - now) >= 2)
       idle();
+
     return false;
   }
 
   // pre-render
-  nextFrameStart = now + eachFrameMillis;
+  justRendered = true;
   lastFrameStart = now;
-  post_render = true;
-  return post_render;
+  nextFrameStart = now + eachFrameMillis;
+  frameCount++;
+
+  return true;
 }
 
 bool Arduboy2Base::nextFrameDEV() {

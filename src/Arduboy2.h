@@ -1006,7 +1006,7 @@ class Arduboy2Base : public Arduboy2Core
   uint8_t eachFrameMillis;
   unsigned long lastFrameStart;
   unsigned long nextFrameStart;
-  bool post_render;
+  bool justRendered;
   uint8_t lastFrameDurationMs;
 };
 
