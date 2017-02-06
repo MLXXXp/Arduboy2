@@ -1,8 +1,20 @@
 # Arduboy2 Library
 
-The **Arduboy2** library is a fork of the [Arduboy library](https://github.com/Arduboy/Arduboy) which provides a standard *application programming interface* (API) to the display, buttons and other hardware of the Arduino based [Arduboy miniature game system](https://www.arduboy.com/).
+The **Arduboy2** library is a fork of the [Arduboy library](https://github.com/Arduboy/Arduboy), which provides a standard *application programming interface* (API) to the display, buttons and other hardware of the Arduino based [Arduboy miniature game system](https://www.arduboy.com/).
 
 The name *Arduboy2* doesn't indicate that it's for a new "next generation" of the Arduboy hardware. The name was changed so it can coexist in the Arduino IDE with the current *Arduboy* library, without conflict. This way, existing sketches can continue to use the *Arduboy* library and class, without changes, while new sketches can be written (or old ones modified) to use and take advantage of the capabilities of the *Arduboy2* class and library.
+
+For notes on the differences between the *Arduboy2* library and the original *Arduboy* library, and for information on migrating a sketch currently using the *Arduboy* library, see the sections at the end of this document.
+
+## Library documentation
+
+Comments in the library header files are formatted for the [Doxygen](http://www.doxygen.org) document generation system. The HTML files generated using the configuration file _extras/Doxyfile_ can be found at:
+
+https://MLXXXp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/html/index.html
+
+A generated PDF file can be found at:
+
+https://MLXXXp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/pdf/Arduboy2.pdf
 
 ## Installation
 
@@ -17,29 +29,6 @@ For more library installation information see
 
 [Installing Additional Arduino Libraries - Using the Library Manager](https://www.arduino.cc/en/Guide/Libraries#toc3)
 
-## What's different from Arduboy V1.1
-
-A main goal of Arduboy2 is to provide ways in which more code space can be freed for use by large sketches. Another goal is to allow methods other than the *tunes* functions to be used to produce sounds. Arduboy2 remains substantially compatible with [Arduboy library V1.1](https://github.com/Arduboy/Arduboy/releases/tag/v1.1), which was the latest stable release at the time of the fork. Arduboy2 is based on the code targeted for Arduboy library V1.2, which was still in development and unreleased at the time it was forked.
-
-Main differences between Arduboy2 and Arduboy V1.1 are:
-
-- The *ArduboyTunes* subclass, which provided the *tunes.xxx()* functions, has been removed. It's functionality is available in a separate [*ArduboyPlaytune* library](https://github.com/Arduboy/ArduboyPlayTune). By removing these functions, more code space may become available because interrupt routines and other support code was being compiled in even if a sketch didn't make use them. Another benefit is that without the automatic installation of timer interrupt service routines, other audio generating functions and libraries, that need access to the same interrupts, can now be used. Removal of the *tunes* functions is the main API incompatibility with Arduboy V1.1. Sketches written to use *tunes* functions will need some minor modifications in order to make them work with Arduboy2 plus ArduboyPlaytune, [ArduboyTones](https://github.com/MLXXXp/ArduboyTones), or some other audio library.
-- Arduboy library V1.1 uses timer 1 for the *tunes* functions. This causes problems when attempting to control the Arduboy's RGB LED using PWM, such as with *setRGBled()*, because it also requires timer 1. Since the *tunes* functionality has been removed from Arduboy2, there are no problems with using the RGB LED (except those caused by the RGB LED being incorrectly installed). Of course, using an external library that uses timer 1, such as *ArduboyPlaytune*, may reintroduce the problems. However, using a library that doesn't use timer 1, such as *ArduboyTones*, is now an option.
-- The code to generate text output, using *setCursor()*, *print()*, etc., can be removed to free up code space, if a sketch doesn't use any text functions. The *Arduboy2* class includes the text functions but using the *Arduboy2Base* class instead will eliminate them. With text functions included, the font table and some support functions are always compiled in even if not used. The API for using text functions is the same as Arduboy V1.1 with some additional functions added:
- - *setTextColor()* and *setTextBackground()* allow for printing black text on a white background.
- - *getCursorX()* and *getCursorY()* allow for determining the current text cursor position.
- - The *clear()* function will now reset the text cursor to home position 0, 0.
-- A new feature has been added which allows the *audio on/off* flag in system EEPROM to be configured by the user when the sketch starts. The flag is used by the Arduboy and Arduboy2 *audio* subclass, along with external sound functions and libraries, to provide a standardized sound mute capability. This feature is described in more detail later in this document.
-- The *color* parameter, which is the last parameter for most of the drawing functions, has been made optional and will default to WHITE if not included in the call. This doesn't save any code but has been added as a convenience, since most drawing functions are called with WHITE specified.
-- A new function *digitalWriteRGB()* has been added to control the RGB LED digitally instead of using PWM. This uses less code if just turning the RGB LEDs fully on or off is all that's required.
-- The *beginNoLogo()* function is not included. This function could be used in Arduboy V1.1 in place of *begin()* to suppress the displaying of the ARDUBOY logo and thus free up the code that it required. Instead, Arduboy2 allows a sketch to call *boot()* and then add in any extra features that *begin()* provides by calling their functions directly after *boot()*, if desired.
-- The *ArduboyCore* and *ArduboyAudio* base classes, previously only available to, and used to derive, the *Arduboy* class, have been made publicly available for the benefit of developers who may wish to use them as the base of an entirely new library. This change doesn't affect the existing API.
-
-As of version 2.1.0 functionality from the [Team A.R.G.](http://www.team-arg.org/) *Arglib* library has been added:
-
-- The sprite drawing functions, collision detection functions, and button handling functions that Team A.R.G. incorporated from the [ArduboyExtra](https://github.com/yyyc514/ArduboyExtra) project. The *poll()* function was renamed *pollButtons()* for clarity. The *Sprites* class doesn't require a parameter for the constructor, whereas in *Arglib* a pointer to an Arduboy class object is required.
-- The *drawCompressed()* function, which allows compressed bitmaps to be drawn. Saving bitmaps in compressed form may reduce overall sketch size. 
-
 ## Start up features
 
 The *begin()* function, used to initialize the library, includes features that are intended to be available to all sketches using the library (unless the sketch developer has chosen to disable one or more of them to free up some code space):
@@ -48,7 +37,7 @@ The *begin()* function, used to initialize the library, includes features that a
 
 At the start of the sketch, the **ARDUBOY** logo scrolls down from the top of the screen to the center.
 
-The RGB LED lights red then green then blue while the logo is scrolling. (If your Arduboy is one of those that has the RGB LED installed incorrectly, then it will light blue then off then red). This pattern is different than with Arduboy V1.1, which lit and then faded red (or blue if the LED is incorrectly installed).
+The RGB LED lights red then green then blue while the logo is scrolling. (If your Arduboy is one of those that has the RGB LED installed incorrectly, then it will light blue then off then red).
 
 A user settable *unit name* of up to 6 characters can be saved in system EEPROM memory. If set, this name will be briefly displayed at the bottom of the boot logo screen, after the logo stops scrolling down. This feature is only available if the *Arduboy2* class is used, not the *Arduboy2Base* class. This is because it requires the text display functions, which are only available in the *Arduboy2* class.
 
@@ -62,11 +51,7 @@ If the *UP* button is pressed and held when the Arduboy is powered on, it enters
 
 *Flashlight* mode is also sometimes useful to allow uploading of new sketches, in case the sketch currently loaded uses a large amount of RAM which creates a bootloader problem.
 
-Lighting the screen is new to Arduboy2. Arduboy library V1.1 only lights the RGB LED.
-
 ### Audio mute control
-
-This feature is new to the Arduboy2 library. It's not available in Arduboy library V1.1.
 
 Pressing and holding the *B* button when powering on will enter *System Control* mode. The RGB LED will light blue (red for an incorrect LED) to indicate that you are in *system control* mode. You must continue to hold the *B* button to remain in this mode. The only *system control* function currently implemented is *audio mute control*.
 
@@ -77,16 +62,6 @@ Pressing the *DOWN* button (while still holding *B*) will set the flag to *audio
 Releasing the *B* button will exit *system control* mode and the sketch will continue.
 
 Note that the audio control feature only sets a flag in EEPROM. Whatever code actually produces the sound must use the *audio.enabled()* function to check and honor the mute state. Audio libraries written with the Arduboy system in mind, such as the available *ArduboyPlaytune* and *ArduboyTones*, should do this. However, be aware that for some sketches, which don't use the Arduboy2 or other compliant library and generate sounds in their own way, this method of muting sound may not work.
-
-## Library documentation
-
-Comments in the library header files are formatted for the [Doxygen](http://www.doxygen.org) document generation system. The HTML files generated using the configuration file _extras/Doxyfile_ can be found at:
-
-https://MLXXXp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/html/index.html
-
-A generated PDF file can be found at:
-
-https://MLXXXp.github.io/documents/Arduino/libraries/Arduboy2/Doxygen/pdf/Arduboy2.pdf
 
 ## Using the library in a sketch
 
@@ -150,7 +125,7 @@ Arduboy2 arduboy;
 
 #### Sound effects and music
 
-Arduboy2 will automatically use less code than Arduboy V1.1 because it doesn't include the *tunes* subclass. If your sketch doesn't have sound, more code is available than with Arduboy V1.1. If you want your sketch to have sound, then using the *ArduboyTones* library will be more code efficient than using *ArduboyPlaytune*. *ArduboyTones* even produces less code than the [Arduino built in *tone()* function](https://www.arduino.cc/en/Reference/Tone). You'll have to decide on the appropriate library or functions you use to generate sound, based on the features required and how much memory you want it to use.
+If you want your sketch to have sound, then using the *ArduboyTones* library will be more code efficient than using *ArduboyPlaytune* or most other sound libraries compatible with the Arduboy. *ArduboyTones* even produces less code than the [Arduino built in *tone()* function](https://www.arduino.cc/en/Reference/Tone). You'll have to decide on the appropriate library or functions you use to generate sound, based on the features required and how much memory you want it to use.
 
 #### Remove the text functions
 
@@ -218,12 +193,44 @@ For example: Let's say a sketch has its own code to enable, disable and save the
   // check for and handle buttons held during start up for system control
 //  systemButtons();
 
+  arduboy.audio.begin();
+
 //  bootLogo();
 
-  arduboy.audio.begin();
+  // wait for all buttons to be released
+  do {
+    delay(50);
+  } while (arduboy.buttonsState());
 ```
 
 This saves whatever code *blank()*, *systemButtons()* and *bootLogo()* would use.
+
+----------
+
+## What's different from Arduboy library V1.1
+
+A main goal of Arduboy2 is to provide ways in which more code space can be freed for use by large sketches. Another goal is to allow methods other than the *tunes* functions to be used to produce sounds. Arduboy2 remains substantially compatible with [Arduboy library V1.1](https://github.com/Arduboy/Arduboy/releases/tag/v1.1), which was the latest stable release at the time of the fork. Arduboy2 is based on the code targeted for Arduboy library V1.2, which was still in development and unreleased at the time it was forked.
+
+Main differences between Arduboy2 and Arduboy V1.1 are:
+
+- The *ArduboyTunes* subclass, which provided the *tunes.xxx()* functions, has been removed. It's functionality is available in a separate [*ArduboyPlaytune* library](https://github.com/Arduboy/ArduboyPlayTune). By removing these functions, more code space may become available because interrupt routines and other support code was being compiled in even if a sketch didn't make use them. Another benefit is that without the automatic installation of timer interrupt service routines, other audio generating functions and libraries, that need access to the same interrupts, can now be used. Removal of the *tunes* functions is the main API incompatibility with Arduboy V1.1. Sketches written to use *tunes* functions will need some minor modifications in order to make them work with Arduboy2 plus ArduboyPlaytune, [ArduboyTones](https://github.com/MLXXXp/ArduboyTones), or some other audio library.
+- Arduboy library V1.1 uses timer 1 for the *tunes* functions. This causes problems when attempting to control the Arduboy's RGB LED using PWM, such as with *setRGBled()*, because it also requires timer 1. Since the *tunes* functionality has been removed from Arduboy2, there are no problems with using the RGB LED (except those caused by the RGB LED being incorrectly installed). Of course, using an external library that uses timer 1, such as *ArduboyPlaytune*, may reintroduce the problems. However, using a library that doesn't use timer 1, such as *ArduboyTones*, is now an option.
+- The code to generate text output, using *setCursor()*, *print()*, etc., can be removed to free up code space, if a sketch doesn't use any text functions. The *Arduboy2* class includes the text functions but using the *Arduboy2Base* class instead will eliminate them. With text functions included, the font table and some support functions are always compiled in even if not used. The API for using text functions is the same as Arduboy V1.1 with some additional functions added:
+ - *setTextColor()* and *setTextBackground()* allow for printing black text on a white background.
+ - *getCursorX()* and *getCursorY()* allow for determining the current text cursor position.
+ - The *clear()* function will now reset the text cursor to home position 0, 0.
+- A new feature has been added which allows the *audio on/off* flag in system EEPROM to be configured by the user when the sketch starts. The flag is used by the Arduboy and Arduboy2 *audio* subclass, along with external sound functions and libraries, to provide a standardized sound mute capability. See the information above, under the heading *Audio mute control*, for more details.
+- The *color* parameter, which is the last parameter for most of the drawing functions, has been made optional and will default to WHITE if not included in the call. This doesn't save any code but has been added as a convenience, since most drawing functions are called with WHITE specified.
+- A new function *digitalWriteRGB()* has been added to control the RGB LED digitally instead of using PWM. This uses less code if just turning the RGB LEDs fully on or off is all that's required.
+- The *beginNoLogo()* function is not included. This function could be used in Arduboy V1.1 in place of *begin()* to suppress the displaying of the ARDUBOY logo and thus free up the code that it required. Instead, Arduboy2 allows a sketch to call *boot()* and then add in any extra features that *begin()* provides by calling their functions directly after *boot()*, if desired.
+- The *ArduboyCore* and *ArduboyAudio* base classes, previously only available to, and used to derive, the *Arduboy* class, have been made publicly available for the benefit of developers who may wish to use them as the base of an entirely new library. This change doesn't affect the existing API.
+
+As of version 2.1.0 functionality from the [Team A.R.G.](http://www.team-arg.org/) *Arglib* library has been added:
+
+- The sprite drawing functions, collision detection functions, and button handling functions that Team A.R.G. incorporated from the [ArduboyExtra](https://github.com/yyyc514/ArduboyExtra) project. The *poll()* function was renamed *pollButtons()* for clarity. The *Sprites* class doesn't require a parameter for the constructor, whereas in *Arglib* a pointer to an Arduboy class object is required.
+- The *drawCompressed()* function, which allows compressed bitmaps to be drawn. Saving bitmaps in compressed form may reduce overall sketch size.
+
+Team A.R.G. has now migrated all of their games and demos to use the Arduboy2 library.
 
 ## Migrating a sketch from Arduboy library V1.1 to Arduboy2
 
@@ -350,7 +357,14 @@ The sound channels must then be initialzed and assigned to the speaker pins. Thi
 ```cpp
   // audio setup
   tunes.initChannel(PIN_SPEAKER_1);
+#ifndef AB_DEVKIT
+  // if not a DevKit
   tunes.initChannel(PIN_SPEAKER_2);
+#else
+  // if it's a DevKit
+  tunes.initChannel(PIN_SPEAKER_1); // use the same pin for both channels
+  tunes.toneMutesScore(true);       // mute the score when a tone is sounding
+#endif
 ```
 
 If you name the ArduboyPlaytune object *tunes* as shown above, then you just have to remove the Arduboy object name from any *tunes* calls. For example:
@@ -373,7 +387,7 @@ The benefit of using *ArduboyTones* would be reduced code size and possibly easi
 
 ### Sketch uses the *beginNoLogo()* function instead of *begin()*
 
-The *beginNoLogo()* function has been removed. Instead, *boot()* can be used with additional functions following it to add back in desired boot functionality. See the information above under the heading *Remove boot up features* for more details. Assuming the object is named *arduboy*, a direct replacement for *beginNoLogo()* would be:
+The *beginNoLogo()* function has been removed. Instead, *boot()* can be used with additional functions following it to add back in desired boot functionality. See the information above, under the heading *Remove boot up features*, for more details. Assuming the object is named *arduboy*, a direct replacement for *beginNoLogo()* would be:
 
 ```cpp
   arduboy.boot();
