@@ -45,6 +45,11 @@ void Arduboy2Base::begin()
   audio.begin();
 
   bootLogo();
+
+  // wait for all buttons to be released
+  do {
+    delay(50);
+  } while (buttonsState());
 }
 
 void Arduboy2Base::flashlight()
@@ -92,7 +97,12 @@ void Arduboy2Base::bootLogo()
 {
   digitalWrite(RED_LED, RGB_ON);
 
-  for(int8_t y = -18; y <= 24; y++) {
+  for (int8_t y = -18; y <= 24; y++) {
+    if (pressed(RIGHT_BUTTON)) {
+      digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
+      return;
+    }
+
     if (y == -4) {
       digitalWriteRGB(RGB_OFF, RGB_ON, RGB_OFF); // green LED on
     }

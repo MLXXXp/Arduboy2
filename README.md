@@ -54,6 +54,8 @@ A user settable *unit name* of up to 6 characters can be saved in system EEPROM 
 
 Once the logo display sequence completes, the sketch continues.
 
+For developers who wish to quickly begin testing, or impatient users who want to go strait to playing their game, the boot logo sequence can be bypassed by holding the *RIGHT* button while powering up, and then releasing it. Alternatively, the *RIGHT* button can be pressed while the logo is scrolling down.
+
 ### "Flashlight" mode
 
 If the *UP* button is pressed and held when the Arduboy is powered on, it enters *flashlight* mode. This turns the RGB LED fully on, and all the pixels of the screen are lit, resulting in a bright white light suitable as a small flashlight. (For an incorrect RGB LED, only the screen will light). To exit *flashlight* mode, press the *DOWN* button to continue with the sketch.
@@ -193,6 +195,11 @@ void Arduboy2Base::begin()
   audio.begin();
 
   bootLogo();
+
+  // wait for all buttons to be released
+  do {
+    delay(50);
+  } while (buttonsState());
 }
 ```
 

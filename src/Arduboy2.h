@@ -236,6 +236,11 @@ class Arduboy2Base : public Arduboy2Core
    * The Arduboy logo scrolls down from the top of the screen to the center
    * while the RGB LEDs light in sequence.
    *
+   * If the RIGHT button is pressed while the logo is scrolling down,
+   * the boot logo sequence will be aborted. This can be useful for
+   * developers who wish to quickly start testing, or anyone else who is
+   * impatient and wants to go straight to the actual sketch.
+   *
    * This function calls `bootLogoExtra()` after the logo stops scrolling down,
    * which derived classes can implement to add additional information to the
    * logo screen. The `Arduboy2` class uses this to display the unit name.
