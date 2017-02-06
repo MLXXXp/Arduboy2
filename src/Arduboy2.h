@@ -8,6 +8,7 @@
 #define ARDUBOY2_H
 
 #include <Arduino.h>
+#include <EEPROM.h>
 #include "Arduboy2Core.h"
 #include "Sprites.h"
 #include <Print.h>
@@ -34,9 +35,15 @@
 #define ARDUBOY_LIB_VER 30000
 
 // EEPROM settings
+#define ARDUBOY_UNIT_NAME_LEN 6 /**< The maximum length of the unit name string. */
+
 #define EEPROM_VERSION 0
 #define EEPROM_BRIGHTNESS 1
 #define EEPROM_AUDIO_ON_OFF 2
+#define EEPROM_UNIT_ID 8    // A uint16_t binary unit ID
+#define EEPROM_UNIT_NAME 10 // An up to 6 character unit name. Cannot contain
+                            // 0x00 or 0xFF. Lengths less than 6 are padded
+                            // with 0x00
 
 /** \brief
  * Start of EEPROM storage space for sketches.
@@ -180,7 +187,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \note
    * To free up some code space for use by the sketch, `boot()` can be used
-   * instead of `begin()` allow the elimination of some of the things that
+   * instead of `begin()` to allow the elimination of some of the things that
    * aren't really required, such as displaying the boot logo.
    *
    * \see boot()
@@ -229,9 +236,17 @@ class Arduboy2Base : public Arduboy2Core
    * The Arduboy logo scrolls down from the top of the screen to the center
    * while the RGB LEDs light in sequence.
    *
-   * \see begin() boot()
+   * This function calls `bootLogoExtra()` after the logo stops scrolling down,
+   * which derived classes can implement to add additional information to the
+   * logo screen. The `Arduboy2` class uses this to display the unit name.
+   *
+   * \see begin() boot() Arduboy2::bootLogoExtra()
    */
   void bootLogo();
+
+  // Called by bootLogo() to allow derived classes to display additional
+  // information after the logo stops scrolling down.
+  virtual void bootLogoExtra();
 
   /** \brief
    * Clear the display buffer.
@@ -808,6 +823,97 @@ class Arduboy2Base : public Arduboy2Core
   bool collide(Rect rect1, Rect rect2);
 
   /** \brief
+   * Read the unit ID from system EEPROM.
+   *
+   * \return The value of the unit ID stored in system EEPROM.
+   *
+   * \details
+   * This function reads the unit ID that has been set in system EEPROM.
+   * The ID can be any value. It is intended to allow different units to be
+   * uniquely identified.
+   *
+   * \see writeUnitID() readUnitName()
+   */
+  uint16_t readUnitID();
+
+  /** \brief
+   * Write a unit ID to system EEPROM.
+   *
+   * \param id The value of the unit ID to be stored in system EEPROM.
+   *
+   * \details
+   * This function writes a unit ID to a reserved location in system EEPROM.
+   * The ID can be any value. It is intended to allow different units to be
+   * uniquely identified.
+   *
+   * \see readUnitID() writeUnitName()
+   */
+  void writeUnitID(uint16_t id);
+
+  /** \brief
+   * Read the unit name from system EEPROM.
+   *
+   * \param name A pointer to a string array variable where the unit name will
+   * be placed. The string will be up to 6 characters and terminated with a
+   * null (0x00) character, so the provided array must be at least 7 bytes long.
+   *
+   * \return The length of the string (0-6).
+   *
+   * \details
+   * This function reads the unit name that has been set in system EEPROM. The
+   * name is in ASCII and can contain any values except 0xFF and the
+   * null (0x00) terminator value.
+   *
+   * The name can be used for any purpose. It could identify the owner or
+   * give the unit itself a nickname. A sketch could use it to automatically
+   * fill in a name or initials in a high score table, or display it as the
+   * "player" when the opponent is the computer.
+   *
+   * \note
+   * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
+   * hard coding a 6 when working with the unit name. For example, to allocate
+   * a buffer and read the unit name into it:
+   * \code
+   * // Buffer for maximum name length plus the terminator
+   * char unitName[ARDUBOY_UNIT_NAME_LEN + 1];
+   *
+   * // The actual name length
+   * byte unitNameLength;
+   *
+   * unitNameLength = arduboy.readUnitName(unitName);
+   * \endcode
+   *
+   * \see writeUnitName() readUnitID() Arduboy2::bootLogoExtra()
+   */
+  uint8_t readUnitName(char* name);
+
+  /** \brief
+   * Write a unit name to system EEPROM.
+   *
+   * \param name A pointer to a string array variable containing the unit name
+   * to be saved. The string can be up to 6 characters and must be terminated
+   * with a null (0x00) character. It can contain any values except 0xFF.
+   *
+   * \details
+   * This function writes a unit name to a reserved area in system EEPROM.
+   * The name is in ASCII and can contain any values except 0xFF and the
+   * null (0x00) terminator value. The newline character (LF, \\n, 0x0A) and
+   * carriage return character (CR, \\r, 0x0D) should also be avoided.
+   *
+   * The name can be used for any purpose. It could identify the owner or
+   * give the unit itself a nickname. A sketch could use it to automatically
+   * fill in a name or initials in a high score table, or display it as the
+   * "player" when the opponent is the computer.
+   *
+   * \note
+   * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
+   * hard coding a 6 when working with the unit name.
+   *
+   * \see readUnitName() writeUnitID() Arduboy2::bootLogoExtra()
+   */
+  void writeUnitName(char* name);
+
+  /** \brief
    * A counter which is incremented once per frame.
    *
    * \details
@@ -930,6 +1036,24 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * \see Arduboy2::write()
    */
+
+  /** \brief
+   * Show the unit name at the bottom of the boot logo screen.
+   *
+   * \details
+   * This function is called by the `bootLogo()` function.
+   * 
+   * If a unit name has been saved in system EEPROM, it will be displayed at
+   * the bottom of the screen. This function pauses for a short time to allow
+   * the name to be seen.
+   *
+   * \note
+   * This function would not normally be called directly from within a sketch
+   * itself.
+   *
+   * \see readUnitName() writeUnitName() bootLogo() begin()
+   */
+  virtual void bootLogoExtra();
 
   /** \brief
    * Write a single ASCII character at the current text cursor location.

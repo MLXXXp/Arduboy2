@@ -64,6 +64,8 @@ paint8Pixels	KEYWORD2
 paintScreen	KEYWORD2
 pollButtons	KEYWORD2
 pressed	KEYWORD2
+readUnitID	KEYWORD2
+readUnitName	KEYWORD2
 saveOnOff	KEYWORD2
 setCursor	KEYWORD2
 setFrameRate	KEYWORD2
@@ -75,6 +77,8 @@ setTextWrap	KEYWORD2
 systemButtons	KEYWORD2
 toggle	KEYWORD2
 width	KEYWORD2
+writeUnitID	KEYWORD2
+writeUnitName	KEYWORD2
 
 # Sprites class
 drawErase	KEYWORD2

@@ -50,7 +50,9 @@ At the start of the sketch, the **ARDUBOY** logo scrolls down from the top of th
 
 The RGB LED lights red then green then blue while the logo is scrolling. (If your Arduboy is one of those that has the RGB LED installed incorrectly, then it will light blue then off then red). This pattern is different than with Arduboy V1.1, which lit and then faded red (or blue if the LED is incorrectly installed).
 
-Once the logo display completes, the sketch continues.
+A user settable *unit name* of up to 6 characters can be saved in system EEPROM memory. If set, this name will be briefly displayed at the bottom of the boot logo screen, after the logo stops scrolling down. This feature is only available if the *Arduboy2* class is used, not the *Arduboy2Base* class. This is because it requires the text display functions, which are only available in the *Arduboy2* class.
+
+Once the logo display sequence completes, the sketch continues.
 
 ### "Flashlight" mode
 
@@ -188,9 +190,9 @@ void Arduboy2Base::begin()
   // check for and handle buttons held during start up for system control
   systemButtons();
 
-  bootLogo();
-
   audio.begin();
+
+  bootLogo();
 }
 ```
 

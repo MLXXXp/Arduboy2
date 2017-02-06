@@ -42,9 +42,9 @@ void Arduboy2Base::begin()
   // check for and handle buttons held during start up for system control
   systemButtons();
 
-  bootLogo();
-
   audio.begin();
+
+  bootLogo();
 }
 
 void Arduboy2Base::flashlight()
@@ -56,7 +56,7 @@ void Arduboy2Base::flashlight()
   sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
   digitalWriteRGB(RGB_ON, RGB_ON, RGB_ON);
 
-  while(!pressed(DOWN_BUTTON)) {
+  while (!pressed(DOWN_BUTTON)) {
     idle();
   }
 
@@ -113,7 +113,12 @@ void Arduboy2Base::bootLogo()
 
   delay(750);
   digitalWrite(BLUE_LED, RGB_OFF);
+
+  bootLogoExtra();
 }
+
+// Virtual function overridden by derived class
+void Arduboy2Base::bootLogoExtra() { }
 
 /* Frame management */
 
@@ -896,6 +901,58 @@ bool Arduboy2Base::collide(Rect rect1, Rect rect2)
            rect2.y + rect2.height <= rect1.y);
 }
 
+uint16_t Arduboy2Base::readUnitID()
+{
+  return EEPROM.read(EEPROM_UNIT_ID) |
+         (((uint16_t)(EEPROM.read(EEPROM_UNIT_ID + 1))) << 8);
+}
+
+void Arduboy2Base::writeUnitID(uint16_t id)
+{
+  EEPROM.update(EEPROM_UNIT_ID, (uint8_t)(id & 0xff));
+  EEPROM.update(EEPROM_UNIT_ID + 1, (uint8_t)(id >> 8));
+}
+
+uint8_t Arduboy2Base::readUnitName(char* name)
+{
+  char val;
+  uint8_t dest;
+  uint8_t src = EEPROM_UNIT_NAME;
+
+  for (dest = 0; dest < ARDUBOY_UNIT_NAME_LEN; dest++)
+  {
+    if ((val = EEPROM.read(src)) == 0x00 || (byte)val == 0xFF)
+    {
+      break;
+    }
+    name[dest] = val;
+    src++;
+  }
+
+  name[dest] = 0x00;
+  return dest;
+}
+
+void Arduboy2Base::writeUnitName(char* name)
+{
+  bool done = false;
+  uint8_t dest = EEPROM_UNIT_NAME;
+
+  for (uint8_t src = 0; src < ARDUBOY_UNIT_NAME_LEN; src++)
+  {
+    if (name[src] != 0x00 && !done)
+    {
+      EEPROM.update(dest, name[src]);
+    }
+    else
+    {
+      done = true;
+      EEPROM.update(dest, 0x00);
+    }
+    dest++;
+  }
+}
+
 void Arduboy2Base::swap(int16_t& a, int16_t& b)
 {
   int16_t temp = a;
@@ -916,6 +973,27 @@ Arduboy2::Arduboy2()
   textBackground = 0;
   textSize = 1;
   textWrap = 0;
+}
+
+void Arduboy2::bootLogoExtra()
+{
+  uint8_t c = EEPROM.read(EEPROM_UNIT_NAME);
+
+  if (c != 0xFF && c != 0x00)
+  {
+    uint8_t i = EEPROM_UNIT_NAME;
+    cursor_x = 50;
+    cursor_y = 56;
+
+    do
+    {
+      write(c);
+      c = EEPROM.read(++i);
+    } while (i < EEPROM_UNIT_NAME + ARDUBOY_UNIT_NAME_LEN);
+
+    display();
+    delay(1500);
+  }
 }
 
 size_t Arduboy2::write(uint8_t c)
