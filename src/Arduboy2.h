@@ -613,9 +613,36 @@ class Arduboy2Base : public Arduboy2Core
    * }
    * \endcode
    *
-   * \see setFrameRate()
+   * \see setFrameRate() nextFrameDEV()
    */
   bool nextFrame();
+
+  /** \brief
+   * Indicate that it's time to render the next frame, and visually indicate
+   * if the code is running slower than the desired frame rate.
+   * **FOR USE DURING DEVELOPMENT**
+   *
+   * \return `true` if it's time for the next frame.
+   *
+   * \details
+   * This function is intended to be used in place of `nextFrame()` during the
+   * development of a sketch. It does the same thing as `nextFrame()` but
+   * additionally will light the yellow TX LED (at the bottom, to the left
+   * of the USB connector) whenever a frame takes longer to generate than the
+   * time allotted per frame, as determined by the `setFrameRate()` function.
+   *
+   * Therefore, whenever the TX LED comes on (while not communicating over
+   * USB), it indicates that the sketch is running slower than the desired
+   * rate set by `setFrameRate()`. In this case the developer may wish to set
+   * a slower frame rate, or reduce or optimize the code for such frames.
+   *
+   * \note
+   * Once a sketch is ready for release, it would be expected that
+   * `nextFrameDEV()` calls be restored to `nextFrame()`.
+   *
+   * \see nextFrame() cpuLoad() setFrameRate()
+   */
+  bool nextFrameDEV();
 
   /** \brief
    * Indicate if the specified number of frames has elapsed.

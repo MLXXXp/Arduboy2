@@ -169,6 +169,18 @@ bool Arduboy2Base::nextFrame()
   return post_render;
 }
 
+bool Arduboy2Base::nextFrameDEV() {
+  bool ret = nextFrame();
+
+  if (ret) {
+    if (lastFrameDurationMs > eachFrameMillis)
+      TXLED1;
+    else
+      TXLED0;
+  }
+  return ret;
+}
+
 int Arduboy2Base::cpuLoad()
 {
   return lastFrameDurationMs*100 / eachFrameMillis;
