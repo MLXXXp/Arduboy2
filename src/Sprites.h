@@ -31,16 +31,21 @@
  * various poses for a running or jumping character. By specifying a different
  * frame each time the sprite is drawn, it can be animated.
  *
- * Each array begins with values for the width and height of the sprite, in
- * pixels. The width can be any value. The height must be a multiple of
+ * Each image array begins with values for the width and height of the sprite,
+ * in pixels. The width can be any value. The height must be a multiple of
  * 8 pixels, but with proper masking, a sprite of any height can be created.
  *
- * After the width and height values, the remainder of the array contains the
- * image and/or mask data for each frame. Each byte represents a vertical
- * column of 8 pixels with the least significant bit (bit 0) at the top.
- * The bytes are drawn as 8 pixel high rows from left to right, top to bottom.
- * When the end of a row is reached, as specified by the width value, the next
- * byte in the array will be the start of the next row.
+ * For a separate mask array, as is used with `drawExternalMask()`, the width
+ * and height are not included but must contain data of the same dimensions
+ * as the corresponding image array.
+ *
+ * Following the width and height values for an image array, or the from the
+ * beginning of a separate mask array, the array contains the image and/or
+ * mask data for each frame. Each byte represents a vertical column of 8 pixels
+ * with the least significant bit (bit 0) at the top. The bytes are drawn as
+ * 8 pixel high rows from left to right, top to bottom. When the end of a row
+ * is reached, as specified by the width value, the next byte in the array will
+ * be the start of the next row.
  *
  * Data for each frame after the first one immediately follows the previous
  * frame. Frame numbers start at 0.
