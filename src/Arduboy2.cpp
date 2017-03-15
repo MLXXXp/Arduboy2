@@ -71,23 +71,23 @@ void Arduboy2Base::flashlight()
 
 void Arduboy2Base::systemButtons() {
   while (pressed(B_BUTTON)) {
-    digitalWrite(BLUE_LED, RGB_ON); // turn on blue LED
+    digitalWriteRGB(BLUE_LED, RGB_ON); // turn on blue LED
     sysCtrlSound(UP_BUTTON + B_BUTTON, GREEN_LED, 0xff);
     sysCtrlSound(DOWN_BUTTON + B_BUTTON, RED_LED, 0);
     delay(200);
   }
 
-  digitalWrite(BLUE_LED, RGB_OFF); // turn off blue LED
+  digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
 }
 
 void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal) {
   if (pressed(buttons)) {
-    digitalWrite(BLUE_LED, RGB_OFF); // turn off blue LED
+    digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
     delay(200);
-    digitalWrite(led, RGB_ON); // turn on "acknowledge" LED
+    digitalWriteRGB(led, RGB_ON); // turn on "acknowledge" LED
     EEPROM.update(EEPROM_AUDIO_ON_OFF, eeVal);
     delay(500);
-    digitalWrite(led, RGB_OFF); // turn off "acknowledge" LED
+    digitalWriteRGB(led, RGB_OFF); // turn off "acknowledge" LED
 
     while (pressed(buttons)) {} // Wait for button release
   }
@@ -95,7 +95,7 @@ void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal) {
 
 void Arduboy2Base::bootLogo()
 {
-  digitalWrite(RED_LED, RGB_ON);
+  digitalWriteRGB(RED_LED, RGB_ON);
 
   for (int8_t y = -18; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
@@ -104,10 +104,12 @@ void Arduboy2Base::bootLogo()
     }
 
     if (y == -4) {
-      digitalWriteRGB(RGB_OFF, RGB_ON, RGB_OFF); // green LED on
+      digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
+      digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
     }
     else if (y == 24) {
-      digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_ON); // blue LED on
+      digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+      digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
     }
 
     clear();
@@ -122,7 +124,7 @@ void Arduboy2Base::bootLogo()
   }
 
   delay(750);
-  digitalWrite(BLUE_LED, RGB_OFF);
+  digitalWriteRGB(BLUE_LED, RGB_OFF);
 
   bootLogoExtra();
 }

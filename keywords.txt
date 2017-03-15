@@ -75,6 +75,7 @@ setTextColor	KEYWORD2
 setTextBackground	KEYWORD2
 setTextSize	KEYWORD2
 setTextWrap	KEYWORD2
+SPItransfer	KEYWORD2
 systemButtons	KEYWORD2
 toggle	KEYWORD2
 width	KEYWORD2
