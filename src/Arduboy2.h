@@ -254,6 +254,17 @@ class Arduboy2Base : public Arduboy2Core
   virtual void bootLogoExtra();
 
   /** \brief
+   * Checks the battery voltage level.
+   *
+   * \return true if the battery is running low
+   *
+   * \details
+   * This is called periodically by the frame management loop and will
+   * light the TX LED (yellow) if the battery is detected to be low.
+   */
+  static bool checkBatteryLow();
+
+  /** \brief
    * Clear the display buffer.
    *
    * \details
@@ -695,7 +706,7 @@ class Arduboy2Base : public Arduboy2Core
   int cpuLoad();
 
   // Useful for getting raw approximate voltage values.
-  uint16_t rawADC(uint8_t adc_bits);
+  static uint16_t rawADC(uint8_t adc_bits);
 
   /** \brief
    * Test if the specified buttons are pressed.
@@ -1074,7 +1085,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * \details
    * This function is called by the `bootLogo()` function.
-   * 
+   *
    * If a unit name has been saved in system EEPROM, it will be displayed at
    * the bottom of the screen. This function pauses for a short time to allow
    * the name to be seen.
