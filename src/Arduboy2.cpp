@@ -995,12 +995,12 @@ uint8_t Arduboy2Base::readUnitName(char* name)
 
   for (dest = 0; dest < ARDUBOY_UNIT_NAME_LEN; dest++)
   {
-    if ((val = EEPROM.read(src)) == 0x00 || (byte)val == 0xFF)
-    {
-      break;
-    }
+    val = EEPROM.read(src);
     name[dest] = val;
     src++;
+    if (val == 0x00 || (byte)val == 0xFF) {
+      break;
+    }
   }
 
   name[dest] = 0x00;
