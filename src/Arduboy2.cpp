@@ -1046,7 +1046,9 @@ size_t Arduboy2::write(uint8_t c)
 void Arduboy2::drawChar
   (int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size)
 {
+  uint8_t line;
   bool draw_background = bg != color;
+  uint8_t *bitmap = font + c*5;
 
   if ((x >= WIDTH) ||              // Clip right
       (y >= HEIGHT) ||             // Clip bottom
@@ -1057,16 +1059,11 @@ void Arduboy2::drawChar
     return;
   }
 
-  for (int8_t i=0; i<6; i++ )
+  for (uint8_t i=0; i<6; i++ )
   {
-    uint8_t line;
-    if (i == 5)
-    {
+    line = pgm_read_byte(bitmap++);
+    if (i == 5) {
       line = 0x0;
-    }
-    else
-    {
-      line = pgm_read_byte(font+(c*5)+i);
     }
 
     for (int8_t j = 0; j<8; j++)
