@@ -224,7 +224,7 @@ class Sprites
     // (Not officially part of the API)
     void drawBitmap(int16_t x, int16_t y,
                     const uint8_t *bitmap, const uint8_t *mask,
-                    int8_t w, int8_t h, uint8_t draw_mode);
+                    uint8_t w, uint8_t h, uint8_t draw_mode);
 };
 
 #endif
