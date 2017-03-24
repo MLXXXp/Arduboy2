@@ -67,6 +67,7 @@ pollButtons	KEYWORD2
 pressed	KEYWORD2
 readUnitID	KEYWORD2
 readUnitName	KEYWORD2
+safeMode	KEYWORD2
 saveOnOff	KEYWORD2
 setCursor	KEYWORD2
 setFrameRate	KEYWORD2

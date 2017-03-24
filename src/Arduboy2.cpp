@@ -54,22 +54,25 @@ void Arduboy2Base::begin()
 
 void Arduboy2Base::flashlight()
 {
-  if(!pressed(UP_BUTTON)) {
+  if (!pressed(UP_BUTTON)) {
     return;
   }
 
   sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
   digitalWriteRGB(RGB_ON, RGB_ON, RGB_ON);
 
-  while (!pressed(DOWN_BUTTON)) {
+  // prevent the bootloader magic number from being overwritten by timer 0
+  // when a timer variable overlaps the magic number location, for when
+  // flashlight mode is used for upload problem recovery
+  power_timer0_disable();
+
+  while (true) {
     idle();
   }
-
-  digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
-  sendLCDCommand(OLED_PIXELS_FROM_RAM);
 }
 
-void Arduboy2Base::systemButtons() {
+void Arduboy2Base::systemButtons()
+{
   while (pressed(B_BUTTON)) {
     digitalWriteRGB(BLUE_LED, RGB_ON); // turn on blue LED
     sysCtrlSound(UP_BUTTON + B_BUTTON, GREEN_LED, 0xff);
@@ -80,7 +83,8 @@ void Arduboy2Base::systemButtons() {
   digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
 }
 
-void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal) {
+void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal)
+{
   if (pressed(buttons)) {
     digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
     delay(200);

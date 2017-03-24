@@ -32,11 +32,6 @@
 // #define AB_DEVKIT    //< compile for the official dev kit
 #endif
 
-
-#ifdef AB_DEVKIT
-#define SAFE_MODE    //< include safe mode (44 bytes)
-#endif
-
 #define RGB_ON LOW   /**< For digitially setting an RGB LED on using digitalWriteRGB() */
 #define RGB_OFF HIGH /**< For digitially setting an RGB LED off using digitalWriteRGB() */
 
@@ -619,19 +614,28 @@ class Arduboy2Core
      */
     void static boot();
 
-  protected:
-    /*
-     * Safe Mode is engaged by holding down both the LEFT button and UP button
-     * when plugging the device into USB. It puts your device into a tight
-     * loop and allows it to be reprogrammed even if you have uploaded a very
-     * broken sketch that interferes with the normal USB triggered auto-reboot
-     * functionality of the device.
+    /** \brief
+     * Allow upload when the bootloader "magic number" could be corrupted.
      *
-     * This is most useful on Devkits because they lack a built-in reset
-     * button.
+     * \details
+     * If the UP button is held when this function is entered, the RGB LED
+     * will be lit and timer 0 will be disabled, then the sketch will remain
+     * in a tight loop. This is to address a problem with uploading a new
+     * sketch, for sketches that interfere with the bootloader "magic number".
+     * The problem occurs with certain sketches that use large amounts of RAM.
+     *
+     * This function should be called after `boot()` in sketches that
+     * potentially could cause the problem.
+     *
+     * It is intended to replace the `flashlight()` function when more
+     * program space is required. If possible, it is more desirable to use
+     * `flashlight()`, so that the actual flashlight feature isn't lost.
+     *
+     * \see Arduboy2Base::flashlight() boot()
      */
-    void static inline safeMode() __attribute__((always_inline));
+    void static safeMode();
 
+  protected:
     // internals
     void static inline setCPUSpeed8MHz() __attribute__((always_inline));
     void static inline bootOLED() __attribute__((always_inline));

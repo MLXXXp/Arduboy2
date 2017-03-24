@@ -82,12 +82,6 @@ void Arduboy2Core::boot()
 
   bootPins();
   bootOLED();
-
-  #ifdef SAFE_MODE
-  if (buttonsState() == (LEFT_BUTTON | UP_BUTTON))
-    safeMode();
-  #endif
-
   bootPowerSaving();
 }
 
@@ -240,9 +234,15 @@ void Arduboy2Core::SPItransfer(uint8_t data)
 
 void Arduboy2Core::safeMode()
 {
-  blank(); // too avoid random gibberish
-  while (true) {
-    asm volatile("nop \n");
+  if (buttonsState() == UP_BUTTON)
+  {
+    digitalWriteRGB(RED_LED, RGB_ON);
+
+    // prevent the bootloader magic number from being overwritten by timer 0
+    // when a timer variable overlaps the magic number location
+    power_timer0_disable();
+
+    while (true) { }
   }
 }
 
