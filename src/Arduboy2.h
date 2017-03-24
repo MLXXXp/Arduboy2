@@ -195,16 +195,30 @@ class Arduboy2Base : public Arduboy2Core
   void begin();
 
   /** \brief
-   * Flashlight mode turns the RGB LED and display fully on.
+   * Turn the RGB LED and display fully on to act as a small flashlight/torch.
    *
    * \details
    * Checks if the UP button is pressed and if so turns the RGB LED and all
-   * display pixels fully on. Pressing the DOWN button will exit flashlight mode.
+   * display pixels fully on. If the UP button is detected, this function
+   * does not exit. The Arduboy must be restarted after flashlight mode is used.
    *
    * This function is called by `begin()` and can be called by a sketch
    * after `boot()`.
    *
-   * \see begin() boot()
+   * \note
+   * \parblock
+   * This function also contains code to address a problem with uploading a new
+   * sketch, for sketches that interfere with the bootloader "magic number".
+   * This problem occurs with certain sketches that use large amounts of RAM.
+   * Being in flashlight mode when uploading a new sketch can fix this problem.
+   *
+   * Therefore, for sketches that potentially could cause this problem, and use
+   * `boot()` instead of `begin()`, it is recommended that a call to
+   * `flashlight()` be included after calling `boot()`. If program space is
+   * limited, `safeMode()` can be used instead of `flashlight()`.
+   * \endparblock
+   *
+   * \see begin() boot() safeMode()
    */
   void flashlight();
 
