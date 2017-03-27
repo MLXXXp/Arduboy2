@@ -97,6 +97,8 @@ void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal)
   }
 }
 
+// bootLogoText() should be kept in sync with bootLogo()
+// if changes are made to one, equivalent changes should be made to the other
 void Arduboy2Base::bootLogo()
 {
   digitalWriteRGB(RED_LED, RGB_ON);
@@ -1001,6 +1003,50 @@ Arduboy2::Arduboy2()
   textBackground = 0;
   textSize = 1;
   textWrap = 0;
+}
+
+// bootLogoText() should be kept in sync with bootLogo()
+// if changes are made to one, equivalent changes should be made to the other
+void Arduboy2::bootLogoText()
+{
+  digitalWriteRGB(RED_LED, RGB_ON);
+
+  textSize = 2;
+
+  for (int8_t y = -18; y <= 24; y++) {
+    if (pressed(RIGHT_BUTTON)) {
+      digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
+      textSize = 1;
+      return;
+    }
+
+    if (y == -4) {
+      digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
+      digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
+    }
+    else if (y == 24) {
+      digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+      digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+    }
+
+    clear();
+    cursor_x = 23;
+    cursor_y = y;
+    print("ARDUBOY");
+    display();
+    delay(27);
+    // longer delay post boot, we put it inside the loop to
+    // save the flash calling clear/delay again outside the loop
+    if (y==-16) {
+      delay(250);
+    }
+  }
+
+  delay(750);
+  digitalWriteRGB(BLUE_LED, RGB_OFF);
+  textSize = 1;
+
+  bootLogoExtra();
 }
 
 void Arduboy2::bootLogoExtra()

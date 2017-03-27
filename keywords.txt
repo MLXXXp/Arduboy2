@@ -19,6 +19,7 @@ begin	KEYWORD2
 blank	KEYWORD2
 boot	KEYWORD2
 bootLogo	KEYWORD2
+bootLogoText	KEYWORD2
 buttonsState	KEYWORD2
 clear	KEYWORD2
 collide	KEYWORD2
