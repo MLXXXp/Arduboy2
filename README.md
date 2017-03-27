@@ -51,7 +51,7 @@ For developers who wish to quickly begin testing, or impatient users who want to
 
 ### "Flashlight" mode
 
-If the *UP* button is pressed and held when the Arduboy is powered on, it enters *flashlight* mode. This turns the RGB LED fully on, and all the pixels of the screen are lit, resulting in a bright white light suitable as a small flashlight. (For an incorrect RGB LED, only the screen will light). To exit *flashlight* mode, press the *DOWN* button to continue with the sketch.
+If the *UP* button is pressed and held when the Arduboy is powered on, it enters *flashlight* mode. This turns the RGB LED fully on, and all the pixels of the screen are lit, resulting in a bright white light suitable as a small flashlight. (For an incorrect RGB LED, only the screen will light). To exit *flashlight* mode the Arduboy must be restarted.
 
 *Flashlight* mode is also sometimes useful to allow uploading of new sketches, in case the sketch currently loaded uses a large amount of RAM which creates a bootloader problem.
 
@@ -208,6 +208,11 @@ For example: Let's say a sketch has its own code to enable, disable and save the
 ```
 
 This saves whatever code *blank()*, *systemButtons()* and *bootLogo()* would use.
+
+There are a few functions provided that are roughly equivalent to the standard functions used by *begin()* but which use less code space.
+
+- *bootLogoText()* can be used in place *bootLogo()* in the case where the sketch uses text functions. It renders the logo as text instead of as a bitmap (so doesn't look as good).
+- *safeMode()* can be used in place of *flashlight()* for cases where it's needed to allow uploading a new sketch when the bootloader "magic key" problem is an issue. It only lights the red RGB LED, so you don't get the bright light that is the primary purpose of *flashlight()*.
 
 ----------
 

@@ -259,7 +259,7 @@ class Arduboy2Base : public Arduboy2Core
    * which derived classes can implement to add additional information to the
    * logo screen. The `Arduboy2` class uses this to display the unit name.
    *
-   * \see begin() boot() Arduboy2::bootLogoExtra()
+   * \see begin() boot() Arduboy2::bootLogoExtra() Arduboy2::bootLogoText()
    */
   void bootLogo();
 
@@ -1084,10 +1084,30 @@ class Arduboy2 : public Print, public Arduboy2Base
    */
 
   /** \brief
+   * Display the boot logo sequence using printed text instead of a bitmap.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative
+   * to `bootLogo()`.
+   *
+   * The Arduboy logo scrolls down from the top of the screen to the center
+   * while the RGB LEDs light in sequence.
+   *
+   * This function is the same as `bootLogo()` except the logo is printed as
+   * text instead of being rendered as a bitmap. It can be used to save some
+   * code space in a case where the sketch is using the Print class functions
+   * to display text. However, the logo will not look as good when printed as
+   * text as it does with the bitmap used by `bootLogo()`.
+   *
+   * \see bootLogo() boot() Arduboy2::bootLogoExtra()
+   */
+  void bootLogoText();
+
+  /** \brief
    * Show the unit name at the bottom of the boot logo screen.
    *
    * \details
-   * This function is called by the `bootLogo()` function.
+   * This function is called by `bootLogo()` and `bootlogoText()`.
    * 
    * If a unit name has been saved in system EEPROM, it will be displayed at
    * the bottom of the screen. This function pauses for a short time to allow
@@ -1097,7 +1117,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * This function would not normally be called directly from within a sketch
    * itself.
    *
-   * \see readUnitName() writeUnitName() bootLogo() begin()
+   * \see readUnitName() writeUnitName() bootLogo() bootLogoText() begin()
    */
   virtual void bootLogoExtra();
 
