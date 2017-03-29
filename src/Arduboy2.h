@@ -38,12 +38,16 @@
 #define ARDUBOY_UNIT_NAME_LEN 6 /**< The maximum length of the unit name string. */
 
 #define EEPROM_VERSION 0
-#define EEPROM_BRIGHTNESS 1
+#define EEPROM_SYS_FLAGS 1
 #define EEPROM_AUDIO_ON_OFF 2
 #define EEPROM_UNIT_ID 8    // A uint16_t binary unit ID
 #define EEPROM_UNIT_NAME 10 // An up to 6 character unit name. Cannot contain
                             // 0x00 or 0xFF. Lengths less than 6 are padded
                             // with 0x00
+
+// EEPROM_SYS_FLAGS values
+#define SYS_FLAG_UNAME 0    // Display the unit name on the logo screen
+#define SYS_FLAG_UNAME_MASK _BV(SYS_FLAG_UNAME)
 
 /** \brief
  * Start of EEPROM storage space for sketches.
@@ -960,6 +964,38 @@ class Arduboy2Base : public Arduboy2Core
   void writeUnitName(char* name);
 
   /** \brief
+   * Read the "Show Unit Name" flag in system EEPROM.
+   *
+   * \return `true` if the flag is set to indicate that the unit name should
+   * be displayed. `false` if the flag is set to not display the unit name.
+   *
+   * \details
+   * The "Show Unit Name" flag is used to determine whether the system
+   * unit name is to be displayed at the end of the boot logo sequence.
+   * This function returns the value of this flag.
+   *
+   * \see writeShowUnitNameFlag() writeUnitName() readUnitName()
+   * Arduboy2::bootLogoExtra()
+   */
+  bool readShowUnitNameFlag();
+
+  /** \brief
+   * Write the "Show Unit Name" flag in system EEPROM.
+   *
+   * \param val If `true` the flag is set to indicate that the unit name should
+   * be displayed. If `false` the flag is set to not display the unit name.
+   *
+   * \details
+   * The "Show Unit Name" flag is used to determine whether the system
+   * unit name is to be displayed at the end of the boot logo sequence.
+   * This function allows the flag to be saved with the desired value.
+   *
+   * \see readShowUnitNameFlag() writeUnitName() readUnitName()
+   * Arduboy2::bootLogoExtra()
+   */
+  void writeShowUnitNameFlag(bool val);
+
+  /** \brief
    * A counter which is incremented once per frame.
    *
    * \details
@@ -1113,11 +1149,14 @@ class Arduboy2 : public Print, public Arduboy2Base
    * the bottom of the screen. This function pauses for a short time to allow
    * the name to be seen.
    *
+   * The name is not displayed if the "Show Unit Name" flag is not set.
+   *
    * \note
    * This function would not normally be called directly from within a sketch
    * itself.
    *
-   * \see readUnitName() writeUnitName() bootLogo() bootLogoText() begin()
+   * \see readUnitName() writeUnitName() bootLogo() bootLogoText()
+   *  writeShowUnitNameFlag() begin()
    */
   virtual void bootLogoExtra();
 
