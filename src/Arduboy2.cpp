@@ -983,6 +983,19 @@ void Arduboy2Base::writeUnitName(char* name)
   }
 }
 
+bool Arduboy2Base::readShowUnitNameFlag()
+{
+  return (EEPROM.read(EEPROM_SYS_FLAGS) & SYS_FLAG_UNAME_MASK);
+}
+
+void Arduboy2Base::writeShowUnitNameFlag(bool val)
+{
+  uint8_t flags = EEPROM.read(EEPROM_SYS_FLAGS);
+
+  bitWrite(flags, SYS_FLAG_UNAME, val);
+  EEPROM.update(EEPROM_SYS_FLAGS, flags);
+}
+
 void Arduboy2Base::swap(int16_t& a, int16_t& b)
 {
   int16_t temp = a;
@@ -1051,7 +1064,14 @@ void Arduboy2::bootLogoText()
 
 void Arduboy2::bootLogoExtra()
 {
-  uint8_t c = EEPROM.read(EEPROM_UNIT_NAME);
+  uint8_t c;
+
+  if (!readShowUnitNameFlag())
+  {
+    return;
+  }
+
+  c = EEPROM.read(EEPROM_UNIT_NAME);
 
   if (c != 0xFF && c != 0x00)
   {
@@ -1063,10 +1083,11 @@ void Arduboy2::bootLogoExtra()
     {
       write(c);
       c = EEPROM.read(++i);
-    } while (i < EEPROM_UNIT_NAME + ARDUBOY_UNIT_NAME_LEN);
+    }
+    while (i < EEPROM_UNIT_NAME + ARDUBOY_UNIT_NAME_LEN);
 
     display();
-    delay(1500);
+    delay(1000);
   }
 }
 
