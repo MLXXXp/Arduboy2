@@ -82,11 +82,6 @@
 
 #define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
 
-// compare Vcc to 1.1 bandgap
-#define ADC_VOLTAGE (_BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1))
-// compare temperature to 2.5 internal reference and _BV(MUX5)
-#define ADC_TEMP (_BV(REFS0) | _BV(REFS1) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0))
-
 
 /** \brief
  * A rectangle object for collision functions.
@@ -711,9 +706,6 @@ class Arduboy2Base : public Arduboy2Core
    * \see setFrameRate() nextFrame()
    */
   int cpuLoad();
-
-  // Useful for getting raw approximate voltage values.
-  uint16_t rawADC(uint8_t adc_bits);
 
   /** \brief
    * Test if the specified buttons are pressed.

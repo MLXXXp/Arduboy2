@@ -80,6 +80,9 @@ void Arduboy2Core::boot()
   setCPUSpeed8MHz();
   #endif
 
+  // Select the ADC input here so a delay isn't required in initRandomSeed()
+  ADMUX = RAND_SEED_IN_ADMUX;
+
   bootPins();
   bootOLED();
   bootPowerSaving();
@@ -139,10 +142,12 @@ void Arduboy2Core::bootPins()
   // Port F INPUT_PULLUP or HIGH
   PORTF |= _BV(LEFT_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
            _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT);
-  // Port F INPUT or LOW (none)
+  // Port F INPUT or LOW
+  PORTF &= ~(_BV(RAND_SEED_IN_BIT));
   // Port F inputs
   DDRF &= ~(_BV(LEFT_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
-            _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT));
+            _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
+            _BV(RAND_SEED_IN_BIT));
   // Port F outputs (none)
 
 #elif defined(AB_DEVKIT)
@@ -175,9 +180,10 @@ void Arduboy2Core::bootPins()
 
   // Port F INPUT_PULLUP or HIGH
   PORTF |= _BV(A_BUTTON_BIT) | _BV(B_BUTTON_BIT);
-  // Port F INPUT or LOW (none)
+  // Port F INPUT or LOW
+  PORTF &= ~(_BV(RAND_SEED_IN_BIT));
   // Port F inputs
-  DDRF &= ~(_BV(A_BUTTON_BIT) | _BV(B_BUTTON_BIT));
+  DDRF &= ~(_BV(A_BUTTON_BIT) | _BV(B_BUTTON_BIT) | _BV(RAND_SEED_IN_BIT));
   // Port F outputs (none)
   // Speaker: Not set here. Controlled by audio class
 

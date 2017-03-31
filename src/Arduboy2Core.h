@@ -112,6 +112,12 @@
 #define SPEAKER_2_PORT PORTC
 #define SPEAKER_2_DDR DDRC
 #define SPEAKER_2_BIT PORTC7
+
+#define RAND_SEED_IN A4 // Open analog input used for noise by initRandomSeed()
+#define RAND_SEED_IN_PORTF
+#define RAND_SEED_IN_BIT PORTF1
+// Value for ADMUX to read the random seed pin: 2.56V reference, ADC1
+#define RAND_SEED_IN_ADMUX (_BV(REFS0) | _BV(REFS1) | _BV(MUX0))
 // -----------------------
 
 // ----- DevKit pins -----
@@ -185,6 +191,12 @@
 // be dangerous and fry your hardware (because of the devkit wiring).
 //
 // Reference: https://github.com/Arduboy/Arduboy/issues/108
+
+#define RAND_SEED_IN A4 // Open analog input used for noise by initRandomSeed()
+#define RAND_SEED_IN_PORTF
+#define RAND_SEED_IN_BIT PORTF1
+// Value for ADMUX to read the random seed pin: 2.56V reference, ADC1
+#define RAND_SEED_IN_ADMUX (_BV(REFS0) | _BV(REFS1) | _BV(MUX0))
 
 #endif
 // --------------------
