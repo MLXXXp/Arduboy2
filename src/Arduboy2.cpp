@@ -197,23 +197,14 @@ int Arduboy2Base::cpuLoad()
 void Arduboy2Base::initRandomSeed()
 {
   power_adc_enable(); // ADC on
-  randomSeed(~rawADC(ADC_TEMP) * ~rawADC(ADC_VOLTAGE) * ~micros() + micros());
+
+  // do an ADC read from an unconnected input pin
+  ADCSRA |= _BV(ADSC); // start conversion (ADMUX has been pre-set in boot())
+  while (bit_is_set(ADCSRA, ADSC)) { } // wait for conversion complete
+
+  randomSeed(((unsigned long)ADC << 16) + micros());
+
   power_adc_disable(); // ADC off
-}
-
-uint16_t Arduboy2Base::rawADC(uint8_t adc_bits)
-{
-  ADMUX = adc_bits;
-  // we also need MUX5 for temperature check
-  if (adc_bits == ADC_TEMP) {
-    ADCSRB = _BV(MUX5);
-  }
-
-  delay(2); // Wait for ADMUX setting to settle
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA,ADSC)); // measuring
-
-  return ADC;
 }
 
 /* Graphics */
