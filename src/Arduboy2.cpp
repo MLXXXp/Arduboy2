@@ -130,6 +130,27 @@ void Arduboy2Base::bootLogo()
 // Virtual function overridden by derived class
 void Arduboy2Base::bootLogoExtra() { }
 
+bool Arduboy2Base::checkBatteryLow() {
+  bool batteryLow;
+  uint16_t voltage;
+
+  voltage = rawADC(ADC_VOLTAGE);
+  power_adc_disable(); // turn the ADC back off
+
+  // some voltage values for reference
+  // 4262mv - fully charged (plugged in)
+  // 41??mv - fully charged
+  voltage = 1125300L / voltage;
+  batteryLow = voltage < 3700;
+
+  if (batteryLow) {
+    TXLED1;
+  } else {
+    TXLED0;
+  }
+  return batteryLow;
+}
+
 /* Frame management */
 
 void Arduboy2Base::setFrameRate(uint8_t rate)
@@ -188,13 +209,14 @@ int Arduboy2Base::cpuLoad()
 
 void Arduboy2Base::initRandomSeed()
 {
-  power_adc_enable(); // ADC on
   randomSeed(~rawADC(ADC_TEMP) * ~rawADC(ADC_VOLTAGE) * ~micros() + micros());
   power_adc_disable(); // ADC off
 }
 
 uint16_t Arduboy2Base::rawADC(uint8_t adc_bits)
 {
+  power_adc_enable(); // ADC on
+
   ADMUX = adc_bits;
   // we also need MUX5 for temperature check
   if (adc_bits == ADC_TEMP) {
