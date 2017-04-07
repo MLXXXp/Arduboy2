@@ -71,7 +71,7 @@ const uint8_t PROGMEM lcdBootProgram[] = {
 };
 
 
-Arduboy2Core::Arduboy2Core() {}
+Arduboy2Core::Arduboy2Core() { }
 
 void Arduboy2Core::boot()
 {

@@ -93,7 +93,7 @@ void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal)
     delay(500);
     digitalWriteRGB(led, RGB_OFF); // turn off "acknowledge" LED
 
-    while (pressed(buttons)) {} // Wait for button release
+    while (pressed(buttons)) { } // Wait for button release
   }
 }
 
@@ -177,7 +177,8 @@ bool Arduboy2Base::nextFrame()
   return post_render;
 }
 
-bool Arduboy2Base::nextFrameDEV() {
+bool Arduboy2Base::nextFrameDEV()
+{
   bool ret = nextFrame();
 
   if (ret) {
@@ -1155,11 +1156,13 @@ void Arduboy2::setCursor(int16_t x, int16_t y)
   cursor_y = y;
 }
 
-int16_t Arduboy2::getCursorX() {
+int16_t Arduboy2::getCursorX()
+{
   return cursor_x;
 }
 
-int16_t Arduboy2::getCursorY() {
+int16_t Arduboy2::getCursorY()
+{
   return cursor_y;
 }
 
@@ -1184,7 +1187,8 @@ void Arduboy2::setTextWrap(bool w)
   textWrap = w;
 }
 
-void Arduboy2::clear() {
+void Arduboy2::clear()
+{
     Arduboy2Base::clear();
     cursor_x = cursor_y = 0;
 }
