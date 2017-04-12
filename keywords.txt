@@ -19,6 +19,10 @@ begin	KEYWORD2
 blank	KEYWORD2
 boot	KEYWORD2
 bootLogo	KEYWORD2
+bootLogoCompressed	KEYWORD2
+bootLogoShell	KEYWORD2
+bootLogoSpritesOverwrite	KEYWORD2
+bootLogoSpritesSelfMasked	KEYWORD2
 bootLogoText	KEYWORD2
 buttonsState	KEYWORD2
 clear	KEYWORD2

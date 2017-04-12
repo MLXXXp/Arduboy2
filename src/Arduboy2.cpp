@@ -97,13 +97,53 @@ void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal)
   }
 }
 
-// bootLogoText() should be kept in sync with bootLogo()
-// if changes are made to one, equivalent changes should be made to the other
 void Arduboy2Base::bootLogo()
+{
+  bootLogoShell(drawLogoBitmap);
+}
+
+void Arduboy2Base::drawLogoBitmap(int16_t y)
+{
+  drawBitmap(20, y, arduboy_logo, 88, 16);
+}
+
+void Arduboy2Base::bootLogoCompressed()
+{
+  bootLogoShell(drawLogoCompressed);
+}
+
+void Arduboy2Base::drawLogoCompressed(int16_t y)
+{
+  drawCompressed(20, y, arduboy_logo_compressed);
+}
+
+void Arduboy2Base::bootLogoSpritesSelfMasked()
+{
+  bootLogoShell(drawLogoSpritesSelfMasked);
+}
+
+void Arduboy2Base::drawLogoSpritesSelfMasked(int16_t y)
+{
+  Sprites::drawSelfMasked(20, y, arduboy_logo_sprite, 0);
+}
+
+void Arduboy2Base::bootLogoSpritesOverwrite()
+{
+  bootLogoShell(drawLogoSpritesOverwrite);
+}
+
+void Arduboy2Base::drawLogoSpritesOverwrite(int16_t y)
+{
+  Sprites::drawOverwrite(20, y, arduboy_logo_sprite, 0);
+}
+
+// bootLogoText() should be kept in sync with bootLogoShell()
+// if changes are made to one, equivalent changes should be made to the other
+void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
 {
   digitalWriteRGB(RED_LED, RGB_ON);
 
-  for (int8_t y = -18; y <= 24; y++) {
+  for (int16_t y = -18; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
       digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
       return;
@@ -119,7 +159,7 @@ void Arduboy2Base::bootLogo()
     }
 
     clear();
-    drawBitmap(20, y, arduboy_logo, 88, 16, WHITE);
+    (*drawLogo)(y); // call the function that actually draws the logo
     display();
     delay(27);
     // longer delay post boot, we put it inside the loop to
@@ -1010,7 +1050,7 @@ Arduboy2::Arduboy2()
   textWrap = 0;
 }
 
-// bootLogoText() should be kept in sync with bootLogo()
+// bootLogoText() should be kept in sync with bootLogoShell()
 // if changes are made to one, equivalent changes should be made to the other
 void Arduboy2::bootLogoText()
 {

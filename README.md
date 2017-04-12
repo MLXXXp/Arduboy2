@@ -211,6 +211,7 @@ This saves whatever code *blank()*, *systemButtons()* and *bootLogo()* would use
 
 There are a few functions provided that are roughly equivalent to the standard functions used by *begin()* but which use less code space.
 
+- *bootLogoCompressed()*, *bootLogoSpritesSelfMasked()* and *bootLogoSpritesOverwrite()* will do the same as *bootLogo()* but will use *drawCompressed()*, or *Sprites* class *drawSelfMasked()* or *drawOverwrite()*, functions respectively, instead of *drawBitmask()*, to render the logo. If the sketch uses one of these functions, then using the boot logo function that also uses it may reduce code size. It's best to try each of them to see which one produces the smallest size.
 - *bootLogoText()* can be used in place *bootLogo()* in the case where the sketch uses text functions. It renders the logo as text instead of as a bitmap (so doesn't look as good).
 - *safeMode()* can be used in place of *flashlight()* for cases where it's needed to allow uploading a new sketch when the bootloader "magic key" problem is an issue. It only lights the red RGB LED, so you don't get the bright light that is the primary purpose of *flashlight()*.
 
