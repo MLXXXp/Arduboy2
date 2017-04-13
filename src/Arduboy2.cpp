@@ -995,12 +995,12 @@ uint8_t Arduboy2Base::readUnitName(char* name)
 
   for (dest = 0; dest < ARDUBOY_UNIT_NAME_LEN; dest++)
   {
-    if ((val = EEPROM.read(src)) == 0x00 || (byte)val == 0xFF)
-    {
-      break;
-    }
+    val = EEPROM.read(src);
     name[dest] = val;
     src++;
+    if (val == 0x00 || (byte)val == 0xFF) {
+      break;
+    }
   }
 
   name[dest] = 0x00;
@@ -1014,17 +1014,14 @@ void Arduboy2Base::writeUnitName(char* name)
 
   for (uint8_t src = 0; src < ARDUBOY_UNIT_NAME_LEN; src++)
   {
-    if (name[src] != 0x00 && !done)
-    {
-      EEPROM.update(dest, name[src]);
-    }
-    else
-    {
+    if (name[src] == 0x00) {
       done = true;
-      EEPROM.update(dest, 0x00);
     }
+    // write character or 0 pad if finished
+    EEPROM.update(dest, done ? 0x00 : name[src]);
     dest++;
   }
+
 }
 
 bool Arduboy2Base::readShowUnitNameFlag()
