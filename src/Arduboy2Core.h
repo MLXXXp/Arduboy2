@@ -9,7 +9,6 @@
 
 #include <Arduino.h>
 #include <avr/power.h>
-#include <SPI.h>
 #include <avr/sleep.h>
 #include <limits.h>
 
@@ -33,35 +32,45 @@
 // #define AB_DEVKIT    //< compile for the official dev kit
 #endif
 
-
-#ifdef AB_DEVKIT
-#define SAFE_MODE    //< include safe mode (44 bytes)
-#endif
-
 #define RGB_ON LOW   /**< For digitially setting an RGB LED on using digitalWriteRGB() */
 #define RGB_OFF HIGH /**< For digitially setting an RGB LED off using digitalWriteRGB() */
 
+// ----- Arduboy pins -----
 #ifdef ARDUBOY_10
 
-#define CS 12
-#define DC 4
-#define RST 6
+#define PIN_CS 12       // Display CS Arduino pin number
+#define CS_PORT PORTD   // Display CS port
+#define CS_BIT PORTD6   // Display CS physical bit number
+
+#define PIN_DC 4        // Display D/C Arduino pin number
+#define DC_PORT PORTD   // Display D/C port
+#define DC_BIT PORTD4   // Display D/C physical bit number
+
+#define PIN_RST 6       // Display reset Arduino pin number
+#define RST_PORT PORTD  // Display reset port
+#define RST_BIT PORTD7  // Display reset physical bit number
+
+#define SPI_MOSI_PORT PORTB
+#define SPI_MOSI_BIT PORTB2
+
+#define SPI_SCK_PORT PORTB
+#define SPI_SCK_BIT PORTB1
 
 #define RED_LED 10   /**< The pin number for the red color in the RGB LED. */
 #define GREEN_LED 11 /**< The pin number for the greem color in the RGB LED. */
 #define BLUE_LED 9   /**< The pin number for the blue color in the RGB LED. */
-#define TX_LED 30    /**< The pin number for the transmit indicator LED. */
-#define RX_LED 17    /**< The pin number for the receive indicator LED. */
 
-// pin values for buttons, probably shouldn't use these
-#define PIN_LEFT_BUTTON A2
-#define PIN_RIGHT_BUTTON A1
-#define PIN_UP_BUTTON A0
-#define PIN_DOWN_BUTTON A3
-#define PIN_A_BUTTON 7
-#define PIN_B_BUTTON 8
+#define RED_LED_PORT PORTB
+#define RED_LED_BIT PORTB6
+
+#define GREEN_LED_PORT PORTB
+#define GREEN_LED_BIT PORTB7
+
+#define BLUE_LED_PORT PORTB
+#define BLUE_LED_BIT PORTB5
 
 // bit values for button states
+// these are determined by the buttonsState() function
 #define LEFT_BUTTON _BV(5)  /**< The Left button value for functions requiring a bitmask */
 #define RIGHT_BUTTON _BV(6) /**< The Right button value for functions requiring a bitmask */
 #define UP_BUTTON _BV(7)    /**< The Up button value for functions requiring a bitmask */
@@ -69,37 +78,79 @@
 #define A_BUTTON _BV(3)     /**< The A button value for functions requiring a bitmask */
 #define B_BUTTON _BV(2)     /**< The B button value for functions requiring a bitmask */
 
+#define PIN_LEFT_BUTTON A2
+#define LEFT_BUTTON_PORT PORTF
+#define LEFT_BUTTON_BIT PORTF5
+
+#define PIN_RIGHT_BUTTON A1
+#define RIGHT_BUTTON_PORT PORTF
+#define RIGHT_BUTTON_BIT PORTF6
+
+#define PIN_UP_BUTTON A0
+#define UP_BUTTON_PORT PORTF
+#define UP_BUTTON_BIT PORTF7
+
+#define PIN_DOWN_BUTTON A3
+#define DOWN_BUTTON_PORT PORTF
+#define DOWN_BUTTON_BIT PORTF4
+
+#define PIN_A_BUTTON 7
+#define A_BUTTON_PORT PORTE
+#define A_BUTTON_BIT PORTE6
+
+#define PIN_B_BUTTON 8
+#define B_BUTTON_PORT PORTB
+#define B_BUTTON_BIT PORTB4
+
 #define PIN_SPEAKER_1 5  /**< The pin number of the first lead of the speaker */
 #define PIN_SPEAKER_2 13 /**< The pin number of the second lead of the speaker */
 
-#define PIN_SPEAKER_1_PORT &PORTC
-#define PIN_SPEAKER_2_PORT &PORTC
+#define SPEAKER_1_PORT PORTC
+#define SPEAKER_1_DDR DDRC
+#define SPEAKER_1_BIT PORTC6
 
-#define PIN_SPEAKER_1_BITMASK _BV(6)
-#define PIN_SPEAKER_2_BITMASK _BV(7)
+#define SPEAKER_2_PORT PORTC
+#define SPEAKER_2_DDR DDRC
+#define SPEAKER_2_BIT PORTC7
 
+#define RAND_SEED_IN A4 // Open analog input used for noise by initRandomSeed()
+#define RAND_SEED_IN_PORTF
+#define RAND_SEED_IN_BIT PORTF1
+// Value for ADMUX to read the random seed pin: 2.56V reference, ADC1
+#define RAND_SEED_IN_ADMUX (_BV(REFS0) | _BV(REFS1) | _BV(MUX0))
+// -----------------------
+
+// ----- DevKit pins -----
 #elif defined(AB_DEVKIT)
 
-#define CS 6
-#define DC 4
-#define RST 12
+#define PIN_CS 6        // Display CS Arduino pin number
+#define CS_PORT PORTD   // Display CS port
+#define CS_BIT PORTD7   // Display CS physical bit number
+
+#define PIN_DC 4        // Display D/C Arduino pin number
+#define DC_PORT PORTD   // Display D/C port
+#define DC_BIT PORTD4   // Display D/C physical bit number
+
+#define PIN_RST 12      // Display reset Arduino pin number
+#define RST_PORT PORTD  // Display reset port
+#define RST_BIT PORTD6  // Display reset physical bit number
+
+#define SPI_MOSI_PORT PORTB
+#define SPI_MOSI_BIT PORTB2
+
+#define SPI_SCK_PORT PORTB
+#define SPI_SCK_BIT PORTB1
 
 // map all LEDs to the single TX LED on DEVKIT
 #define RED_LED 17
 #define GREEN_LED 17
 #define BLUE_LED 17
-#define TX_LED 17
-#define RX_LED 17
 
-// pin values for buttons, probably shouldn't use these
-#define PIN_LEFT_BUTTON 9
-#define PIN_RIGHT_BUTTON 5
-#define PIN_UP_BUTTON 8
-#define PIN_DOWN_BUTTON 10
-#define PIN_A_BUTTON A0
-#define PIN_B_BUTTON A1
+#define BLUE_LED_PORT PORTB
+#define BLUE_LED_BIT PORTB0
 
 // bit values for button states
+// these are determined by the buttonsState() function
 #define LEFT_BUTTON _BV(5)
 #define RIGHT_BUTTON _BV(2)
 #define UP_BUTTON _BV(4)
@@ -107,15 +158,48 @@
 #define A_BUTTON _BV(1)
 #define B_BUTTON _BV(0)
 
+// pin values for buttons, probably shouldn't use these
+#define PIN_LEFT_BUTTON 9
+#define LEFT_BUTTON_PORT PORTB
+#define LEFT_BUTTON_BIT PORTB5
+
+#define PIN_RIGHT_BUTTON 5
+#define RIGHT_BUTTON_PORT PORTC
+#define RIGHT_BUTTON_BIT PORTC6
+
+#define PIN_UP_BUTTON 8
+#define UP_BUTTON_PORT PORTB
+#define UP_BUTTON_BIT PORTB4
+
+#define PIN_DOWN_BUTTON 10
+#define DOWN_BUTTON_PORT PORTB
+#define DOWN_BUTTON_BIT PORTB6
+
+#define PIN_A_BUTTON A0
+#define A_BUTTON_PORT PORTF
+#define A_BUTTON_BIT PORTF7
+
+#define PIN_B_BUTTON A1
+#define B_BUTTON_PORT PORTF
+#define B_BUTTON_BIT PORTF6
+
 #define PIN_SPEAKER_1 A2
-#define PIN_SPEAKER_1_PORT &PORTF
-#define PIN_SPEAKER_1_BITMASK _BV(5)
+#define SPEAKER_1_PORT PORTF
+#define SPEAKER_1_DDR DDRF
+#define SPEAKER_1_BIT PORTF5
 // SPEAKER_2 is purposely not defined for DEVKIT as it could potentially
 // be dangerous and fry your hardware (because of the devkit wiring).
 //
 // Reference: https://github.com/Arduboy/Arduboy/issues/108
 
+#define RAND_SEED_IN A4 // Open analog input used for noise by initRandomSeed()
+#define RAND_SEED_IN_PORTF
+#define RAND_SEED_IN_BIT PORTF1
+// Value for ADMUX to read the random seed pin: 2.56V reference, ADC1
+#define RAND_SEED_IN_ADMUX (_BV(REFS0) | _BV(REFS1) | _BV(MUX0))
+
 #endif
+// --------------------
 
 // OLED hardware (SSD1306)
 
@@ -183,6 +267,8 @@ class Arduboy2Core
      * This is a low level function that is not intended for general use in a
      * sketch. It has been made public and documented for use by derived
      * classes.
+     *
+     * \see LCDCommandMode() SPItransfer()
      */
     void static LCDDataMode();
 
@@ -206,9 +292,24 @@ class Arduboy2Core
      * sketch. It has been made public and documented for use by derived
      * classes.
      *
-     * \see sendLCDCommand()
+     * \see LCDDataMode() sendLCDCommand() SPItransfer()
      */
     void static LCDCommandMode();
+
+    /** \brief
+     * Transfer a byte to the display.
+     *
+     * \param data The byte to be sent to the display.
+     *
+     * \details
+     * Transfer one byte to the display over the SPI port and wait for the
+     * transfer to complete. The byte will either be interpreted as a command
+     * or as data to be placed on the screen, depending on the command/data
+     * mode.
+     *
+     * \see LCDDataMode() LCDCommandMode() sendLCDCommand()
+     */
+    void static inline SPItransfer(uint8_t data);
 
     /** \brief
      * Get the width of the display in pixels.
@@ -233,7 +334,7 @@ class Arduboy2Core
     uint8_t static height();
 
     /** \brief
-     * get current state of all buttons as a bitmask.
+     * Get the current state of all buttons as a bitmask.
      *
      * \return A bitmask of the state of all the buttons.
      *
@@ -461,9 +562,9 @@ class Arduboy2Core
      *
      * \details
      * The RGB LED is actually individual red, green and blue LEDs placed
-     * very close together in a single package. This function will set each
-     * LED either on or off, to set the RGB LED to 7 different colors at their
-     * highest brightness or turn it off.
+     * very close together in a single package. This 3 parameter version of the
+     * function will set each LED either on or off, to set the RGB LED to
+     * 7 different colors at their highest brightness or turn it off.
      *
      * The colors are as follows:
      *
@@ -486,9 +587,27 @@ class Arduboy2Core
      * light the red LED. If the green LED is turned on, none of the LEDs
      * will light.
      *
-     * \see setRGBled()
+     * \see digitalWriteRGB(uint8_t, uint8_t) setRGBled()
      */
     void static digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue);
+
+    /** \brief
+     * Set one of the RGB LEDs digitally, to either fully on or fully off.
+     *
+     * \param color The name of the LED to set. The value given should be one
+     * of RED_LED, GREEN_LED or BLUE_LED.
+     *
+     * \param val Indicates whether to turn the specified LED on or off.
+     * The value given should be RGB_ON or RGB_OFF.
+     *
+     * \details
+     * This 2 parameter version of the function will set a single LED within
+     * the RGB LED either fully on or fully off. See the description of the
+     * 3 parameter version of this function for more details on the RGB LED.
+     *
+     * \see digitalWriteRGB(uint8_t, uint8_t, uint8_t) setRGBled()
+     */
+    void static digitalWriteRGB(uint8_t color, uint8_t val);
 
     /** \brief
      * Initialize the Arduboy's hardware.
@@ -507,30 +626,33 @@ class Arduboy2Core
      */
     void static boot();
 
-  protected:
-    /*
-     * Safe Mode is engaged by holding down both the LEFT button and UP button
-     * when plugging the device into USB. It puts your device into a tight
-     * loop and allows it to be reprogrammed even if you have uploaded a very
-     * broken sketch that interferes with the normal USB triggered auto-reboot
-     * functionality of the device.
+    /** \brief
+     * Allow upload when the bootloader "magic number" could be corrupted.
      *
-     * This is most useful on Devkits because they lack a built-in reset
-     * button.
+     * \details
+     * If the UP button is held when this function is entered, the RGB LED
+     * will be lit and timer 0 will be disabled, then the sketch will remain
+     * in a tight loop. This is to address a problem with uploading a new
+     * sketch, for sketches that interfere with the bootloader "magic number".
+     * The problem occurs with certain sketches that use large amounts of RAM.
+     *
+     * This function should be called after `boot()` in sketches that
+     * potentially could cause the problem.
+     *
+     * It is intended to replace the `flashlight()` function when more
+     * program space is required. If possible, it is more desirable to use
+     * `flashlight()`, so that the actual flashlight feature isn't lost.
+     *
+     * \see Arduboy2Base::flashlight() boot()
      */
-    void static inline safeMode() __attribute__((always_inline));
+    void static safeMode();
 
+  protected:
     // internals
     void static inline setCPUSpeed8MHz() __attribute__((always_inline));
     void static inline bootOLED() __attribute__((always_inline));
     void static inline bootPins() __attribute__((always_inline));
     void static inline bootPowerSaving() __attribute__((always_inline));
-
-
-  private:
-    volatile static uint8_t *csport, *dcport;
-    uint8_t static cspinmask, dcpinmask;
-
 };
 
 #endif

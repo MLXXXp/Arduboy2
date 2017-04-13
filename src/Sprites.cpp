@@ -69,7 +69,7 @@ void Sprites::draw(int16_t x, int16_t y,
 
 void Sprites::drawBitmap(int16_t x, int16_t y,
                          const uint8_t *bitmap, const uint8_t *mask,
-                         int8_t w, int8_t h, uint8_t draw_mode)
+                         uint8_t w, uint8_t h, uint8_t draw_mode)
 {
   // no need to draw at all of we're offscreen
   if (x + w <= 0 || x > WIDTH - 1 || y + h <= 0 || y > HEIGHT - 1)

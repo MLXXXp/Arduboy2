@@ -20,9 +20,9 @@ Arduboy2Base::Arduboy2Base()
   previousButtonState = 0;
   // frame management
   setFrameRate(60);
-  frameCount = 0;
+  frameCount = -1;
   nextFrameStart = 0;
-  post_render = false;
+  justRendered = false;
   // init not necessary, will be reset after first use
   // lastFrameStart
   // lastFrameDurationMs
@@ -54,64 +54,112 @@ void Arduboy2Base::begin()
 
 void Arduboy2Base::flashlight()
 {
-  if(!pressed(UP_BUTTON)) {
+  if (!pressed(UP_BUTTON)) {
     return;
   }
 
   sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
   digitalWriteRGB(RGB_ON, RGB_ON, RGB_ON);
 
-  while (!pressed(DOWN_BUTTON)) {
+  // prevent the bootloader magic number from being overwritten by timer 0
+  // when a timer variable overlaps the magic number location, for when
+  // flashlight mode is used for upload problem recovery
+  power_timer0_disable();
+
+  while (true) {
     idle();
   }
-
-  digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
-  sendLCDCommand(OLED_PIXELS_FROM_RAM);
 }
 
-void Arduboy2Base::systemButtons() {
+void Arduboy2Base::systemButtons()
+{
   while (pressed(B_BUTTON)) {
-    digitalWrite(BLUE_LED, RGB_ON); // turn on blue LED
+    digitalWriteRGB(BLUE_LED, RGB_ON); // turn on blue LED
     sysCtrlSound(UP_BUTTON + B_BUTTON, GREEN_LED, 0xff);
     sysCtrlSound(DOWN_BUTTON + B_BUTTON, RED_LED, 0);
     delay(200);
   }
 
-  digitalWrite(BLUE_LED, RGB_OFF); // turn off blue LED
+  digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
 }
 
-void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal) {
+void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal)
+{
   if (pressed(buttons)) {
-    digitalWrite(BLUE_LED, RGB_OFF); // turn off blue LED
+    digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
     delay(200);
-    digitalWrite(led, RGB_ON); // turn on "acknowledge" LED
+    digitalWriteRGB(led, RGB_ON); // turn on "acknowledge" LED
     EEPROM.update(EEPROM_AUDIO_ON_OFF, eeVal);
     delay(500);
-    digitalWrite(led, RGB_OFF); // turn off "acknowledge" LED
+    digitalWriteRGB(led, RGB_OFF); // turn off "acknowledge" LED
 
-    while (pressed(buttons)) {} // Wait for button release
+    while (pressed(buttons)) { } // Wait for button release
   }
 }
 
 void Arduboy2Base::bootLogo()
 {
-  digitalWrite(RED_LED, RGB_ON);
+  bootLogoShell(drawLogoBitmap);
+}
 
-  for (int8_t y = -18; y <= 24; y++) {
+void Arduboy2Base::drawLogoBitmap(int16_t y)
+{
+  drawBitmap(20, y, arduboy_logo, 88, 16);
+}
+
+void Arduboy2Base::bootLogoCompressed()
+{
+  bootLogoShell(drawLogoCompressed);
+}
+
+void Arduboy2Base::drawLogoCompressed(int16_t y)
+{
+  drawCompressed(20, y, arduboy_logo_compressed);
+}
+
+void Arduboy2Base::bootLogoSpritesSelfMasked()
+{
+  bootLogoShell(drawLogoSpritesSelfMasked);
+}
+
+void Arduboy2Base::drawLogoSpritesSelfMasked(int16_t y)
+{
+  Sprites::drawSelfMasked(20, y, arduboy_logo_sprite, 0);
+}
+
+void Arduboy2Base::bootLogoSpritesOverwrite()
+{
+  bootLogoShell(drawLogoSpritesOverwrite);
+}
+
+void Arduboy2Base::drawLogoSpritesOverwrite(int16_t y)
+{
+  Sprites::drawOverwrite(20, y, arduboy_logo_sprite, 0);
+}
+
+// bootLogoText() should be kept in sync with bootLogoShell()
+// if changes are made to one, equivalent changes should be made to the other
+void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
+{
+  digitalWriteRGB(RED_LED, RGB_ON);
+
+  for (int16_t y = -18; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
       digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
       return;
     }
 
     if (y == -4) {
-      digitalWriteRGB(RGB_OFF, RGB_ON, RGB_OFF); // green LED on
+      digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
+      digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
     }
     else if (y == 24) {
-      digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_ON); // blue LED on
+      digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+      digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
     }
 
     clear();
-    drawBitmap(20, y, arduboy_logo, 88, 16, WHITE);
+    (*drawLogo)(y); // call the function that actually draws the logo
     display();
     delay(27);
     // longer delay post boot, we put it inside the loop to
@@ -122,7 +170,7 @@ void Arduboy2Base::bootLogo()
   }
 
   delay(750);
-  digitalWrite(BLUE_LED, RGB_OFF);
+  digitalWriteRGB(BLUE_LED, RGB_OFF);
 
   bootLogoExtra();
 }
@@ -145,31 +193,44 @@ bool Arduboy2Base::everyXFrames(uint8_t frames)
 bool Arduboy2Base::nextFrame()
 {
   unsigned long now = millis();
+  bool tooSoonForNextFrame = now < nextFrameStart;
 
-  // post render
-  if (post_render) {
+  if (justRendered) {
     lastFrameDurationMs = now - lastFrameStart;
-    frameCount++;
-    post_render = false;
+    justRendered = false;
+    return false;
   }
+  else if (tooSoonForNextFrame) {
+    // if we have MORE than 1ms to spare (hence our comparison with 2),
+    // lets sleep for power savings.  We don't compare against 1 to avoid
+    // potential rounding errors - say we're actually 0.5 ms away, but a 1
+    // is returned if we go to sleep we might sleep a full 1ms and then
+    // we'd be running the frame slighly late.  So the last 1ms we stay
+    // awake for perfect timing.
 
-  // if it's not time for the next frame yet
-  if (now < nextFrameStart) {
-    // if we have more than 1ms to spare, lets sleep
-    // we should be woken up by timer0 every 1ms, so this should be ok
-    if ((uint8_t)(nextFrameStart - now) > 1)
+    // This is likely trading power savings for absolute timing precision
+    // and the power savings might be the better goal. At 60 FPS trusting
+    // chance here might actually achieve a "truer" 60 FPS than the 16ms
+    // frame duration we get due to integer math.
+
+    // We should be woken up by timer0 every 1ms, so it's ok to sleep.
+    if ((uint8_t)(nextFrameStart - now) >= 2)
       idle();
+
     return false;
   }
 
   // pre-render
-  nextFrameStart = now + eachFrameMillis;
+  justRendered = true;
   lastFrameStart = now;
-  post_render = true;
-  return post_render;
+  nextFrameStart = now + eachFrameMillis;
+  frameCount++;
+
+  return true;
 }
 
-bool Arduboy2Base::nextFrameDEV() {
+bool Arduboy2Base::nextFrameDEV()
+{
   bool ret = nextFrame();
 
   if (ret) {
@@ -189,23 +250,14 @@ int Arduboy2Base::cpuLoad()
 void Arduboy2Base::initRandomSeed()
 {
   power_adc_enable(); // ADC on
-  randomSeed(~rawADC(ADC_TEMP) * ~rawADC(ADC_VOLTAGE) * ~micros() + micros());
+
+  // do an ADC read from an unconnected input pin
+  ADCSRA |= _BV(ADSC); // start conversion (ADMUX has been pre-set in boot())
+  while (bit_is_set(ADCSRA, ADSC)) { } // wait for conversion complete
+
+  randomSeed(((unsigned long)ADC << 16) + micros());
+
   power_adc_disable(); // ADC off
-}
-
-uint16_t Arduboy2Base::rawADC(uint8_t adc_bits)
-{
-  ADMUX = adc_bits;
-  // we also need MUX5 for temperature check
-  if (adc_bits == ADC_TEMP) {
-    ADCSRB = _BV(MUX5);
-  }
-
-  delay(2); // Wait for ADMUX setting to settle
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA,ADSC)); // measuring
-
-  return ADC;
 }
 
 /* Graphics */
@@ -979,12 +1031,12 @@ uint8_t Arduboy2Base::readUnitName(char* name)
 
   for (dest = 0; dest < ARDUBOY_UNIT_NAME_LEN; dest++)
   {
-    if ((val = EEPROM.read(src)) == 0x00 || (byte)val == 0xFF)
-    {
-      break;
-    }
+    val = EEPROM.read(src);
     name[dest] = val;
     src++;
+    if (val == 0x00 || (byte)val == 0xFF) {
+      break;
+    }
   }
 
   name[dest] = 0x00;
@@ -998,17 +1050,27 @@ void Arduboy2Base::writeUnitName(char* name)
 
   for (uint8_t src = 0; src < ARDUBOY_UNIT_NAME_LEN; src++)
   {
-    if (name[src] != 0x00 && !done)
-    {
-      EEPROM.update(dest, name[src]);
-    }
-    else
-    {
+    if (name[src] == 0x00) {
       done = true;
-      EEPROM.update(dest, 0x00);
     }
+    // write character or 0 pad if finished
+    EEPROM.update(dest, done ? 0x00 : name[src]);
     dest++;
   }
+
+}
+
+bool Arduboy2Base::readShowUnitNameFlag()
+{
+  return (EEPROM.read(EEPROM_SYS_FLAGS) & SYS_FLAG_UNAME_MASK);
+}
+
+void Arduboy2Base::writeShowUnitNameFlag(bool val)
+{
+  uint8_t flags = EEPROM.read(EEPROM_SYS_FLAGS);
+
+  bitWrite(flags, SYS_FLAG_UNAME, val);
+  EEPROM.update(EEPROM_SYS_FLAGS, flags);
 }
 
 void Arduboy2Base::swap(int16_t& a, int16_t& b)
@@ -1033,9 +1095,60 @@ Arduboy2::Arduboy2()
   textWrap = 0;
 }
 
+// bootLogoText() should be kept in sync with bootLogoShell()
+// if changes are made to one, equivalent changes should be made to the other
+void Arduboy2::bootLogoText()
+{
+  digitalWriteRGB(RED_LED, RGB_ON);
+
+  textSize = 2;
+
+  for (int8_t y = -18; y <= 24; y++) {
+    if (pressed(RIGHT_BUTTON)) {
+      digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
+      textSize = 1;
+      return;
+    }
+
+    if (y == -4) {
+      digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
+      digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
+    }
+    else if (y == 24) {
+      digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+      digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+    }
+
+    clear();
+    cursor_x = 23;
+    cursor_y = y;
+    print("ARDUBOY");
+    display();
+    delay(27);
+    // longer delay post boot, we put it inside the loop to
+    // save the flash calling clear/delay again outside the loop
+    if (y==-16) {
+      delay(250);
+    }
+  }
+
+  delay(750);
+  digitalWriteRGB(BLUE_LED, RGB_OFF);
+  textSize = 1;
+
+  bootLogoExtra();
+}
+
 void Arduboy2::bootLogoExtra()
 {
-  uint8_t c = EEPROM.read(EEPROM_UNIT_NAME);
+  uint8_t c;
+
+  if (!readShowUnitNameFlag())
+  {
+    return;
+  }
+
+  c = EEPROM.read(EEPROM_UNIT_NAME);
 
   if (c != 0xFF && c != 0x00)
   {
@@ -1047,10 +1160,11 @@ void Arduboy2::bootLogoExtra()
     {
       write(c);
       c = EEPROM.read(++i);
-    } while (i < EEPROM_UNIT_NAME + ARDUBOY_UNIT_NAME_LEN);
+    }
+    while (i < EEPROM_UNIT_NAME + ARDUBOY_UNIT_NAME_LEN);
 
     display();
-    delay(1500);
+    delay(1000);
   }
 }
 
@@ -1082,7 +1196,9 @@ size_t Arduboy2::write(uint8_t c)
 void Arduboy2::drawChar
   (int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size)
 {
+  uint8_t line;
   bool draw_background = bg != color;
+  uint8_t *bitmap = font + c*5;
 
   if ((x >= WIDTH) ||              // Clip right
       (y >= HEIGHT) ||             // Clip bottom
@@ -1093,16 +1209,11 @@ void Arduboy2::drawChar
     return;
   }
 
-  for (int8_t i=0; i<6; i++ )
+  for (uint8_t i=0; i<6; i++ )
   {
-    uint8_t line;
-    if (i == 5)
-    {
+    line = pgm_read_byte(bitmap++);
+    if (i == 5) {
       line = 0x0;
-    }
-    else
-    {
-      line = pgm_read_byte(font+(c*5)+i);
     }
 
     for (int8_t j = 0; j<8; j++)
@@ -1127,11 +1238,13 @@ void Arduboy2::setCursor(int16_t x, int16_t y)
   cursor_y = y;
 }
 
-int16_t Arduboy2::getCursorX() {
+int16_t Arduboy2::getCursorX()
+{
   return cursor_x;
 }
 
-int16_t Arduboy2::getCursorY() {
+int16_t Arduboy2::getCursorY()
+{
   return cursor_y;
 }
 
@@ -1156,7 +1269,8 @@ void Arduboy2::setTextWrap(bool w)
   textWrap = w;
 }
 
-void Arduboy2::clear() {
+void Arduboy2::clear()
+{
     Arduboy2Base::clear();
     cursor_x = cursor_y = 0;
 }
