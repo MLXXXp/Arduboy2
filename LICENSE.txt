@@ -8,7 +8,7 @@ Software License Agreements
 Licensed under the BSD 3-clause license:
 
 Arduboy2 library:
-Copyright (c) 2017, Scott Allen
+Copyright (c) 2016-2017, Scott Allen
 All rights reserved.
 
 The Arduboy2 library was forked from the Arduboy library:

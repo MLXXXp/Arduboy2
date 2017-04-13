@@ -19,6 +19,11 @@ begin	KEYWORD2
 blank	KEYWORD2
 boot	KEYWORD2
 bootLogo	KEYWORD2
+bootLogoCompressed	KEYWORD2
+bootLogoShell	KEYWORD2
+bootLogoSpritesOverwrite	KEYWORD2
+bootLogoSpritesSelfMasked	KEYWORD2
+bootLogoText	KEYWORD2
 buttonsState	KEYWORD2
 clear	KEYWORD2
 collide	KEYWORD2
@@ -65,8 +70,10 @@ paint8Pixels	KEYWORD2
 paintScreen	KEYWORD2
 pollButtons	KEYWORD2
 pressed	KEYWORD2
+readShowUnitNameFlag	KEYWORD2
 readUnitID	KEYWORD2
 readUnitName	KEYWORD2
+safeMode	KEYWORD2
 saveOnOff	KEYWORD2
 setCursor	KEYWORD2
 setFrameRate	KEYWORD2
@@ -75,9 +82,11 @@ setTextColor	KEYWORD2
 setTextBackground	KEYWORD2
 setTextSize	KEYWORD2
 setTextWrap	KEYWORD2
+SPItransfer	KEYWORD2
 systemButtons	KEYWORD2
 toggle	KEYWORD2
 width	KEYWORD2
+writeShowUnitNameFlag	KEYWORD2
 writeUnitID	KEYWORD2
 writeUnitName	KEYWORD2
 

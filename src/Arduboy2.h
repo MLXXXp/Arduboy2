@@ -32,18 +32,22 @@
  * #endif
  * \endcode
  */
-#define ARDUBOY_LIB_VER 30100
+#define ARDUBOY_LIB_VER 30101
 
 // EEPROM settings
 #define ARDUBOY_UNIT_NAME_LEN 6 /**< The maximum length of the unit name string. */
 
 #define EEPROM_VERSION 0
-#define EEPROM_BRIGHTNESS 1
+#define EEPROM_SYS_FLAGS 1
 #define EEPROM_AUDIO_ON_OFF 2
 #define EEPROM_UNIT_ID 8    // A uint16_t binary unit ID
 #define EEPROM_UNIT_NAME 10 // An up to 6 character unit name. Cannot contain
                             // 0x00 or 0xFF. Lengths less than 6 are padded
                             // with 0x00
+
+// EEPROM_SYS_FLAGS values
+#define SYS_FLAG_UNAME 0    // Display the unit name on the logo screen
+#define SYS_FLAG_UNAME_MASK _BV(SYS_FLAG_UNAME)
 
 /** \brief
  * Start of EEPROM storage space for sketches.
@@ -77,11 +81,6 @@
 #define INVERT 2
 
 #define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
-
-// compare Vcc to 1.1 bandgap
-#define ADC_VOLTAGE (_BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1))
-// compare temperature to 2.5 internal reference and _BV(MUX5)
-#define ADC_TEMP (_BV(REFS0) | _BV(REFS1) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0))
 
 
 /** \brief
@@ -195,16 +194,30 @@ class Arduboy2Base : public Arduboy2Core
   void begin();
 
   /** \brief
-   * Flashlight mode turns the RGB LED and display fully on.
+   * Turn the RGB LED and display fully on to act as a small flashlight/torch.
    *
    * \details
    * Checks if the UP button is pressed and if so turns the RGB LED and all
-   * display pixels fully on. Pressing the DOWN button will exit flashlight mode.
+   * display pixels fully on. If the UP button is detected, this function
+   * does not exit. The Arduboy must be restarted after flashlight mode is used.
    *
    * This function is called by `begin()` and can be called by a sketch
    * after `boot()`.
    *
-   * \see begin() boot()
+   * \note
+   * \parblock
+   * This function also contains code to address a problem with uploading a new
+   * sketch, for sketches that interfere with the bootloader "magic number".
+   * This problem occurs with certain sketches that use large amounts of RAM.
+   * Being in flashlight mode when uploading a new sketch can fix this problem.
+   *
+   * Therefore, for sketches that potentially could cause this problem, and use
+   * `boot()` instead of `begin()`, it is recommended that a call to
+   * `flashlight()` be included after calling `boot()`. If program space is
+   * limited, `safeMode()` can be used instead of `flashlight()`.
+   * \endparblock
+   *
+   * \see begin() boot() safeMode()
    */
   void flashlight();
 
@@ -227,7 +240,7 @@ class Arduboy2Base : public Arduboy2Core
   void systemButtons();
 
   /** \brief
-   * Display the boot logo sequence.
+   * Display the boot logo sequence using `drawBitmap()`.
    *
    * \details
    * This function is called by `begin()` and can be called by a sketch
@@ -245,11 +258,78 @@ class Arduboy2Base : public Arduboy2Core
    * which derived classes can implement to add additional information to the
    * logo screen. The `Arduboy2` class uses this to display the unit name.
    *
-   * \see begin() boot() Arduboy2::bootLogoExtra()
+   * \see begin() boot() Arduboy2::bootLogoExtra() bootLogoShell()
+   * Arduboy2::bootLogoText()
    */
   void bootLogo();
 
-  // Called by bootLogo() to allow derived classes to display additional
+  /** \brief
+   * Display the boot logo sequence using `drawCompressed()`.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative to
+   * `bootLogo()`. This may reduce code size if the sketch itself uses
+   * `drawCompressed()`.
+   *
+   * \see bootLogo() begin() boot()
+   */
+  void bootLogoCompressed();
+
+  /** \brief
+   * Display the boot logo sequence using the `Sprites` class
+   * `drawSelfMasked()` function.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative to
+   * `bootLogo()`. This may reduce code size if the sketch itself uses
+   * `Sprites` class functions.
+   *
+   * \see bootLogo() begin() boot() Sprites
+   */
+  void bootLogoSpritesSelfMasked();
+
+  /** \brief
+   * Display the boot logo sequence using the `Sprites` class
+   * `drawOverwrite()` function.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative to
+   * `bootLogo()`. This may reduce code size if the sketch itself uses
+   * `Sprites` class functions.
+   *
+   * \see bootLogo() begin() boot() Sprites
+   */
+  void bootLogoSpritesOverwrite();
+
+  /** \brief
+   * Display the boot logo sequence using the provided function
+   *
+   * \param drawLogo A reference to a function which will draw the boot logo
+   * at the given Y position.
+   *
+   * \details
+   * This common function executes the sequence to display the boot logo.
+   * It is called by `bootLogo()` and other similar functions which provide it
+   * with a reference to a function which will do the actual drawing of the
+   * logo.
+   *
+   * The prototype for the function provided to draw the logo is:
+
+   * \code
+   * void drawLogo(int16_t y);
+   * \endcode
+   *
+   * The y parameter is the Y offset for the top of the logo. It is expected
+   * that the logo will be 16 pixels high and centered horizontally. This will
+   * result in the logo stopping in the middle of the screen at the end of the
+   * sequence. If the logo height is not 16 pixels, the Y value can be adjusted
+   * to compensate.
+   *
+   * \see bootLogo() boot()
+   */
+  void bootLogoShell(void (*drawLogo)(int16_t));
+
+  // Called by bootLogoShell() to allow derived classes to display additional
   // information after the logo stops scrolling down.
   virtual void bootLogoExtra();
 
@@ -482,7 +562,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * The array must be located in program memory by using the PROGMEM modifier.
    */
-  void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
+  static void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
   /** \brief
    * Draw a bitmap from a horizontally oriented array in program memory.
@@ -520,6 +600,7 @@ class Arduboy2Base : public Arduboy2Core
    * \param sy The Y coordinate of the top left pixel affected by the bitmap.
    * \param bitmap A pointer to the compressed bitmap array in program memory.
    * \param color The color of pixels for bits set to 1 in the bitmap.
+   *              (optional; defaults to WHITE).
    *
    * \details
    * Draw a bitmap starting at the given coordinates from an array that has
@@ -534,7 +615,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * The array must be located in program memory by using the PROGMEM modifier.
    */
-  void drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color = WHITE);
+  static void drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color = WHITE);
 
   /** \brief
    * Get a pointer to the display buffer in RAM.
@@ -693,9 +774,6 @@ class Arduboy2Base : public Arduboy2Core
    * \see setFrameRate() nextFrame()
    */
   int cpuLoad();
-
-  // Useful for getting raw approximate voltage values.
-  uint16_t rawADC(uint8_t adc_bits);
 
   /** \brief
    * Test if the specified buttons are pressed.
@@ -946,6 +1024,38 @@ class Arduboy2Base : public Arduboy2Core
   void writeUnitName(char* name);
 
   /** \brief
+   * Read the "Show Unit Name" flag in system EEPROM.
+   *
+   * \return `true` if the flag is set to indicate that the unit name should
+   * be displayed. `false` if the flag is set to not display the unit name.
+   *
+   * \details
+   * The "Show Unit Name" flag is used to determine whether the system
+   * unit name is to be displayed at the end of the boot logo sequence.
+   * This function returns the value of this flag.
+   *
+   * \see writeShowUnitNameFlag() writeUnitName() readUnitName()
+   * Arduboy2::bootLogoExtra()
+   */
+  bool readShowUnitNameFlag();
+
+  /** \brief
+   * Write the "Show Unit Name" flag in system EEPROM.
+   *
+   * \param val If `true` the flag is set to indicate that the unit name should
+   * be displayed. If `false` the flag is set to not display the unit name.
+   *
+   * \details
+   * The "Show Unit Name" flag is used to determine whether the system
+   * unit name is to be displayed at the end of the boot logo sequence.
+   * This function allows the flag to be saved with the desired value.
+   *
+   * \see readShowUnitNameFlag() writeUnitName() readUnitName()
+   * Arduboy2::bootLogoExtra()
+   */
+  void writeShowUnitNameFlag(bool val);
+
+  /** \brief
    * A counter which is incremented once per frame.
    *
    * \details
@@ -998,6 +1108,12 @@ class Arduboy2Base : public Arduboy2Core
   // helper function for sound enable/disable system control
   void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
 
+  // functions passed to bootLogoShell() to draw the logo
+  static void drawLogoBitmap(int16_t y);
+  static void drawLogoCompressed(int16_t y);
+  static void drawLogoSpritesSelfMasked(int16_t y);
+  static void drawLogoSpritesOverwrite(int16_t y);
+
   // For button handling
   uint8_t currentButtonState;
   uint8_t previousButtonState;
@@ -1006,7 +1122,7 @@ class Arduboy2Base : public Arduboy2Core
   uint8_t eachFrameMillis;
   unsigned long lastFrameStart;
   unsigned long nextFrameStart;
-  bool post_render;
+  bool justRendered;
   uint8_t lastFrameDurationMs;
 };
 
@@ -1070,20 +1186,43 @@ class Arduboy2 : public Print, public Arduboy2Base
    */
 
   /** \brief
+   * Display the boot logo sequence using printed text instead of a bitmap.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative
+   * to `bootLogo()`.
+   *
+   * The Arduboy logo scrolls down from the top of the screen to the center
+   * while the RGB LEDs light in sequence.
+   *
+   * This function is the same as `bootLogo()` except the logo is printed as
+   * text instead of being rendered as a bitmap. It can be used to save some
+   * code space in a case where the sketch is using the Print class functions
+   * to display text. However, the logo will not look as good when printed as
+   * text as it does with the bitmap used by `bootLogo()`.
+   *
+   * \see bootLogo() boot() Arduboy2::bootLogoExtra()
+   */
+  void bootLogoText();
+
+  /** \brief
    * Show the unit name at the bottom of the boot logo screen.
    *
    * \details
-   * This function is called by the `bootLogo()` function.
+   * This function is called by `bootLogoShell()` and `bootlogoText()`.
    * 
    * If a unit name has been saved in system EEPROM, it will be displayed at
    * the bottom of the screen. This function pauses for a short time to allow
    * the name to be seen.
    *
+   * The name is not displayed if the "Show Unit Name" flag is not set.
+   *
    * \note
    * This function would not normally be called directly from within a sketch
    * itself.
    *
-   * \see readUnitName() writeUnitName() bootLogo() begin()
+   * \see readUnitName() writeUnitName() bootLogo() bootLogoShell()
+   * bootLogoText() writeShowUnitNameFlag() begin()
    */
   virtual void bootLogoExtra();
 

@@ -6,40 +6,6 @@
 
 #include "Arduboy2Core.h"
 
-// need to redeclare these here since we declare them static in .h
-volatile uint8_t *Arduboy2Core::csport, *Arduboy2Core::dcport;
-uint8_t Arduboy2Core::cspinmask, Arduboy2Core::dcpinmask;
-
-const uint8_t PROGMEM pinBootProgram[] = {
-  // buttons
-  PIN_LEFT_BUTTON, INPUT_PULLUP,
-  PIN_RIGHT_BUTTON, INPUT_PULLUP,
-  PIN_UP_BUTTON, INPUT_PULLUP,
-  PIN_DOWN_BUTTON, INPUT_PULLUP,
-  PIN_A_BUTTON, INPUT_PULLUP,
-  PIN_B_BUTTON, INPUT_PULLUP,
-
-  // RGB LED (or single blue LED on the DevKit)
-#ifdef ARDUBOY_10
-  RED_LED, INPUT_PULLUP,  // set INPUT_PULLUP to make the pin high when
-  RED_LED, OUTPUT,        //   set to OUTPUT
-  GREEN_LED, INPUT_PULLUP,
-  GREEN_LED, OUTPUT,
-#endif
-  BLUE_LED, INPUT_PULLUP,
-  BLUE_LED, OUTPUT,
-
-  // audio is specifically not included here as those pins are handled
-  // separately by `audio.begin()`, `audio.on()` and `audio.off()` in order
-  // to respect the EEPROM audio settings
-
-  // OLED SPI
-  DC, OUTPUT,
-  CS, OUTPUT,
-  RST, OUTPUT,
-  0
-};
-
 const uint8_t PROGMEM lcdBootProgram[] = {
   // boot defaults are commented out but left here in case they
   // might prove useful for reference
@@ -105,7 +71,7 @@ const uint8_t PROGMEM lcdBootProgram[] = {
 };
 
 
-Arduboy2Core::Arduboy2Core() {}
+Arduboy2Core::Arduboy2Core() { }
 
 void Arduboy2Core::boot()
 {
@@ -114,15 +80,11 @@ void Arduboy2Core::boot()
   setCPUSpeed8MHz();
   #endif
 
-  SPI.begin();
+  // Select the ADC input here so a delay isn't required in initRandomSeed()
+  ADMUX = RAND_SEED_IN_ADMUX;
+
   bootPins();
   bootOLED();
-
-  #ifdef SAFE_MODE
-  if (buttonsState() == (LEFT_BUTTON | UP_BUTTON))
-    safeMode();
-  #endif
-
   bootPowerSaving();
 }
 
@@ -143,64 +105,150 @@ void Arduboy2Core::setCPUSpeed8MHz()
 }
 #endif
 
+// Pins are set to the proper modes and levels for the specific hardware.
+// This routine must be modified if any pins are moved to a different port
 void Arduboy2Core::bootPins()
 {
-  uint8_t pin, mode;
-  const uint8_t *i = pinBootProgram;
+#ifdef ARDUBOY_10
 
-  while(true) {
-    pin = pgm_read_byte(i++);
-    mode = pgm_read_byte(i++);
-    if (pin==0) break;
-    pinMode(pin, mode);
-  }
+  // Port B INPUT_PULLUP or HIGH
+  PORTB |= _BV(RED_LED_BIT) | _BV(GREEN_LED_BIT) | _BV(BLUE_LED_BIT) |
+           _BV(B_BUTTON_BIT);
+  // Port B INPUT or LOW (none)
+  // Port B inputs
+  DDRB &= ~(_BV(B_BUTTON_BIT));
+  // Port B outputs
+  DDRB |= _BV(RED_LED_BIT) | _BV(GREEN_LED_BIT) | _BV(BLUE_LED_BIT) |
+          _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT);
 
-  digitalWrite(RST, HIGH);
-  delay(1);           // VDD (3.3V) goes high at start, lets just chill for a ms
-  digitalWrite(RST, LOW);   // bring reset low
-  delay(10);          // wait 10ms
-  digitalWrite(RST, HIGH);  // bring out of reset
+  // Port C
+  // Speaker: Not set here. Controlled by audio class
+
+  // Port D INPUT_PULLUP or HIGH
+  PORTD |= _BV(CS_BIT);
+  // Port D INPUT or LOW
+  PORTD &= ~(_BV(RST_BIT));
+  // Port D inputs (none)
+  // Port D outputs
+  DDRD |= _BV(RST_BIT) | _BV(CS_BIT) | _BV(DC_BIT);
+
+  // Port E INPUT_PULLUP or HIGH
+  PORTE |= _BV(A_BUTTON_BIT);
+  // Port E INPUT or LOW (none)
+  // Port E inputs
+  DDRE &= ~(_BV(A_BUTTON_BIT));
+  // Port E outputs (none)
+
+  // Port F INPUT_PULLUP or HIGH
+  PORTF |= _BV(LEFT_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
+           _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT);
+  // Port F INPUT or LOW
+  PORTF &= ~(_BV(RAND_SEED_IN_BIT));
+  // Port F inputs
+  DDRF &= ~(_BV(LEFT_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
+            _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
+            _BV(RAND_SEED_IN_BIT));
+  // Port F outputs (none)
+
+#elif defined(AB_DEVKIT)
+
+  // Port B INPUT_PULLUP or HIGH
+  PORTB |= _BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
+           _BV(BLUE_LED_BIT);
+  // Port B INPUT or LOW (none)
+  // Port B inputs
+  DDRB &= ~(_BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT));
+  // Port B outputs
+  DDRB |= _BV(BLUE_LED_BIT) | _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT);
+
+  // Port C INPUT_PULLUP or HIGH
+  PORTE |= _BV(RIGHT_BUTTON_BIT);
+  // Port C INPUT or LOW (none)
+  // Port C inputs
+  DDRE &= ~(_BV(RIGHT_BUTTON_BIT));
+  // Port C outputs (none)
+
+  // Port D INPUT_PULLUP or HIGH
+  PORTD |= _BV(CS_BIT);
+  // Port D INPUT or LOW
+  PORTD &= ~(_BV(RST_BIT));
+  // Port D inputs (none)
+  // Port D outputs
+  DDRD |= _BV(RST_BIT) | _BV(CS_BIT) | _BV(DC_BIT);
+
+  // Port E (none)
+
+  // Port F INPUT_PULLUP or HIGH
+  PORTF |= _BV(A_BUTTON_BIT) | _BV(B_BUTTON_BIT);
+  // Port F INPUT or LOW
+  PORTF &= ~(_BV(RAND_SEED_IN_BIT));
+  // Port F inputs
+  DDRF &= ~(_BV(A_BUTTON_BIT) | _BV(B_BUTTON_BIT) | _BV(RAND_SEED_IN_BIT));
+  // Port F outputs (none)
+  // Speaker: Not set here. Controlled by audio class
+
+#endif
 }
 
 void Arduboy2Core::bootOLED()
 {
-  // setup the ports we need to talk to the OLED
-  csport = portOutputRegister(digitalPinToPort(CS));
-  cspinmask = digitalPinToBitMask(CS);
-  dcport = portOutputRegister(digitalPinToPort(DC));
-  dcpinmask = digitalPinToBitMask(DC);
+  // init SPI
+  // master, mode 0, MSB first, CPU clock / 2 (8MHz)
+  SPCR = _BV(SPE) | _BV(MSTR);
+  SPSR = _BV(SPI2X);
 
-  SPI.setClockDivider(SPI_CLOCK_DIV2);
+  // reset the display
+  delay(2); // reset pin should be low here. let it stay low a while
+  bitSet(RST_PORT, RST_BIT); // set high to come out of reset
+  delay(10); // wait a while
 
-  LCDCommandMode();
+  // select the display (permanently, since nothing else is using SPI)
+  bitClear(CS_PORT, CS_BIT);
+
   // run our customized boot-up command sequence against the
   // OLED to initialize it properly for Arduboy
+  LCDCommandMode();
   for (uint8_t i = 0; i < sizeof(lcdBootProgram); i++) {
-    SPI.transfer(pgm_read_byte(lcdBootProgram + i));
+    SPItransfer(pgm_read_byte(lcdBootProgram + i));
   }
   LCDDataMode();
 }
 
 void Arduboy2Core::LCDDataMode()
 {
-  *dcport |= dcpinmask;
-  *csport &= ~cspinmask;
+  bitSet(DC_PORT, DC_BIT);
 }
 
 void Arduboy2Core::LCDCommandMode()
 {
-  *csport |= cspinmask;
-  *dcport &= ~dcpinmask;
-  *csport &= ~cspinmask;
+  bitClear(DC_PORT, DC_BIT);
 }
 
-
+// Write to the SPI bus (MOSI pin)
+void Arduboy2Core::SPItransfer(uint8_t data)
+{
+  SPDR = data;
+  /*
+   * The following NOP introduces a small delay that can prevent the wait
+   * loop form iterating when running at the maximum speed. This gives
+   * about 10% more speed, even if it seems counter-intuitive. At lower
+   * speeds it is unnoticed.
+   */
+  asm volatile("nop");
+  while (!(SPSR & _BV(SPIF))) { } // wait
+}
 
 void Arduboy2Core::safeMode()
 {
-  blank(); // too avoid random gibberish
-  while (true) {
-    asm volatile("nop \n");
+  if (buttonsState() == UP_BUTTON)
+  {
+    digitalWriteRGB(RED_LED, RGB_ON);
+
+    // prevent the bootloader magic number from being overwritten by timer 0
+    // when a timer variable overlaps the magic number location
+    power_timer0_disable();
+
+    while (true) { }
   }
 }
 
@@ -215,15 +263,11 @@ void Arduboy2Core::idle()
 
 void Arduboy2Core::bootPowerSaving()
 {
-  power_adc_disable();
-  power_usart0_disable();
-  power_twi_disable();
-  // timer 0 is for millis()
-  // timers 1 and 3 are for music and sounds
-  power_timer2_disable();
-  power_usart1_disable();
-  // we need USB, for now (to allow triggered reboots to reprogram)
-  // power_usb_disable()
+  // disable Two Wire Interface (I2C) and the ADC
+  PRR0 = _BV(PRTWI) | _BV(PRADC);
+  // disable USART1
+  PRR1 = _BV(PRUSART1);
+  // All other bits will be written with 0 so will be enabled
 }
 
 uint8_t Arduboy2Core::width() { return WIDTH; }
@@ -235,14 +279,14 @@ uint8_t Arduboy2Core::height() { return HEIGHT; }
 
 void Arduboy2Core::paint8Pixels(uint8_t pixels)
 {
-  SPI.transfer(pixels);
+  SPItransfer(pixels);
 }
 
 void Arduboy2Core::paintScreen(const uint8_t *image)
 {
   for (int i = 0; i < (HEIGHT*WIDTH)/8; i++)
   {
-    SPI.transfer(pgm_read_byte(image + i));
+    SPItransfer(pgm_read_byte(image + i));
   }
 }
 
@@ -288,13 +332,13 @@ void Arduboy2Core::paintScreen(uint8_t image[], bool clear)
 void Arduboy2Core::blank()
 {
   for (int i = 0; i < (HEIGHT*WIDTH)/8; i++)
-    SPI.transfer(0x00);
+    SPItransfer(0x00);
 }
 
 void Arduboy2Core::sendLCDCommand(uint8_t command)
 {
   LCDCommandMode();
-  SPI.transfer(command);
+  SPItransfer(command);
   LCDDataMode();
 }
 
@@ -334,19 +378,48 @@ void Arduboy2Core::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
   analogWrite(GREEN_LED, 255 - green);
   analogWrite(BLUE_LED, 255 - blue);
 #elif defined(AB_DEVKIT)
-  // only blue on devkit
-  digitalWrite(BLUE_LED, ~blue);
+  // only blue on DevKit, which is not PWM capable
+  (void)red;    // parameter unused
+  (void)green;  // parameter unused
+  bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, blue ? RGB_ON : RGB_OFF);
 #endif
 }
 
 void Arduboy2Core::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
 #ifdef ARDUBOY_10
-  digitalWrite(RED_LED, red);
-  digitalWrite(GREEN_LED, green);
-  digitalWrite(BLUE_LED, blue);
+  bitWrite(RED_LED_PORT, RED_LED_BIT, red);
+  bitWrite(GREEN_LED_PORT, GREEN_LED_BIT, green);
+  bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, blue);
 #elif defined(AB_DEVKIT)
-  digitalWrite(BLUE_LED, blue);
+  // only blue on DevKit
+  (void)red;    // parameter unused
+  (void)green;  // parameter unused
+  bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, blue);
+#endif
+}
+
+void Arduboy2Core::digitalWriteRGB(uint8_t color, uint8_t val)
+{
+#ifdef ARDUBOY_10
+  if (color == RED_LED)
+  {
+    bitWrite(RED_LED_PORT, RED_LED_BIT, val);
+  }
+  else if (color == GREEN_LED)
+  {
+    bitWrite(GREEN_LED_PORT, GREEN_LED_BIT, val);
+  }
+  else if (color == BLUE_LED)
+  {
+    bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, val);
+  }
+#elif defined(AB_DEVKIT)
+  // only blue on DevKit
+  if (color == BLUE_LED)
+  {
+    bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, val);
+  }
 #endif
 }
 

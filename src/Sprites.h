@@ -31,16 +31,21 @@
  * various poses for a running or jumping character. By specifying a different
  * frame each time the sprite is drawn, it can be animated.
  *
- * Each array begins with values for the width and height of the sprite, in
- * pixels. The width can be any value. The height must be a multiple of
+ * Each image array begins with values for the width and height of the sprite,
+ * in pixels. The width can be any value. The height must be a multiple of
  * 8 pixels, but with proper masking, a sprite of any height can be created.
  *
- * After the width and height values, the remainder of the array contains the
- * image and/or mask data for each frame. Each byte represents a vertical
- * column of 8 pixels with the least significant bit (bit 0) at the top.
- * The bytes are drawn as 8 pixel high rows from left to right, top to bottom.
- * When the end of a row is reached, as specified by the width value, the next
- * byte in the array will be the start of the next row.
+ * For a separate mask array, as is used with `drawExternalMask()`, the width
+ * and height are not included but must contain data of the same dimensions
+ * as the corresponding image array.
+ *
+ * Following the width and height values for an image array, or the from the
+ * beginning of a separate mask array, the array contains the image and/or
+ * mask data for each frame. Each byte represents a vertical column of 8 pixels
+ * with the least significant bit (bit 0) at the top. The bytes are drawn as
+ * 8 pixel high rows from left to right, top to bottom. When the end of a row
+ * is reached, as specified by the width value, the next byte in the array will
+ * be the start of the next row.
  *
  * Data for each frame after the first one immediately follows the previous
  * frame. Frame numbers start at 0.
@@ -82,8 +87,8 @@ class Sprites
      *     ..O..  OOOOO  OOOOO   ..O..
      *     .....  .OOO.  OOOOO   O...O
      */
-    void drawExternalMask(int16_t x, int16_t y, const uint8_t *bitmap,
-                          const uint8_t *mask, uint8_t frame, uint8_t mask_frame);
+    static void drawExternalMask(int16_t x, int16_t y, const uint8_t *bitmap,
+                                 const uint8_t *mask, uint8_t frame, uint8_t mask_frame);
 
     /** \brief
      * Draw a sprite using an array containing both image and mask values.
@@ -119,7 +124,7 @@ class Sprites
      *     ..O..  OOOOO  OOOOO   ..O..
      *     .....  .OOO.  OOOOO   O...O
      */
-    void drawPlusMask(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
+    static void drawPlusMask(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
     /** \brief
      * Draw a sprite by replacing the existing content completely.
@@ -150,7 +155,7 @@ class Sprites
      *     ..O..  OOOOO   ..O..
      *     .....  OOOOO   .....
      */
-    void drawOverwrite(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
+    static void drawOverwrite(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
     /** \brief
      * "Erase" a sprite.
@@ -181,7 +186,7 @@ class Sprites
      *     ..O..  OOOOO   OO.OO
      *     .....  OOOOO   OOOOO
      */
-    void drawErase(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
+    static void drawErase(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
     /** \brief
      * Draw a sprite using only the bits set to 1.
@@ -211,20 +216,20 @@ class Sprites
      *     ..O..  OOOOO   OOOOO
      *     .....  OOOOO   OOOOO
      */
-    void drawSelfMasked(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
+    static void drawSelfMasked(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
     // Master function. Needs to be abstracted into separate function for
     // every render type.
     // (Not officially part of the API)
-    void draw(int16_t x, int16_t y,
-              const uint8_t *bitmap, uint8_t frame,
-              const uint8_t *mask, uint8_t sprite_frame,
-              uint8_t drawMode);
+    static void draw(int16_t x, int16_t y,
+                     const uint8_t *bitmap, uint8_t frame,
+                     const uint8_t *mask, uint8_t sprite_frame,
+                     uint8_t drawMode);
 
     // (Not officially part of the API)
-    void drawBitmap(int16_t x, int16_t y,
-                    const uint8_t *bitmap, const uint8_t *mask,
-                    int8_t w, int8_t h, uint8_t draw_mode);
+    static void drawBitmap(int16_t x, int16_t y,
+                           const uint8_t *bitmap, const uint8_t *mask,
+                           uint8_t w, uint8_t h, uint8_t draw_mode);
 };
 
 #endif

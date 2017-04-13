@@ -1,5 +1,9 @@
 # Arduboy2 Library
 
+The Arduboy2 library is maintained in a git repository hosted on [GitHub](https://github.com/) at:
+
+https://github.com/MLXXXp/Arduboy2
+
 The **Arduboy2** library is a fork of the [Arduboy library](https://github.com/Arduboy/Arduboy), which provides a standard *application programming interface* (API) to the display, buttons and other hardware of the Arduino based [Arduboy miniature game system](https://www.arduboy.com/).
 
 The name *Arduboy2* doesn't indicate that it's for a new "next generation" of the Arduboy hardware. The name was changed so it can coexist in the Arduino IDE with the current *Arduboy* library, without conflict. This way, existing sketches can continue to use the *Arduboy* library and class, without changes, while new sketches can be written (or old ones modified) to use and take advantage of the capabilities of the *Arduboy2* class and library.
@@ -47,7 +51,7 @@ For developers who wish to quickly begin testing, or impatient users who want to
 
 ### "Flashlight" mode
 
-If the *UP* button is pressed and held when the Arduboy is powered on, it enters *flashlight* mode. This turns the RGB LED fully on, and all the pixels of the screen are lit, resulting in a bright white light suitable as a small flashlight. (For an incorrect RGB LED, only the screen will light). To exit *flashlight* mode, press the *DOWN* button to continue with the sketch.
+If the *UP* button is pressed and held when the Arduboy is powered on, it enters *flashlight* mode. This turns the RGB LED fully on, and all the pixels of the screen are lit, resulting in a bright white light suitable as a small flashlight. (For an incorrect RGB LED, only the screen will light). To exit *flashlight* mode the Arduboy must be restarted.
 
 *Flashlight* mode is also sometimes useful to allow uploading of new sketches, in case the sketch currently loaded uses a large amount of RAM which creates a bootloader problem.
 
@@ -204,6 +208,12 @@ For example: Let's say a sketch has its own code to enable, disable and save the
 ```
 
 This saves whatever code *blank()*, *systemButtons()* and *bootLogo()* would use.
+
+There are a few functions provided that are roughly equivalent to the standard functions used by *begin()* but which use less code space.
+
+- *bootLogoCompressed()*, *bootLogoSpritesSelfMasked()* and *bootLogoSpritesOverwrite()* will do the same as *bootLogo()* but will use *drawCompressed()*, or *Sprites* class *drawSelfMasked()* or *drawOverwrite()*, functions respectively, instead of *drawBitmask()*, to render the logo. If the sketch uses one of these functions, then using the boot logo function that also uses it may reduce code size. It's best to try each of them to see which one produces the smallest size.
+- *bootLogoText()* can be used in place *bootLogo()* in the case where the sketch uses text functions. It renders the logo as text instead of as a bitmap (so doesn't look as good).
+- *safeMode()* can be used in place of *flashlight()* for cases where it's needed to allow uploading a new sketch when the bootloader "magic key" problem is an issue. It only lights the red RGB LED, so you don't get the bright light that is the primary purpose of *flashlight()*.
 
 ----------
 
