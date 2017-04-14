@@ -169,7 +169,7 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
     }
   }
 
-  delay(750);
+  delay(700);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
 
   bootLogoExtra();
@@ -1021,7 +1021,6 @@ void Arduboy2Base::writeUnitName(char* name)
     EEPROM.update(dest, done ? 0x00 : name[src]);
     dest++;
   }
-
 }
 
 bool Arduboy2Base::readShowUnitNameFlag()
