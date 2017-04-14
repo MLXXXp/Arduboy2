@@ -1161,7 +1161,7 @@ void Arduboy2::drawChar
 {
   uint8_t line;
   bool draw_background = bg != color;
-  uint8_t *bitmap = font + c*5;
+  const unsigned char* bitmap = font + c * 5;
 
   if ((x >= WIDTH) ||              // Clip right
       (y >= HEIGHT) ||             // Clip bottom
@@ -1172,14 +1172,14 @@ void Arduboy2::drawChar
     return;
   }
 
-  for (uint8_t i=0; i<6; i++ )
+  for (uint8_t i = 0; i < 6; i++ )
   {
     line = pgm_read_byte(bitmap++);
     if (i == 5) {
       line = 0x0;
     }
 
-    for (int8_t j = 0; j<8; j++)
+    for (uint8_t j = 0; j < 8; j++)
     {
       uint8_t draw_color = (line & 0x1) ? color : bg;
 
