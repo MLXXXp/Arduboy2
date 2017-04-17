@@ -676,6 +676,19 @@ class Arduboy2Core
      */
     void static safeMode();
 
+    /** \brief
+     * Delay for the number of milliseconds, specified as a 16 bit value.
+     *
+     * \param ms The delay in milliseconds.
+     *
+     * \details
+     * This function works the same as the Arduino `delay()` function except
+     * the provided value is 16 bits long, so the maximum delay allowed is
+     * 65535 milliseconds (about 65.5 seconds). Using this function instead
+     * of Arduino `delay()` will save a few bytes of code.
+     */
+    void static delayShort(uint16_t ms) __attribute__ ((noinline));
+
   protected:
     // internals
     void static setCPUSpeed8MHz();

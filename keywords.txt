@@ -28,6 +28,7 @@ buttonsState	KEYWORD2
 clear	KEYWORD2
 collide	KEYWORD2
 cpuLoad	KEYWORD2
+delayShort	KEYWORD2
 digitalWriteRGB	KEYWORD2
 display	KEYWORD2
 displayOff	KEYWORD2

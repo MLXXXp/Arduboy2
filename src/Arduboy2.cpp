@@ -48,7 +48,7 @@ void Arduboy2Base::begin()
 
   // wait for all buttons to be released
   do {
-    delay(50);
+    delayShort(50);
   } while (buttonsState());
 }
 
@@ -77,7 +77,7 @@ void Arduboy2Base::systemButtons()
     digitalWriteRGB(BLUE_LED, RGB_ON); // turn on blue LED
     sysCtrlSound(UP_BUTTON + B_BUTTON, GREEN_LED, 0xff);
     sysCtrlSound(DOWN_BUTTON + B_BUTTON, RED_LED, 0);
-    delay(200);
+    delayShort(200);
   }
 
   digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
@@ -87,10 +87,10 @@ void Arduboy2Base::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal)
 {
   if (pressed(buttons)) {
     digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
-    delay(200);
+    delayShort(200);
     digitalWriteRGB(led, RGB_ON); // turn on "acknowledge" LED
     EEPROM.update(EEPROM_AUDIO_ON_OFF, eeVal);
-    delay(500);
+    delayShort(500);
     digitalWriteRGB(led, RGB_OFF); // turn off "acknowledge" LED
 
     while (pressed(buttons)) { } // Wait for button release
@@ -161,15 +161,15 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
     clear();
     (*drawLogo)(y); // call the function that actually draws the logo
     display();
-    delay(27);
+    delayShort(27);
     // longer delay post boot, we put it inside the loop to
     // save the flash calling clear/delay again outside the loop
     if (y==-16) {
-      delay(250);
+      delayShort(250);
     }
   }
 
-  delay(700);
+  delayShort(700);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
 
   bootLogoExtra();
@@ -1087,15 +1087,15 @@ void Arduboy2::bootLogoText()
     cursor_y = y;
     print("ARDUBOY");
     display();
-    delay(27);
+    delayShort(27);
     // longer delay post boot, we put it inside the loop to
     // save the flash calling clear/delay again outside the loop
     if (y==-16) {
-      delay(250);
+      delayShort(250);
     }
   }
 
-  delay(750);
+  delayShort(700);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
   textSize = 1;
 
@@ -1127,7 +1127,7 @@ void Arduboy2::bootLogoExtra()
     while (i < EEPROM_UNIT_NAME + ARDUBOY_UNIT_NAME_LEN);
 
     display();
-    delay(1000);
+    delayShort(1000);
   }
 }
 

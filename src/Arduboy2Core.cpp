@@ -194,9 +194,9 @@ void Arduboy2Core::bootPins()
 void Arduboy2Core::bootOLED()
 {
   // reset the display
-  delay(5); // reset pin should be low here. let it stay low a while
+  delayShort(5); // reset pin should be low here. let it stay low a while
   bitSet(RST_PORT, RST_BIT); // set high to come out of reset
-  delay(5); // wait a while
+  delayShort(5); // wait a while
 
   // select the display (permanently, since nothing else is using SPI)
   bitClear(CS_PORT, CS_BIT);
@@ -281,7 +281,7 @@ void Arduboy2Core::displayOff()
   SPItransfer(0xAE); // display off
   SPItransfer(0x8D); // charge pump:
   SPItransfer(0x10); //   disable
-  delay(250);
+  delayShort(250);
   bitClear(RST_PORT, RST_BIT); // set display reset pin low (reset state)
 }
 
@@ -469,3 +469,10 @@ uint8_t Arduboy2Core::buttonsState()
 
   return buttons;
 }
+
+// delay in ms with 16 bit duration
+void Arduboy2Core::delayShort(uint16_t ms)
+{
+  delay((unsigned long) ms);
+}
+
