@@ -30,6 +30,8 @@ collide	KEYWORD2
 cpuLoad	KEYWORD2
 digitalWriteRGB	KEYWORD2
 display	KEYWORD2
+displayOff	KEYWORD2
+displayOn	KEYWORD2
 drawBitmap	KEYWORD2
 drawChar	KEYWORD2
 drawCircle	KEYWORD2
