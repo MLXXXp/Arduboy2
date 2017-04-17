@@ -309,7 +309,7 @@ class Arduboy2Core
      *
      * \see LCDDataMode() LCDCommandMode() sendLCDCommand()
      */
-    void static inline SPItransfer(uint8_t data);
+    void static SPItransfer(uint8_t data);
 
     /** \brief
      * Get the width of the display in pixels.
@@ -649,10 +649,10 @@ class Arduboy2Core
 
   protected:
     // internals
-    void static inline setCPUSpeed8MHz() __attribute__((always_inline));
-    void static inline bootOLED() __attribute__((always_inline));
-    void static inline bootPins() __attribute__((always_inline));
-    void static inline bootPowerSaving() __attribute__((always_inline));
+    void static setCPUSpeed8MHz();
+    void static bootOLED();
+    void static bootPins();
+    void static bootPowerSaving();
 };
 
 #endif
