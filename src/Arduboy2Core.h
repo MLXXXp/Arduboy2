@@ -312,6 +312,35 @@ class Arduboy2Core
     void static SPItransfer(uint8_t data);
 
     /** \brief
+     * Turn the display off.
+     *
+     * \details
+     * The display will clear and be put into a low power mode. This can be
+     * used to extend battery life when a game is paused or when a sketch
+     * doesn't require anything to be displayed for a relatively long period
+     * of time.
+     *
+     * \see displayOn()
+     */
+    void static displayOff();
+
+    /** \brief
+     * Turn the display on.
+     *
+     * \details
+     * Used to power up and reinitialize the display after calling
+     * `displayOff()`.
+     *
+     * \note
+     * The previous call to `displayOff()` will have caused the display's
+     * buffer contents to be lost. The display will have to be re-painted,
+     * which is usually done by calling `display()`.
+     *
+     * \see displayOff()
+     */
+    void static displayOn();
+
+    /** \brief
      * Get the width of the display in pixels.
      *
      * \return The width of the display in pixels.
@@ -650,6 +679,7 @@ class Arduboy2Core
   protected:
     // internals
     void static setCPUSpeed8MHz();
+    void static bootSPI();
     void static bootOLED();
     void static bootPins();
     void static bootPowerSaving();

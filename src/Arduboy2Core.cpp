@@ -84,6 +84,7 @@ void Arduboy2Core::boot()
   ADMUX = RAND_SEED_IN_ADMUX;
 
   bootPins();
+  bootSPI();
   bootOLED();
   bootPowerSaving();
 }
@@ -192,15 +193,10 @@ void Arduboy2Core::bootPins()
 
 void Arduboy2Core::bootOLED()
 {
-  // init SPI
-  // master, mode 0, MSB first, CPU clock / 2 (8MHz)
-  SPCR = _BV(SPE) | _BV(MSTR);
-  SPSR = _BV(SPI2X);
-
   // reset the display
-  delay(2); // reset pin should be low here. let it stay low a while
+  delay(5); // reset pin should be low here. let it stay low a while
   bitSet(RST_PORT, RST_BIT); // set high to come out of reset
-  delay(10); // wait a while
+  delay(5); // wait a while
 
   // select the display (permanently, since nothing else is using SPI)
   bitClear(CS_PORT, CS_BIT);
@@ -222,6 +218,14 @@ void Arduboy2Core::LCDDataMode()
 void Arduboy2Core::LCDCommandMode()
 {
   bitClear(DC_PORT, DC_BIT);
+}
+
+// Initialize the SPI interface for the display
+void Arduboy2Core::bootSPI()
+{
+// master, mode 0, MSB first, CPU clock / 2 (8MHz)
+  SPCR = _BV(SPE) | _BV(MSTR);
+  SPSR = _BV(SPI2X);
 }
 
 // Write to the SPI bus (MOSI pin)
@@ -268,6 +272,23 @@ void Arduboy2Core::bootPowerSaving()
   // disable USART1
   PRR1 = _BV(PRUSART1);
   // All other bits will be written with 0 so will be enabled
+}
+
+// Shut down the display
+void Arduboy2Core::displayOff()
+{
+  LCDCommandMode();
+  SPItransfer(0xAE); // display off
+  SPItransfer(0x8D); // charge pump:
+  SPItransfer(0x10); //   disable
+  delay(250);
+  bitClear(RST_PORT, RST_BIT); // set display reset pin low (reset state)
+}
+
+// Restart the display after a displayOff()
+void Arduboy2Core::displayOn()
+{
+  bootOLED();
 }
 
 uint8_t Arduboy2Core::width() { return WIDTH; }
