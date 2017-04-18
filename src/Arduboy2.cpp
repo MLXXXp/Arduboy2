@@ -267,6 +267,14 @@ void Arduboy2Base::clear()
   fillScreen(BLACK);
 }
 
+
+// Used by drawPixel to help with left bitshifting since AVR has no
+// multiple bit shift instruction.  We can bit shift from a lookup table
+// in flash faster than we can calculate the bit shifts on the CPU.
+PROGMEM const unsigned char bitshift_left[] = {
+  1, 2, 4, 8, 16, 32, 64, 128
+};
+
 void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
 {
   #ifdef PIXEL_SAFE_MODE
@@ -276,14 +284,41 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
   }
   #endif
 
-  uint8_t row = (uint8_t)y / 8;
-  if (color)
-  {
-    sBuffer[(row*WIDTH) + (uint8_t)x] |=   _BV((uint8_t)y % 8);
-  }
-  else
-  {
-    sBuffer[(row*WIDTH) + (uint8_t)x] &= ~ _BV((uint8_t)y % 8);
+  uint16_t row_offset;
+  uint8_t bit;
+
+  // uint8_t row = (uint8_t)y / 8;
+  // row_offset = (row*WIDTH) + (uint8_t)x;
+  // bit = _BV((uint8_t)y % 8);
+
+  // the above math can also be rewritten more simply as;
+  //   (y * WIDTH/8) & ~0b01111111 + (uint8_t)x;
+  // which is what the below assembler does
+  asm volatile(
+    "mul %[width_offset],%[y]\n"
+    "movw %[row_offset], r0\n"
+    "andi %A[row_offset], 0x80\n" // row_offset &= (~0b01111111);
+    "clr __zero_reg__\n"
+    "add %A[row_offset], %[x]\n"
+    // mask for only 0-7
+    "andi %[y], 0x07\n"
+    // Z += y
+    "add r30, %[y]\n"
+    "adc r31, __zero_reg__\n"
+    // load correct bitshift from program RAM
+    "lpm %[bit], Z\n"
+    : [row_offset] "=x&" (row_offset), // upper register (ANDI)
+      [bit] "=r" (bit)
+    : [width_offset] "r" ((uint8_t)(WIDTH/8)),
+      [x] "r" ((uint8_t)x),
+      [y] "a" ((uint8_t)y), // upper register (ANDI)
+      "z" (bitshift_left)
+    : "r1", "r0");
+
+  if (color) {
+    sBuffer[row_offset] |=   bit;
+  } else {
+    sBuffer[row_offset] &= ~ bit;
   }
 }
 
