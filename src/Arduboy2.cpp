@@ -308,11 +308,11 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
     "adc r31, __zero_reg__\n"
     // load correct bitshift from program RAM
     "lpm %[bit], Z\n"
-    : [row_offset] "=a" (row_offset), // upper register (ANDI)
+    : [row_offset] "=x&" (row_offset), // upper register (ANDI)
       [bit] "=r" (bit)
     : [width_offset] "r" ((uint8_t)(WIDTH/8)),
-      [y] "a" ((uint8_t)y), // upper register (ANDI)
       [x] "r" ((uint8_t)x),
+      [y] "a" ((uint8_t)y), // upper register (ANDI)
       "z" (bitshift_left)
     : "r1", "r0");
 
