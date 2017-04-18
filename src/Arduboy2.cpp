@@ -300,7 +300,6 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
     "andi %A[row_offset], 0x80\n" // row_offset &= (~0b01111111);
     "clr __zero_reg__\n"
     "add %A[row_offset], %[x]\n"
-    "adc %B[row_offset], __zero_reg__\n"
     // mask for only 0-7
     "andi %[y], 0x07\n"
     // Z += y
