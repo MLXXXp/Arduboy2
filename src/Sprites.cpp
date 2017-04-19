@@ -252,8 +252,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
       asm volatile(
         "push r28\n" // save Y
         "push r29\n"
-        "mov r28, %A[buffer_page2_ofs]\n" // Y = buffer page 2 offset
-        "mov r29, %B[buffer_page2_ofs]\n"
+        "movw r28, %[buffer_page2_ofs]\n" // Y = buffer page 2 offset
         "loop_y:\n"
         "loop_x:\n"
         // load bitmap and mask data
@@ -264,11 +263,9 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         "tst %[yOffset]\n"
         "breq skip_shifting\n"
         "mul %A[bitmap_data], %[mul_amt]\n"
-        "mov %A[bitmap_data], r0\n"
-        "mov %B[bitmap_data], r1\n"
+        "movw %[bitmap_data], r0\n"
         "mul %A[mask_data], %[mul_amt]\n"
-        "mov %A[mask_data], r0\n"
-        // "mov %B[mask_data], r1\n"
+        "movw %[mask_data], r0\n"
 
 
         // SECOND PAGE
@@ -277,8 +274,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         "brge end_second_page\n"
         // then
         "ld %[data], Y\n"
-        // "com %B[mask_data]\n" // invert high byte of mask
-        "com r1\n"
+        "com %B[mask_data]\n" // invert high byte of mask
         "and %[data], r1\n" // %B[mask_data]
         "or %[data], %B[bitmap_data]\n"
         // update buffer, increment
@@ -333,7 +329,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         "clr __zero_reg__\n" // just in case
         : [xi] "+&r" (xi),
         [yi] "+&r" (yi),
-        [sRow] "+&a" (sRow), // CPI requires an upper register
+        [sRow] "+&d" (sRow), // CPI requires an upper register
         [data] "+&r" (data),
         [mask_data] "+&r" (mask_data),
         [bitmap_data] "+&r" (bitmap_data)
