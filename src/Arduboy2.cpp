@@ -292,7 +292,7 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
   // bit = _BV((uint8_t)y % 8);
 
   // the above math can also be rewritten more simply as;
-  //   (y * WIDTH/8) & ~0b01111111 + (uint8_t)x;
+  //   row_offset = (y * WIDTH/8) & ~0b01111111 + (uint8_t)x;
   // which is what the below assembler does
   asm volatile(
     "mul %[width_offset],%[y]\n"
@@ -311,9 +311,9 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
       [bit] "=r" (bit)
     : [width_offset] "r" ((uint8_t)(WIDTH/8)),
       [x] "r" ((uint8_t)x),
-      [y] "a" ((uint8_t)y), // upper register (ANDI)
+      [y] "d" ((uint8_t)y), // upper register (ANDI)
       "z" (bitshift_left)
-    : "r1", "r0");
+    :);
 
   if (color) {
     sBuffer[row_offset] |=   bit;
