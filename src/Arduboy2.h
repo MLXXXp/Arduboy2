@@ -38,12 +38,16 @@
 #define ARDUBOY_UNIT_NAME_LEN 6 /**< The maximum length of the unit name string. */
 
 #define EEPROM_VERSION 0
-#define EEPROM_BRIGHTNESS 1
+#define EEPROM_SYS_FLAGS 1
 #define EEPROM_AUDIO_ON_OFF 2
 #define EEPROM_UNIT_ID 8    // A uint16_t binary unit ID
 #define EEPROM_UNIT_NAME 10 // An up to 6 character unit name. Cannot contain
                             // 0x00 or 0xFF. Lengths less than 6 are padded
                             // with 0x00
+
+// EEPROM_SYS_FLAGS values
+#define SYS_FLAG_UNAME 0    // Display the unit name on the logo screen
+#define SYS_FLAG_UNAME_MASK _BV(SYS_FLAG_UNAME)
 
 /** \brief
  * Start of EEPROM storage space for sketches.
@@ -77,11 +81,6 @@
 #define INVERT 2
 
 #define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
-
-// compare Vcc to 1.1 bandgap
-#define ADC_VOLTAGE (_BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1))
-// compare temperature to 2.5 internal reference and _BV(MUX5)
-#define ADC_TEMP (_BV(REFS0) | _BV(REFS1) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0))
 
 
 /** \brief
@@ -195,16 +194,30 @@ class Arduboy2Base : public Arduboy2Core
   void begin();
 
   /** \brief
-   * Flashlight mode turns the RGB LED and display fully on.
+   * Turn the RGB LED and display fully on to act as a small flashlight/torch.
    *
    * \details
    * Checks if the UP button is pressed and if so turns the RGB LED and all
-   * display pixels fully on. Pressing the DOWN button will exit flashlight mode.
+   * display pixels fully on. If the UP button is detected, this function
+   * does not exit. The Arduboy must be restarted after flashlight mode is used.
    *
    * This function is called by `begin()` and can be called by a sketch
    * after `boot()`.
    *
-   * \see begin() boot()
+   * \note
+   * \parblock
+   * This function also contains code to address a problem with uploading a new
+   * sketch, for sketches that interfere with the bootloader "magic number".
+   * This problem occurs with certain sketches that use large amounts of RAM.
+   * Being in flashlight mode when uploading a new sketch can fix this problem.
+   *
+   * Therefore, for sketches that potentially could cause this problem, and use
+   * `boot()` instead of `begin()`, it is recommended that a call to
+   * `flashlight()` be included after calling `boot()`. If program space is
+   * limited, `safeMode()` can be used instead of `flashlight()`.
+   * \endparblock
+   *
+   * \see begin() boot() safeMode()
    */
   void flashlight();
 
@@ -245,7 +258,7 @@ class Arduboy2Base : public Arduboy2Core
    * which derived classes can implement to add additional information to the
    * logo screen. The `Arduboy2` class uses this to display the unit name.
    *
-   * \see begin() boot() Arduboy2::bootLogoExtra()
+   * \see begin() boot() Arduboy2::bootLogoExtra() Arduboy2::bootLogoText()
    */
   void bootLogo();
 
@@ -694,9 +707,6 @@ class Arduboy2Base : public Arduboy2Core
    */
   int cpuLoad();
 
-  // Useful for getting raw approximate voltage values.
-  uint16_t rawADC(uint8_t adc_bits);
-
   /** \brief
    * Test if the specified buttons are pressed.
    *
@@ -946,6 +956,38 @@ class Arduboy2Base : public Arduboy2Core
   void writeUnitName(char* name);
 
   /** \brief
+   * Read the "Show Unit Name" flag in system EEPROM.
+   *
+   * \return `true` if the flag is set to indicate that the unit name should
+   * be displayed. `false` if the flag is set to not display the unit name.
+   *
+   * \details
+   * The "Show Unit Name" flag is used to determine whether the system
+   * unit name is to be displayed at the end of the boot logo sequence.
+   * This function returns the value of this flag.
+   *
+   * \see writeShowUnitNameFlag() writeUnitName() readUnitName()
+   * Arduboy2::bootLogoExtra()
+   */
+  bool readShowUnitNameFlag();
+
+  /** \brief
+   * Write the "Show Unit Name" flag in system EEPROM.
+   *
+   * \param val If `true` the flag is set to indicate that the unit name should
+   * be displayed. If `false` the flag is set to not display the unit name.
+   *
+   * \details
+   * The "Show Unit Name" flag is used to determine whether the system
+   * unit name is to be displayed at the end of the boot logo sequence.
+   * This function allows the flag to be saved with the desired value.
+   *
+   * \see readShowUnitNameFlag() writeUnitName() readUnitName()
+   * Arduboy2::bootLogoExtra()
+   */
+  void writeShowUnitNameFlag(bool val);
+
+  /** \brief
    * A counter which is incremented once per frame.
    *
    * \details
@@ -1070,20 +1112,43 @@ class Arduboy2 : public Print, public Arduboy2Base
    */
 
   /** \brief
+   * Display the boot logo sequence using printed text instead of a bitmap.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative
+   * to `bootLogo()`.
+   *
+   * The Arduboy logo scrolls down from the top of the screen to the center
+   * while the RGB LEDs light in sequence.
+   *
+   * This function is the same as `bootLogo()` except the logo is printed as
+   * text instead of being rendered as a bitmap. It can be used to save some
+   * code space in a case where the sketch is using the Print class functions
+   * to display text. However, the logo will not look as good when printed as
+   * text as it does with the bitmap used by `bootLogo()`.
+   *
+   * \see bootLogo() boot() Arduboy2::bootLogoExtra()
+   */
+  void bootLogoText();
+
+  /** \brief
    * Show the unit name at the bottom of the boot logo screen.
    *
    * \details
-   * This function is called by the `bootLogo()` function.
+   * This function is called by `bootLogo()` and `bootlogoText()`.
    * 
    * If a unit name has been saved in system EEPROM, it will be displayed at
    * the bottom of the screen. This function pauses for a short time to allow
    * the name to be seen.
    *
+   * The name is not displayed if the "Show Unit Name" flag is not set.
+   *
    * \note
    * This function would not normally be called directly from within a sketch
    * itself.
    *
-   * \see readUnitName() writeUnitName() bootLogo() begin()
+   * \see readUnitName() writeUnitName() bootLogo() bootLogoText()
+   *  writeShowUnitNameFlag() begin()
    */
   virtual void bootLogoExtra();
 

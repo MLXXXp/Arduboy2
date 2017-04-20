@@ -14,7 +14,7 @@
   ----------------------------------------------------------------------------
 */
 
-// Version 1.0
+// Version 2.0
 
 /*
 ------------------------------------------------------------------------------
@@ -61,14 +61,20 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // All the constant stings
 const char StrName[] PROGMEM = "NAME";
 const char StrID[] PROGMEM = "ID";
+const char StrYes[] PROGMEM = "YES";
+const char StrNo[] PROGMEM = "NO";
 const char StrSaveQ[] PROGMEM = "SAVE?";
+const char StrSaved[] PROGMEM = "SAVED";
+const char StrShowNameQ1[] PROGMEM = "Show Unit Name";
+const char StrShowNameQ2[] PROGMEM = "on logo screen?";
 const char StrBtnChangeName[] PROGMEM = "UP:change Unit Name";
 const char StrBtnChangeID[] PROGMEM = "DOWN:change Unit ID";
+const char StrBtnShowName[] PROGMEM = "LEFT:set \"show name\"";
 const char StrBtnMenu[] PROGMEM = "A:menu";
 const char StrBtnSave[] PROGMEM = "B:save";
 const char StrBtnYes[] PROGMEM = "A:yes";
 const char StrBtnNo[] PROGMEM = "B:no";
-const char StrBtnLogo[] PROGMEM = "LEFT:show boot logo";
+const char StrBtnTestLogo[] PROGMEM = "DOWN:test boot logo";
 const char StrHex[] PROGMEM = "hex";
 const char StrDecimal[] PROGMEM = "decimal";
 
@@ -91,8 +97,8 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define MENU_ID_DECIMAL_X (centerStrLen(5) + (WIDTH / 4)) 
 #define MENU_ID_Y (MENU_HEADINGS_Y + CHAR_HEIGHT + 1)
 
-#define MENU_BTN_LOGO_X 0
-#define MENU_BTN_LOGO_Y 56
+#define MENU_BTN_SHOW_NAME_X 0
+#define MENU_BTN_SHOW_NAME_Y 56
 
 
 #define NAME_TITLE_X centerStr_P(StrName)
@@ -151,13 +157,32 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define ID_SAVE_X (ID_SAVE_Q_X + ((strlen_P(StrSaveQ) * CHAR_WIDTH) + CHAR_WIDTH))
 #define ID_SAVE_Y (ID_LARGE_Y + 1)
 
+#define SHOW_NAME_BTN_MENU_X 0
+#define SHOW_NAME_BTN_MENU_Y 0
+#define SHOW_NAME_BTN_SAVE_X rightStr_P(StrBtnSave)
+#define SHOW_NAME_BTN_SAVE_Y SHOW_NAME_BTN_MENU_Y
+#define SHOW_NAME_Q_1_X centerStr_P(StrShowNameQ1)
+#define SHOW_NAME_Q_1_Y 12
+#define SHOW_NAME_Q_2_X centerStr_P(StrShowNameQ2)
+#define SHOW_NAME_Q_2_Y (SHOW_NAME_Q_1_Y + 8)
+#define SHOW_NAME_YES_X ((WIDTH / 2) - ((strlen_P(StrYes) + 1) * CHAR_WIDTH * 2))
+#define SHOW_NAME_YES_Y 34
+#define SHOW_NAME_NO_X ((WIDTH / 2) + (CHAR_WIDTH * 2))
+#define SHOW_NAME_NO_Y SHOW_NAME_YES_Y
+#define SHOW_NAME_TEST_X 0
+#define SHOW_NAME_TEST_Y 56
+#define SHOW_NAME_SAVED_X centerStr2_P(StrSaved)
+#define SHOW_NAME_SAVED_Y ((HEIGHT / 2) - CHAR_HEIGHT)
+
 // Calculation of the number of frames to wait before button auto-repeat starts
 #define DELAY_FRAMES (REPEAT_DELAY / (1000 / FRAME_RATE))
 
 // The Arduino "magic" has trouble creating prototypes for functions called
 // by pointers, so they're declared here manually
-void stateMain(), stateName(), stateID(), stateSaveName(), stateSaveID();
-void screenMain(), screenName(), screenID(), screenSaveName(), screenSaveID();
+void stateMain(), stateName(), stateID(), stateShowName();
+void stateSaveName(), stateSaveID();
+void screenMain(), screenName(), screenID(), screenShowName();
+void screenSaveName(), screenSaveID();
 
 Arduboy2 arduboy;
 
@@ -167,11 +192,14 @@ byte nameIndex;
 uint16_t unitID;
 byte idIndex;
 
+boolean showNameFlag;
+
 // Assign numbers for each state/screen
 enum State : byte {
   sMain,
   sName,
   sID,
+  sShowName,
   sSaveName,
   sSaveID,
   sMAX = sSaveID
@@ -184,6 +212,7 @@ void (*stateFunc[sMAX + 1])() = {
   stateMain,
   stateName,
   stateID,
+  stateShowName,
   stateSaveName,
   stateSaveID
 };
@@ -193,6 +222,7 @@ void (*screenFunc[sMAX + 1])() = {
   screenMain,
   screenName,
   screenID,
+  screenShowName,
   screenSaveName,
   screenSaveID
 };
@@ -246,9 +276,7 @@ void stateMain() {
     setState(sID);
   }
   else if (arduboy.justPressed(LEFT_BUTTON)) {
-    arduboy.bootLogo();
-    delay(1000);
-    setState(sMain);
+    setState(sShowName);
   }
 }
 
@@ -322,6 +350,29 @@ void stateID() {
   }
 }
 
+// STATE: Set "Show Unit Name" flag
+void stateShowName() {
+  if (arduboy.justPressed(RIGHT_BUTTON)) {
+    showNameToggle();
+  }
+  else if (arduboy.justPressed(LEFT_BUTTON)) {
+    showNameToggle();
+  }
+  else if (arduboy.justPressed(A_BUTTON)) {
+    setState(sMain);
+  }
+  else if (arduboy.justPressed(B_BUTTON)) {
+    saveShowName();
+    setState(sShowName);
+  }
+  else if (arduboy.justPressed(DOWN_BUTTON)) {
+    showNameFlag = arduboy.readShowUnitNameFlag();
+    arduboy.bootLogo();
+    delay(1000);
+    setState(sShowName);
+  }
+}
+
 // STATE: Prompt to save the unit name
 void stateSaveName() {
   if (arduboy.justPressed(A_BUTTON)) {
@@ -367,7 +418,7 @@ void screenMain() {
   printIDHex(MENU_ID_HEX_X, MENU_ID_Y);
   printIDDecimal(MENU_ID_DECIMAL_X, MENU_ID_Y);
 
-  printStr_P(MENU_BTN_LOGO_X, MENU_BTN_LOGO_Y, StrBtnLogo);
+  printStr_P(MENU_BTN_SHOW_NAME_X, MENU_BTN_SHOW_NAME_Y, StrBtnShowName);
 }
 
 // DISPLAY: Change unit name
@@ -389,6 +440,20 @@ void screenID() {
   printIDCursors();
 }
 
+// DISPLAY: Set "Show Unit Name" flag
+void screenShowName() {
+  printStr_P(SHOW_NAME_BTN_MENU_X, SHOW_NAME_BTN_MENU_Y, StrBtnMenu);
+  printStr_P(SHOW_NAME_BTN_SAVE_X, SHOW_NAME_BTN_SAVE_Y, StrBtnSave);
+  printStr_P(SHOW_NAME_Q_1_X, SHOW_NAME_Q_1_Y, StrShowNameQ1);
+  printStr_P(SHOW_NAME_Q_2_X, SHOW_NAME_Q_2_Y, StrShowNameQ2);
+  arduboy.setTextSize(2);
+  printStr_P(SHOW_NAME_YES_X, SHOW_NAME_YES_Y, StrYes);
+  printStr_P(SHOW_NAME_NO_X, SHOW_NAME_NO_Y, StrNo);
+  arduboy.setTextSize(1);
+  printShowNameCursor();
+  printStr_P(SHOW_NAME_TEST_X, SHOW_NAME_TEST_Y, StrBtnTestLogo);
+}
+
 // DISPLAY: Prompt to save the unit name
 void screenSaveName() {
   printNameScreenCommon();
@@ -407,6 +472,21 @@ void screenSaveID() {
   printIDLarge(ID_SAVE_X, ID_SAVE_Y);
 }
 
+// Save the "Show Unit Name" flag and overlay the "SAVED" message on the screen
+void saveShowName() {
+  arduboy.writeShowUnitNameFlag(showNameFlag);
+  arduboy.fillRect(SHOW_NAME_SAVED_X - 4, SHOW_NAME_SAVED_Y - 4,
+                   strlen_P(StrSaved) * CHAR_WIDTH * 2 + 6, CHAR_HEIGHT * 2 + 6);
+  arduboy.setTextColor(BLACK);
+  arduboy.setTextBackground(WHITE);
+  arduboy.setTextSize(2);
+  printStr_P(SHOW_NAME_SAVED_X, SHOW_NAME_SAVED_Y, StrSaved);
+  arduboy.setTextSize(1);
+  arduboy.setTextColor(WHITE);
+  arduboy.setTextBackground(BLACK);
+  arduboy.display();
+  delay(1000);
+}
 
 // --------------------- Printing Functions ------------------------------
 
@@ -456,6 +536,18 @@ void printIDCursors() {
   arduboy.drawFastHLine((ID_BINARY_X + CHAR_WIDTH + SMALL_SPACE) +
                          (idIndex * (CHAR_WIDTH * 4 + SMALL_SPACE)),
                         ID_BINARY_Y + CHAR_HEIGHT + 1, CHAR_WIDTH * 4 - 1);
+}
+
+// Print the current "Show Unit Name" cursor
+void printShowNameCursor() {
+  if (showNameFlag) {
+    arduboy.fillRect(SHOW_NAME_YES_X, SHOW_NAME_YES_Y + (CHAR_HEIGHT * 2),
+                     (strlen_P(StrYes) * CHAR_WIDTH - 1) * 2, 2);
+  }
+  else {
+    arduboy.fillRect(SHOW_NAME_NO_X, SHOW_NAME_NO_Y + (CHAR_HEIGHT * 2),
+                     (strlen_P(StrNo) * CHAR_WIDTH - 1) * 2, 2);
+  }
 }
 
 // Print the unit name in normal size including an extent underline
@@ -621,11 +713,12 @@ void printBinaryNybble(int x, int y, byte val) {
 
 // ---------------- Control and Utility Functions ------------------------
 
-// Get the current unit name and ID from EEPROM
+// Get the current unit name and ID, and the "Show Unit Name" flag, from EEPROM
 void readEEPROM() {
   memset(unitName, 0, sizeof(unitName));
   arduboy.readUnitName(unitName);
   unitID = arduboy.readUnitID();
+  showNameFlag = arduboy.readShowUnitNameFlag();
 }
 
 // Increment the name character at the cursor position
@@ -701,6 +794,12 @@ void idCursorLeft() {
   drawScreen();
 }
 
+// Toggle the "Show Unit Name" selection
+void showNameToggle() {
+  showNameFlag = !showNameFlag;
+  drawScreen();
+}
+
 // Start the button auto-repeat delay
 void startButtonDelay() {
   delayCount = DELAY_FRAMES;
@@ -721,6 +820,12 @@ int centerStrLen(unsigned int len) {
 // Calculate the X coordinate to center a string located in program memory
 int centerStr_P(const char* str) {
   return (WIDTH / 2) - (strlen_P(str) * CHAR_WIDTH / 2);
+}
+
+// Calculate the X coordinate to center a size 2 string located in
+// program memory
+int centerStr2_P(const char* str) {
+  return (WIDTH / 2) - (strlen_P(str) * CHAR_WIDTH);
 }
 
 // Calculate the X coordinate to right justify a string in program memory
