@@ -285,19 +285,23 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
 
 
         // FIRST PAGE
-        "ld %[data], %a[buffer_ofs]\n"
         // if sRow >= 0
         "tst %[sRow]\n"
-        "brmi end_first_page\n"
+        "brmi skip_first_page\n"
+        "ld %[data], %a[buffer_ofs]\n"
         // then
         "com %A[mask_data]\n"
         "and %[data], %A[mask_data]\n"
         "or %[data], %A[bitmap_data]\n"
-
-        "end_first_page:\n"
         // update buffer, increment
         "st %a[buffer_ofs]+, %[data]\n"
+        "jmp end_first_page\n"
 
+        "skip_first_page:\n"
+        // since no ST Z+ when skipped we need to do this manually
+        "adiw %[buffer_ofs], 1\n"
+
+        "end_first_page:\n"
 
         // "x_loop_next:\n"
         "dec %[xi]\n"
