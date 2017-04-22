@@ -334,9 +334,9 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         : [xi] "+&r" (xi),
         [yi] "+&r" (yi),
         [sRow] "+&d" (sRow), // CPI requires an upper register
-        [data] "+&r" (data),
-        [mask_data] "+&r" (mask_data),
-        [bitmap_data] "+&r" (bitmap_data)
+        [data] "=&r" (data),
+        [mask_data] "=&r" (mask_data),
+        [bitmap_data] "=&r" (bitmap_data)
         :
         [x_count] "r" (rendered_width),
         [y_count] "r" (loop_h),
