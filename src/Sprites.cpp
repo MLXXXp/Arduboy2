@@ -125,9 +125,6 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
   sRow += start_h;
   ofs = (sRow * WIDTH) + x + xOffset;
   uint8_t *bofs = (uint8_t *)bitmap + (start_h * w) + xOffset;
-  uint8_t *mask_ofs;
-  if (mask != 0)
-    mask_ofs = (uint8_t *)mask + (start_h * w) + xOffset;
   uint8_t data;
 
   uint8_t mul_amt = 1 << yOffset;
@@ -205,6 +202,8 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
       break;
 
     case SPRITE_MASKED:
+      uint8_t *mask_ofs;
+      mask_ofs = (uint8_t *)mask + (start_h * w) + xOffset;
       for (uint8_t a = 0; a < loop_h; a++) {
         for (uint8_t iCol = 0; iCol < rendered_width; iCol++) {
           // NOTE: you might think in the yOffset==0 case that this results
