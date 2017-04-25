@@ -274,7 +274,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         // then
         "ld %[data], Y\n"
         "com %B[mask_data]\n" // invert high byte of mask
-        "and %[data], r1\n" // %B[mask_data]
+        "and %[data], %B[mask_data]\n"
         "or %[data], %B[bitmap_data]\n"
         // update buffer, increment
         "st Y+, %[data]\n"
