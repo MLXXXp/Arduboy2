@@ -1,1 +1,4 @@
 doxygen/
+
+# OS X
+*.DS_Store

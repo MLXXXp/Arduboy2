@@ -12,6 +12,13 @@ void Sprites::drawExternalMask(int16_t x, int16_t y, const uint8_t *bitmap,
   draw(x, y, bitmap, frame, mask, mask_frame, SPRITE_MASKED);
 }
 
+void Sprites::drawMaskedSprite(int16_t x, int16_t y,
+                              const uint8_t *bitmap, uint8_t frame,
+                              const uint8_t *mask, uint8_t mask_frame)
+{
+  draw(x, y, bitmap, frame, mask, mask_frame, SPRITE_MASK_SPRITE);
+}
+
 void Sprites::drawOverwrite(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame)
 {
   draw(x, y, bitmap, frame, NULL, 0, SPRITE_OVERWRITE);
@@ -240,6 +247,33 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
       }
       break;
 
+    case SPRITE_MASK_SPRITE:
+      for (uint8_t a = 0; a < loop_h; a++) {
+        for (uint8_t iCol = 0; iCol < rendered_width; iCol++) {
+          // load data and bit shift
+          mask_data = pgm_read_byte(mask_ofs) * mul_amt;
+          bitmap_data = pgm_read_byte(bofs) * mul_amt;
+
+          if (sRow >= 0) {
+            data = Arduboy2Base::sBuffer[ofs];
+            data |= (uint8_t)(bitmap_data & mask_data);
+            Arduboy2Base::sBuffer[ofs] = data;
+          }
+          if (yOffset != 0 && sRow < 7) {
+            data = Arduboy2Base::sBuffer[ofs + WIDTH];
+            data |= (*((unsigned char *) (&bitmap_data) + 1)) & (*((unsigned char *) (&mask_data) + 1));
+            Arduboy2Base::sBuffer[ofs + WIDTH] = data;
+          }
+          ofs++;
+          mask_ofs++;
+          bofs++;
+        }
+        sRow++;
+        bofs += w - rendered_width;
+        mask_ofs += w - rendered_width;
+        ofs += WIDTH - rendered_width;
+      }
+      break;
 
     case SPRITE_PLUS_MASK:
       // *2 because we use double the bits (mask + bitmap)

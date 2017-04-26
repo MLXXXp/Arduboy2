@@ -13,6 +13,7 @@
 #define SPRITE_UNMASKED 2
 #define SPRITE_OVERWRITE 2
 #define SPRITE_PLUS_MASK 3
+#define SPRITE_MASK_SPRITE 4
 #define SPRITE_IS_MASK 250
 #define SPRITE_IS_MASK_ERASE 251
 #define SPRITE_AUTO_MODE 255
@@ -89,6 +90,43 @@ class Sprites
      */
     static void drawExternalMask(int16_t x, int16_t y, const uint8_t *bitmap,
                                  const uint8_t *mask, uint8_t frame, uint8_t mask_frame);
+
+    /** \brief
+    * Draw a partial sprite using a separate image and mask array only showing masked part of the image.
+    *
+    * \param x,y The coordinates of the top left pixel location.
+    * \param bitmap A pointer to the array containing the image frames.
+    * \param mask A pointer to the array containing the mask frames.
+    * \param frame The frame number of the image to draw.
+    * \param mask_frame The frame number for the mask to use (can be different
+    * from the image frame number).
+    *
+    * \details
+    * An array containing the image frames, and another array containing
+    * corresponding mask frames, are used to draw a sprite.
+    *
+    * Only bits set to 1 in the mask and the image will be drawn.
+    * Partial sprite will be added (&) to the screen buffer.
+    *
+    *     image  mask   before  after
+    *
+    *     .....  .....  .....   .....
+    *     ..O..  .....  .....   .....
+    *     OO.OO  OOOOO  .....   OO.OO
+    *     ..O..  OOOOO  .....   ..O..
+    *     .....  .OOO.  .....   .....
+    *
+    *     image  mask   before  after
+    *
+    *     .....  .....  OOOOO   OOOOO
+    *     ..O..  .....  OOOOO   OOOOO
+    *     OO.OO  OOOOO  OOOOO   OOOOO
+    *     ..O..  OOOOO  OOOOO   OOOOO
+    *     .....  .OOO.  OOOOO   OOOOO
+    */
+    void Sprites::drawMaskedSprite(int16_t x, int16_t y,
+                                const uint8_t *bitmap, uint8_t frame,
+                                const uint8_t *mask, uint8_t mask_frame);
 
     /** \brief
      * Draw a sprite using an array containing both image and mask values.
