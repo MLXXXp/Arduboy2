@@ -45,6 +45,11 @@ void Arduboy2Base::begin()
   audio.begin();
 
   bootLogo();
+  // alternative logo functions. Work the same a bootLogo() but may reduce
+  // memory size if the sketch uses the same bitmap drawing function
+//  bootLogoCompressed();
+//  bootLogoSpritesSelfMasked();
+//  bootLogoSpritesOverwrite();
 
   // wait for all buttons to be released
   do {
