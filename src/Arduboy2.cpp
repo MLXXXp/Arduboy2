@@ -599,39 +599,49 @@ void Arduboy2Base::fillRect
 
 void Arduboy2Base::fillScreen(uint8_t color)
 {
-  // C version :
+  // C version:
   //
-  // if (color) color = 0xFF;  //change any nonzero argument to b11111111 and insert into screen array.
-  // for(int16_t i=0; i<1024; i++)  { sBuffer[i] = color; }  //sBuffer = (128*64) = 8192/8 = 1024 bytes.
+  // if (color != BLACK)
+  // {
+  //   color = 0xFF; // all pixels on
+  // }
+  // for (int16_t i = 0; i < WIDTH * HEIGTH / 8; i++)
+  // {
+  //    sBuffer[i] = color;
+  // }
+
+  // This asm version is hard coded for 1024 bytes. It doesn't use the defined
+  // WIDTH and HEIGHT values. It will have to be modified for a different
+  // screen buffer size.
+  // It also assumes color value for BLACK is 0.
+
+  // local variable for screen buffer pointer,
+  // which can be declared a read-write operand
+  uint8_t* bPtr = sBuffer;
 
   asm volatile
   (
-    // load color value into r27
-    "mov r27, %1 \n\t"
     // if value is zero, skip assigning to 0xff
-    "cpse r27, __zero_reg__ \n\t"
-    "ldi r27, 0xff \n\t"
-    // load sBuffer pointer into Z
-    "movw  r30, %0\n\t"
+    "cpse %[color], __zero_reg__\n"
+    "ldi %[color], 0xFF\n"
     // counter = 0
-    "clr __tmp_reg__ \n\t"
-    "loopto:   \n\t"
+    "clr __tmp_reg__\n"
+    "loopto:\n"
     // (4x) push zero into screen buffer,
     // then increment buffer position
-    "st Z+, r27 \n\t"
-    "st Z+, r27 \n\t"
-    "st Z+, r27 \n\t"
-    "st Z+, r27 \n\t"
+    "st Z+, %[color]\n"
+    "st Z+, %[color]\n"
+    "st Z+, %[color]\n"
+    "st Z+, %[color]\n"
     // increase counter
-    "inc __tmp_reg__ \n\t"
+    "inc __tmp_reg__\n"
     // repeat for 256 loops
     // (until counter rolls over back to 0)
-    "brne loopto \n\t"
-    // input: sBuffer, color
-    // modified: Z (r30, r31), r27
+    "brne loopto\n"
+    : [color] "+d" (color),
+      "+z" (bPtr)
     :
-    : "r" (sBuffer), "r" (color)
-    : "r30", "r31", "r27"
+    :
   );
 }
 
