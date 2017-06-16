@@ -299,24 +299,25 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
   // the above math can also be rewritten more simply as;
   //   row_offset = (y * WIDTH/8) & ~0b01111111 + (uint8_t)x;
   // which is what the below assembler does
+  
   asm volatile(
-    "mul %[width_offset],%[y]\n"
+    "mul %[width_offset], %A[y]\n"
     "movw %[row_offset], r0\n"
     "andi %A[row_offset], 0x80\n" // row_offset &= (~0b01111111);
     "clr __zero_reg__\n"
     "add %A[row_offset], %[x]\n"
     // mask for only 0-7
-    "andi %[y], 0x07\n"
+    "andi %A[y], 0x07\n"
     // Z += y
-    "add r30, %[y]\n"
+    "add r30, %A[y]\n"
     "adc r31, __zero_reg__\n"
     // load correct bitshift from program RAM
     "lpm %[bit], Z\n"
     : [row_offset] "=x&" (row_offset), // upper register (ANDI)
-      [bit] "=r" (bit)
+      [bit] "=r" (bit),
+      [y] "+d" (y) // upper register (ANDI), must be writable
     : [width_offset] "r" ((uint8_t)(WIDTH/8)),
       [x] "r" ((uint8_t)x),
-      [y] "d" ((uint8_t)y), // upper register (ANDI)
       "z" (bitshift_left)
     :);
 
