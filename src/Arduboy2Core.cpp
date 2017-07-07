@@ -163,10 +163,10 @@ void Arduboy2Core::bootPins()
   DDRB |= _BV(BLUE_LED_BIT) | _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT);
 
   // Port C INPUT_PULLUP or HIGH
-  PORTE |= _BV(RIGHT_BUTTON_BIT);
+  PORTC |= _BV(RIGHT_BUTTON_BIT);
   // Port C INPUT or LOW (none)
   // Port C inputs
-  DDRE &= ~(_BV(RIGHT_BUTTON_BIT));
+  DDRC &= ~(_BV(RIGHT_BUTTON_BIT));
   // Port C outputs (none)
 
   // Port D INPUT_PULLUP or HIGH
