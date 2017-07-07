@@ -32,7 +32,7 @@
  * #endif
  * \endcode
  */
-#define ARDUBOY_LIB_VER 40001
+#define ARDUBOY_LIB_VER 40002
 
 // EEPROM settings
 #define ARDUBOY_UNIT_NAME_LEN 6 /**< The maximum length of the unit name string. */
