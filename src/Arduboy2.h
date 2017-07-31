@@ -921,7 +921,7 @@ class Arduboy2Base : public Arduboy2Core
    * \param rect1,rect2 Structures describing the size and locations of the
    * rectangles.
    *
-   * \return `true1 if the first rectangle is intersecting the second.
+   * \return `true` if the first rectangle is intersecting the second.
    *
    * \details
    * This function is intended to detemine if an object, whose boundaries are
@@ -1209,7 +1209,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * Show the unit name at the bottom of the boot logo screen.
    *
    * \details
-   * This function is called by `bootLogoShell()` and `bootlogoText()`.
+   * This function is called by `bootLogoShell()` and `bootLogoText()`.
    *
    * If a unit name has been saved in system EEPROM, it will be displayed at
    * the bottom of the screen. This function pauses for a short time to allow
