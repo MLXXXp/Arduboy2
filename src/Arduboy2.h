@@ -1295,6 +1295,8 @@ class Arduboy2 : public Print, public Arduboy2Base
    * As with all drawing functions, location 0, 0 is the top left corner of
    * the display. The cursor location will be the top left corner of the next
    * character written.
+   *
+   * \see getCursorX() getCursorY()
    */
   void setCursor(int16_t x, int16_t y);
 
@@ -1306,6 +1308,8 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \details
    * The X coordinate returned is a pixel location with 0 indicating the
    * leftmost column.
+   *
+   * \see getCursorY() setCursor()
    */
   int16_t getCursorX();
 
@@ -1317,6 +1321,8 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \details
    * The Y coordinate returned is a pixel location with 0 indicating the
    * topmost row.
+   *
+   * \see getCursorX() setCursor()
    */
   int16_t getCursorY();
 
@@ -1324,15 +1330,37 @@ class Arduboy2 : public Print, public Arduboy2Base
    * Set the text foreground color.
    *
    * \param color The color to be used for following text.
+   *
+   * \see setTextBackground() getTextColor()
    */
   void setTextColor(uint8_t color);
+
+  /** \brief
+   * Get the currently set text foreground color.
+   *
+   * \return The color that will be used to display any following text.
+   *
+   * \see setTextColor()
+   */
+  uint8_t getTextColor();
 
   /** \brief
    * Set the text background color.
    *
    * \param bg The background color to be used for following text.
+   *
+   * \see setTextColor() getTextBackground()
    */
   void setTextBackground(uint8_t bg);
+
+  /** \brief
+   * Get the currently set text background color.
+   *
+   * \return The background color that will be used to display any following text.
+   *
+   * \see setTextBackground()
+   */
+  uint8_t getTextBackground();
 
   /** \brief
    * Set the text character size.
@@ -1347,8 +1375,19 @@ class Arduboy2 : public Print, public Arduboy2Base
    * The value specified is a multiplier. A value of 2 will double the
    * size so they will occupy 12x16 pixels. A value of 3 will result in
    * 18x24, etc.
+   *
+   * \see getTextSize()
    */
   void setTextSize(uint8_t s);
+
+  /** \brief
+   * Get the currently set text size.
+   *
+   * \return The size that will be used for any following text.
+   *
+   * \see setTextSize()
+   */
+  uint8_t getTextSize();
 
   /** \brief
    * Set or disable text wrap mode.
@@ -1364,8 +1403,19 @@ class Arduboy2 : public Print, public Arduboy2Base
    * If wrap mode is disabled, characters will continue to be written to the
    * same line. A character at the right edge of the screen may only be
    * partially displayed and additional characters will be off screen.
+   *
+   * \see getTextWrap()
    */
   void setTextWrap(bool w);
+
+  /** \brief
+   * Get the currently set text wrap mode.
+   *
+   * \return `true` if text wrapping is on, `false` if wrapping is off.
+   *
+   * \see setTextWrap()
+   */
+  bool getTextWrap();
 
   /** \brief
    * Clear the display buffer and set the text cursor to location 0, 0

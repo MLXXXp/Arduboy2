@@ -1273,9 +1273,19 @@ void Arduboy2::setTextColor(uint8_t color)
   textColor = color;
 }
 
+uint8_t Arduboy2::getTextColor()
+{
+  return textColor;
+}
+
 void Arduboy2::setTextBackground(uint8_t bg)
 {
   textBackground = bg;
+}
+
+uint8_t Arduboy2::getTextBackground()
+{
+  return textBackground;
 }
 
 void Arduboy2::setTextSize(uint8_t s)
@@ -1284,9 +1294,19 @@ void Arduboy2::setTextSize(uint8_t s)
   textSize = max(1, s);
 }
 
+uint8_t Arduboy2::getTextSize()
+{
+  return textSize;
+}
+
 void Arduboy2::setTextWrap(bool w)
 {
   textWrap = w;
+}
+
+bool Arduboy2::getTextWrap()
+{
+  return textWrap;
 }
 
 void Arduboy2::clear()
