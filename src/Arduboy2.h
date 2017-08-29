@@ -641,8 +641,8 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \details
    * The Arduino random number generator is seeded with a random value
-   * derrived from entropy from the temperature, voltage reading, and
-   * microseconds since boot.
+   * derived from entropy from an ADC reading of a floating pin combined with
+   * the microseconds since boot.
    *
    * This method is still most effective when called after a semi-random time,
    * such as after a user hits a button to start a game or other semi-random
