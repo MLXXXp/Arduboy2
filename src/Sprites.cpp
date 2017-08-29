@@ -341,19 +341,20 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         [x_count] "l" (rendered_width), // lower register
         [sprite_ofs] "z" (bofs),
         [buffer_ofs] "x" (Arduboy2Base::sBuffer+ofs),
-        [buffer_ofs_jump] "a" (WIDTH-rendered_width), // lower register
-        [sprite_ofs_jump] "a" ((w-rendered_width)*2), // lower register
+        [buffer_ofs_jump] "a" (WIDTH-rendered_width), // upper reg (r16-r23)
+        [sprite_ofs_jump] "a" ((w-rendered_width)*2), // upper reg (r16-r23)
 
         // [sprite_ofs_jump] "r" (0),
         [yOffset] "l" (yOffset), // lower register
         [mul_amt] "l" (mul_amt) // lower register
-        // NOTE: We also clobber r28 and r29 but sometimes the compiler
-        // won't allow us so in order to make this work we don't tell it
-        // they we clobber them.  Then we need to guarantee that the
-        // the compiler doesn't put one of our own variables into r28/r29.
+        // NOTE: We also clobber r28 and r29 (y) but sometimes the compiler
+        // won't allow us, so in order to make this work we don't tell it
+        // that we clobber them. Instead, we push/pop to preserve them.
+        // Then we need to guarantee that the the compiler doesn't put one of
+        // our own variables into r28/r29.
         // We do that by specifying all the inputs and outputs use either
         // lower registers (l) or simple (r16-r23) upper registers (a).
-        : // clobbers r28 and r29
+        : // pushes/clobbers/pops r28 and r29 (y)
       );
       break;
   }
