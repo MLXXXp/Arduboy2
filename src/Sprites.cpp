@@ -245,13 +245,15 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
       // *2 because we use double the bits (mask + bitmap)
       bofs = (uint8_t *)(bitmap + ((start_h * w) + xOffset) * 2);
 
-      uint8_t xi = rendered_width; // used for x loop below
-      uint8_t yi = loop_h; // used for y loop below
+      uint8_t xi = rendered_width; // counter for x loop below
 
       asm volatile(
         "push r28\n" // save Y
         "push r29\n"
-        "movw r28, %[buffer_page2_ofs]\n" // Y = buffer page 2 offset
+        "movw r28, %[buffer_ofs]\n" // Y = buffer_ofs_2
+        "adiw r28, 63\n" // buffer_ofs_2 = buffer_ofs + 128
+        "adiw r28, 63\n"
+        "adiw r28, 2\n"
         "loop_y:\n"
         "loop_x:\n"
         // load bitmap and mask data
@@ -265,7 +267,6 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         "movw %[bitmap_data], r0\n"
         "mul %A[mask_data], %[mul_amt]\n"
         "movw %[mask_data], r0\n"
-
 
         // SECOND PAGE
         // if yOffset != 0 && sRow < 7
@@ -281,7 +282,6 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
 
         "end_second_page:\n"
         "skip_shifting:\n"
-
 
         // FIRST PAGE
         // if sRow >= 0
@@ -330,26 +330,30 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         "pop r29\n"
         "pop r28\n"
         "clr __zero_reg__\n" // just in case
-        : [xi] "+&r" (xi),
-        [yi] "+&r" (yi),
-        [sRow] "+&d" (sRow), // CPI requires an upper register
-        [data] "=&r" (data),
-        [mask_data] "=&r" (mask_data),
-        [bitmap_data] "=&r" (bitmap_data)
+        : [xi] "+&a" (xi),
+        [yi] "+&a" (loop_h),
+        [sRow] "+&a" (sRow), // CPI requires an upper register (r16-r23)
+        [data] "=&l" (data),
+        [mask_data] "=&l" (mask_data),
+        [bitmap_data] "=&l" (bitmap_data)
         :
-        [x_count] "r" (rendered_width),
-        [y_count] "r" (loop_h),
+        [screen_width] "M" (WIDTH),
+        [x_count] "l" (rendered_width), // lower register
         [sprite_ofs] "z" (bofs),
         [buffer_ofs] "x" (Arduboy2Base::sBuffer+ofs),
-        [buffer_page2_ofs] "r" (Arduboy2Base::sBuffer+ofs+WIDTH), // Y pointer
-        [buffer_ofs_jump] "r" (WIDTH-rendered_width),
-        [sprite_ofs_jump] "r" ((w-rendered_width)*2),
-        [yOffset] "r" (yOffset),
-        [mul_amt] "r" (mul_amt)
-        // declaring an extra high register clobber here for some reason
-        // prevents a compile error for some sketches:
-        // can't find a register in class 'LD_REGS' while reloading 'asm'
-        : "r24"
+        [buffer_ofs_jump] "a" (WIDTH-rendered_width), // lower register
+        [sprite_ofs_jump] "a" ((w-rendered_width)*2), // lower register
+
+        // [sprite_ofs_jump] "r" (0),
+        [yOffset] "l" (yOffset), // lower register
+        [mul_amt] "l" (mul_amt) // lower register
+        // NOTE: We also clobber r28 and r29 but sometimes the compiler
+        // won't allow us so in order to make this work we don't tell it
+        // they we clobber them.  Then we need to guarantee that the
+        // the compiler doesn't put one of our own variables into r28/r29.
+        // We do that by specifying all the inputs and outputs use either
+        // lower registers (l) or simple (r16-r23) upper registers (a).
+        : // clobbers r28 and r29
       );
       break;
   }
