@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
+#include <avr/wdt.h>
 #include <limits.h>
 
 
@@ -688,6 +689,22 @@ class Arduboy2Core
      * of Arduino `delay()` will save a few bytes of code.
      */
     void static delayShort(uint16_t ms) __attribute__ ((noinline));
+
+    /** \brief
+     * Exit the sketch and start the bootloader
+     *
+     * \details
+     * TODO add details including cautions and warnings
+     */
+    void static exitToBootloader();
+
+    /** \brief
+     * Arduino main() function without USB
+     *
+     * \details
+     * TODO add details including cautions and warnings
+     */
+    void static mainNoUSB();
 
   protected:
     // internals

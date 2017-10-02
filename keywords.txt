@@ -47,6 +47,7 @@ drawSlowXYBitmap	KEYWORD2
 drawTriangle	KEYWORD2
 enabled	KEYWORD2
 everyXFrames	KEYWORD2
+exitToBootloader	KEYWORD2
 fillCircle	KEYWORD2
 fillRect	KEYWORD2
 fillRoundRect	KEYWORD2
@@ -68,6 +69,7 @@ initRandomSeed	KEYWORD2
 invert	KEYWORD2
 justPressed	KEYWORD2
 justReleased	KEYWORD2
+mainNoUSB	KEYWORD2
 nextFrame	KEYWORD2
 nextFrameDEV	KEYWORD2
 notPressed	KEYWORD2

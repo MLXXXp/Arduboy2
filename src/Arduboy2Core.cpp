@@ -476,3 +476,73 @@ void Arduboy2Core::delayShort(uint16_t ms)
   delay((unsigned long) ms);
 }
 
+// reset to the bootloader using the watchdog timer
+void Arduboy2Core::exitToBootloader()
+{
+  // prevent the bootloader magic number from being overwritten by timer 0
+  // when a timer variable overlaps the magic number location.
+  power_timer0_disable();
+
+  *(uint16_t *)MAGIC_KEY_POS = MAGIC_KEY;
+  wdt_enable(WDTO_15MS);
+
+  while (true) { }
+}
+
+void Arduboy2Core::mainNoUSB()
+{
+  init();
+
+  // disable USB
+  UDCON = _BV(DETACH);
+  USBCON = _BV(FRZCLK);
+  power_usb_disable();
+
+#ifdef ARDUBOY_10
+  // Set the UP button pin for INPUT_PULLUP
+  PORTF |= _BV(UP_BUTTON_BIT);
+  DDRF &= ~(_BV(UP_BUTTON_BIT));
+
+  // Set RGB led to magenta
+  PORTB |= _BV(GREEN_LED_BIT); // green off (high)
+  PORTB &= ~(_BV(RED_LED_BIT)); // red on (low)
+  PORTB &= ~(_BV(BLUE_LED_BIT)); // blue on (low)
+  // set RGB led pins as outputs
+  DDRB |= _BV(RED_LED_BIT) | _BV(GREEN_LED_BIT) | _BV(BLUE_LED_BIT);
+
+  // Delay to give time for the UP pin to be pulled high if it was floating
+  for (volatile uint8_t i = 0; i < 100; i++) { }
+
+  // if the UP button is pressed
+  if ((PINF & _BV(UP_BUTTON_BIT)) == 0) {
+    exitToBootloader();
+  }
+#elif defined(AB_DEVKIT)
+//TODO do above for DevKit (light the blue LED)
+#endif
+
+  // The remainder is a copy of the Arduino main() function with the
+  // USB code and other unneeded code commented out.
+  // init() was called above.
+  // The call to function initVariant() is commented out to fix compiler
+  // error: "multiple definition of 'main'".
+  // The return statment is removed since this function is type void.
+
+//  init();
+
+//  initVariant();
+
+//#if defined(USBCON)
+//  USBDevice.attach();
+//#endif
+
+  setup();
+
+  for (;;) {
+    loop();
+//    if (serialEventRun) serialEventRun();
+  }
+
+//  return 0;
+}
+
