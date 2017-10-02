@@ -8,7 +8,10 @@
         "url": "https://github.com/MLXXXp/Arduboy2.git"
     },
     "version": "4.1.0",
-    "exclude": "extras",
+    "export":
+    {
+        "exclude": "extras"
+    },
     "frameworks": "arduino",
     "platforms": "atmelavr"
 }
