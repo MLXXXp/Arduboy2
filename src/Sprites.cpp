@@ -148,7 +148,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
             data |= (uint8_t)(bitmap_data);
             Arduboy2Base::sBuffer[ofs] = data;
           }
-          if (yOffset != 0 && sRow < 7) {
+          if (yOffset != 0 && sRow < ((HEIGHT / 8) - 1)) {
             data = Arduboy2Base::sBuffer[ofs + WIDTH];
             data &= (*((unsigned char *) (&mask_data) + 1));
             data |= (*((unsigned char *) (&bitmap_data) + 1));
@@ -170,7 +170,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
           if (sRow >= 0) {
             Arduboy2Base::sBuffer[ofs] |= (uint8_t)(bitmap_data);
           }
-          if (yOffset != 0 && sRow < 7) {
+          if (yOffset != 0 && sRow < ((HEIGHT / 8) - 1)) {
             Arduboy2Base::sBuffer[ofs + WIDTH] |= (*((unsigned char *) (&bitmap_data) + 1));
           }
           ofs++;
@@ -189,7 +189,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
           if (sRow >= 0) {
             Arduboy2Base::sBuffer[ofs]  &= ~(uint8_t)(bitmap_data);
           }
-          if (yOffset != 0 && sRow < 7) {
+          if (yOffset != 0 && sRow < ((HEIGHT / 8) - 1)) {
             Arduboy2Base::sBuffer[ofs + WIDTH] &= ~(*((unsigned char *) (&bitmap_data) + 1));
           }
           ofs++;
@@ -223,7 +223,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
             data |= (uint8_t)(bitmap_data);
             Arduboy2Base::sBuffer[ofs] = data;
           }
-          if (yOffset != 0 && sRow < 7) {
+          if (yOffset != 0 && sRow < ((HEIGHT / 8) - 1)) {
             data = Arduboy2Base::sBuffer[ofs + WIDTH];
             data &= (*((unsigned char *) (&mask_data) + 1));
             data |= (*((unsigned char *) (&bitmap_data) + 1));
@@ -251,9 +251,8 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         "push r28\n" // save Y
         "push r29\n"
         "movw r28, %[buffer_ofs]\n" // Y = buffer_ofs_2
-        "adiw r28, 63\n" // buffer_ofs_2 = buffer_ofs + 128
-        "adiw r28, 63\n"
-        "adiw r28, 2\n"
+        "subi r28, %[neg_width]\n" // buffer_ofs_2 = buffer_ofs + WIDTH
+        "sbci r29, -1\n"
         "loop_y:\n"
         "loop_x:\n"
         // load bitmap and mask data
@@ -269,8 +268,8 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         "movw %[mask_data], r0\n"
 
         // SECOND PAGE
-        // if yOffset != 0 && sRow < 7
-        "cpi %[sRow], 7\n"
+        // if yOffset != 0 && sRow < ((HEIGHT / 8) - 1)
+        "cpi %[sRow], %[row_height]\n"
         "brge end_second_page\n"
         // then
         "ld %[data], Y\n"
@@ -346,7 +345,9 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
 
         // [sprite_ofs_jump] "r" (0),
         [yOffset] "l" (yOffset), // lower register
-        [mul_amt] "l" (mul_amt) // lower register
+        [mul_amt] "l" (mul_amt), // lower register
+		[neg_width] "M" (256 - WIDTH),
+		[row_height] "M" ((HEIGHT / 8) - 1)
         // NOTE: We also clobber r28 and r29 (y) but sometimes the compiler
         // won't allow us, so in order to make this work we don't tell it
         // that we clobber them. Instead, we push/pop to preserve them.
