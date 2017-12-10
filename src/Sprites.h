@@ -49,6 +49,11 @@
  *
  * Data for each frame after the first one immediately follows the previous
  * frame. Frame numbers start at 0.
+
+ * \note
+ * In the example patterns given in each Sprites function description,
+ * a # character represents a bit set to 1 and
+ * a - character represents a bit set to 0.
  */
 class Sprites
 {
@@ -71,21 +76,21 @@ class Sprites
      * value of the corresponding image bit. Bits set to 0 in the mask will be
      * left unchanged.
      *
+     *     image  mask   before  after  (# = 1, - = 0)
+     *
+     *     -----  -###-  -----   -----
+     *     --#--  #####  -----   --#--
+     *     ##-##  ##-##  -----   ##-##
+     *     --#--  #####  -----   --#--
+     *     -----  -###-  -----   -----
+     *
      *     image  mask   before  after
      *
-     *     .....  .OOO.  .....   .....
-     *     ..O..  OOOOO  .....   ..O..
-     *     OO.OO  OO.OO  .....   OO.OO
-     *     ..O..  OOOOO  .....   ..O..
-     *     .....  .OOO.  .....   .....
-     *
-     *     image  mask   before  after
-     *
-     *     .....  .OOO.  OOOOO   O...O
-     *     ..O..  OOOOO  OOOOO   ..O..
-     *     OO.OO  OOOOO  OOOOO   OO.OO
-     *     ..O..  OOOOO  OOOOO   ..O..
-     *     .....  .OOO.  OOOOO   O...O
+     *     -----  -###-  #####   #---#
+     *     --#--  #####  #####   --#--
+     *     ##-##  #####  #####   ##-##
+     *     --#--  #####  #####   --#--
+     *     -----  -###-  #####   #---#
      */
     static void drawExternalMask(int16_t x, int16_t y, const uint8_t *bitmap,
                                  const uint8_t *mask, uint8_t frame, uint8_t mask_frame);
@@ -108,21 +113,21 @@ class Sprites
      * value of the corresponding image bit. Bits set to 0 in the mask will be
      * left unchanged.
      *
+     *     image  mask   before  after  (# = 1, - = 0)
+     *
+     *     -----  -###-  -----   -----
+     *     --#--  #####  -----   --#--
+     *     ##-##  ##-##  -----   ##-##
+     *     --#--  #####  -----   --#--
+     *     -----  -###-  -----   -----
+     *
      *     image  mask   before  after
      *
-     *     .....  .OOO.  .....   .....
-     *     ..O..  OOOOO  .....   ..O..
-     *     OO.OO  OO.OO  .....   OO.OO
-     *     ..O..  OOOOO  .....   ..O..
-     *     .....  .OOO.  .....   .....
-     *
-     *     image  mask   before  after
-     *
-     *     .....  .OOO.  OOOOO   O...O
-     *     ..O..  OOOOO  OOOOO   ..O..
-     *     OO.OO  OOOOO  OOOOO   OO.OO
-     *     ..O..  OOOOO  OOOOO   ..O..
-     *     .....  .OOO.  OOOOO   O...O
+     *     -----  -###-  #####   #---#
+     *     --#--  #####  #####   --#--
+     *     ##-##  #####  #####   ##-##
+     *     --#--  #####  #####   --#--
+     *     -----  -###-  #####   #---#
      */
     static void drawPlusMask(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
@@ -139,21 +144,21 @@ class Sprites
      * to 1 in the frame will set the pixel to 1 in the buffer, and a 0 in the
      * array will set a 0 in the buffer.
      *
+     *     image  before  after  (# = 1, - = 0)
+     *
+     *     -----  -----   -----
+     *     --#--  -----   --#--
+     *     ##-##  -----   ##-##
+     *     --#--  -----   --#--
+     *     -----  -----   -----
+     *
      *     image  before  after
      *
-     *     .....  .....   .....
-     *     ..O..  .....   ..O..
-     *     OO.OO  .....   OO.OO
-     *     ..O..  .....   ..O..
-     *     .....  .....   .....
-     *
-     *     image  before  after
-     *
-     *     .....  OOOOO   .....
-     *     ..O..  OOOOO   ..O..
-     *     OO.OO  OOOOO   OO.OO
-     *     ..O..  OOOOO   ..O..
-     *     .....  OOOOO   .....
+     *     -----  #####   -----
+     *     --#--  #####   --#--
+     *     ##-##  #####   ##-##
+     *     --#--  #####   --#--
+     *     -----  #####   -----
      */
     static void drawOverwrite(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
@@ -170,21 +175,21 @@ class Sprites
      * corresponding pixel in the buffer to 0. Frame bits set to 0 will remain
      * unchanged in the buffer.
      *
+     *     image  before  after  (# = 1, - = 0)
+     *
+     *     -----  -----   -----
+     *     --#--  -----   -----
+     *     ##-##  -----   -----
+     *     --#--  -----   -----
+     *     -----  -----   -----
+     *
      *     image  before  after
      *
-     *     .....  .....   .....
-     *     ..O..  .....   .....
-     *     OO.OO  .....   .....
-     *     ..O..  .....   .....
-     *     .....  .....   .....
-     *
-     *     image  before  after
-     *
-     *     .....  OOOOO   OOOOO
-     *     ..O..  OOOOO   OO.OO
-     *     OO.OO  OOOOO   ..O..
-     *     ..O..  OOOOO   OO.OO
-     *     .....  OOOOO   OOOOO
+     *     -----  #####   #####
+     *     --#--  #####   ##-##
+     *     ##-##  #####   --#--
+     *     --#--  #####   ##-##
+     *     -----  #####   #####
      */
     static void drawErase(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
@@ -200,21 +205,21 @@ class Sprites
      * the corresponding pixel in the buffer to 1. Bits set to 0 in the frame
      * will remain unchanged in the buffer.
      *
+     *     image  before  after  (# = 1, - = 0)
+     *
+     *     -----  -----   -----
+     *     --#--  -----   --#--
+     *     ##-##  -----   ##-##
+     *     --#--  -----   --#--
+     *     -----  -----   -----
+     *
      *     image  before  after
      *
-     *     .....  .....   .....
-     *     ..O..  .....   ..O..
-     *     OO.OO  .....   OO.OO
-     *     ..O..  .....   ..O..
-     *     .....  .....   .....
-     *
-     *     image  before  after
-     *
-     *     .....  OOOOO   OOOOO  (no change because all pixels were
-     *     ..O..  OOOOO   OOOOO  already white)
-     *     OO.OO  OOOOO   OOOOO
-     *     ..O..  OOOOO   OOOOO
-     *     .....  OOOOO   OOOOO
+     *     -----  #####   #####  (no change because all pixels were
+     *     --#--  #####   #####  already white)
+     *     ##-##  #####   #####
+     *     --#--  #####   #####
+     *     -----  #####   #####
      */
     static void drawSelfMasked(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t frame);
 
