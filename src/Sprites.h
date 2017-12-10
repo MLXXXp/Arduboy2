@@ -39,7 +39,7 @@
  * and height are not included but must contain data of the same dimensions
  * as the corresponding image array.
  *
- * Following the width and height values for an image array, or the from the
+ * Following the width and height values for an image array, or from the
  * beginning of a separate mask array, the array contains the image and/or
  * mask data for each frame. Each byte represents a vertical column of 8 pixels
  * with the least significant bit (bit 0) at the top. The bytes are drawn as
