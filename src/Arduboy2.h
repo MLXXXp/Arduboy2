@@ -741,7 +741,7 @@ class Arduboy2Base : public Arduboy2Core
    * is being held down:
    *
    * \code
-   * if (arduboy.everyXframes(5)) {
+   * if (arduboy.everyXFrames(5)) {
    *   if arduboy.pressed(A_BUTTON) {
    *     fireShot();
    *   }
