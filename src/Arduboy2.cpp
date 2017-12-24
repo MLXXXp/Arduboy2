@@ -849,11 +849,11 @@ void Arduboy2Base::drawSlowXYBitmap
 struct BitStreamReader {
   const uint8_t *source;
   uint16_t sourceIndex;
-  uint16_t bitBuffer;
+  uint8_t bitBuffer;
   uint8_t byteBuffer;
   
   BitStreamReader(const uint8_t *source)
-    : source(source), sourceIndex(), bitBuffer(0x100), byteBuffer()
+    : source(source), sourceIndex(), bitBuffer(), byteBuffer()
   {
   }
   
@@ -862,7 +862,7 @@ struct BitStreamReader {
     uint16_t result = 0;
     for (uint16_t i = 0; i < bitCount; i++)
     {
-      if (this->bitBuffer == 0x100)
+      if (this->bitBuffer == 0)
       {
         this->bitBuffer = 0x1;
         this->byteBuffer = pgm_read_byte(&this->source[this->sourceIndex]);
@@ -911,7 +911,7 @@ void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap,
   int columnOffset = 0;
   
   uint8_t byte = 0x00;
-  uint16_t bit = 0x01;
+  uint8_t bit = 0x01;
   while (rowOffset < rows) // + (frame*rows))
   {
     uint16_t bitLength = 1;
@@ -927,7 +927,7 @@ void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap,
         byte |= bit;
       bit <<= 1;
 
-      if (bit == 0x100) // reached end of byte
+      if (bit == 0) // reached end of byte
       {
         // draw
         int bRow = startRow + rowOffset;
