@@ -38,9 +38,15 @@
 // ----- Arduboy pins -----
 #ifdef ARDUBOY_10
 
-#define PIN_CS 12       // Display CS Arduino pin number
-#define CS_PORT PORTD   // Display CS port
-#define CS_BIT PORTD6   // Display CS physical bit number
+#ifdef ARDUINO_AVR_PROMICRO
+  #define PIN_CS 3        // Pro Micro alternative display CS pin
+  #define CS_PORT PORTD
+  #define CS_BIT PORTD3
+#else
+  #define PIN_CS 12       // Display CS Arduino pin number
+  #define CS_PORT PORTD   // Display CS port
+  #define CS_BIT PORTD6   // Display CS physical bit number
+#endif
 
 #define PIN_DC 4        // Display D/C Arduino pin number
 #define DC_PORT PORTD   // Display D/C port
@@ -57,14 +63,23 @@
 #define SPI_SCK_BIT PORTB1
 
 #define RED_LED 10   /**< The pin number for the red color in the RGB LED. */
-#define GREEN_LED 11 /**< The pin number for the greem color in the RGB LED. */
+#ifdef ARDUINO_AVR_PROMICRO
+  #define GREEN_LED 3 // Pro Micro alternative green LED pin
+#else
+  #define GREEN_LED 11 /**< The pin number for the green color in the RGB LED. */
+#endif
 #define BLUE_LED 9   /**< The pin number for the blue color in the RGB LED. */
 
 #define RED_LED_PORT PORTB
 #define RED_LED_BIT PORTB6
 
-#define GREEN_LED_PORT PORTB
-#define GREEN_LED_BIT PORTB7
+#ifdef ARDUINO_AVR_PROMICRO
+  #define GREEN_LED_PORT PORTD // Pro Micro alternative green LED port
+  #define GREEN_LED_BIT PORTD0
+#else
+  #define GREEN_LED_PORT PORTB
+  #define GREEN_LED_BIT PORTB7
+#endif
 
 #define BLUE_LED_PORT PORTB
 #define BLUE_LED_BIT PORTB5
@@ -103,15 +118,22 @@
 #define B_BUTTON_BIT PORTB4
 
 #define PIN_SPEAKER_1 5  /**< The pin number of the first lead of the speaker */
-#define PIN_SPEAKER_2 13 /**< The pin number of the second lead of the speaker */
 
 #define SPEAKER_1_PORT PORTC
 #define SPEAKER_1_DDR DDRC
 #define SPEAKER_1_BIT PORTC6
 
-#define SPEAKER_2_PORT PORTC
-#define SPEAKER_2_DDR DDRC
-#define SPEAKER_2_BIT PORTC7
+#ifdef ARDUINO_AVR_PROMICRO
+  #define PIN_SPEAKER_2 2      //Pro Micro alternative for 2nd speaker pin
+  #define SPEAKER_2_PORT PORTD 
+  #define SPEAKER_2_DDR DDRD
+  #define SPEAKER_2_BIT PORTD1
+#else
+  #define PIN_SPEAKER_2 13 /**< The pin number of the second lead of the speaker */
+  #define SPEAKER_2_PORT PORTC
+  #define SPEAKER_2_DDR DDRC
+  #define SPEAKER_2_BIT PORTC7
+#endif
 
 #define RAND_SEED_IN A4 // Open analog input used for noise by initRandomSeed()
 #define RAND_SEED_IN_PORTF
@@ -201,7 +223,7 @@
 #endif
 // --------------------
 
-// OLED hardware (SSD1306)
+// OLED hardware (SSD1306,SSD1309,SH1106,OLED_64X64)
 
 #define OLED_PIXELS_INVERTED 0xA7 // All pixels inverted
 #define OLED_PIXELS_NORMAL 0xA6 // All pixels normal
@@ -215,10 +237,24 @@
 #define OLED_HORIZ_FLIPPED 0xA0 // reversed segment re-map
 #define OLED_HORIZ_NORMAL 0xA1 // normal segment re-map
 
+#define OLED_SET_PAGE_ADDRESS      0xB0
+#ifdef OLED_SH1106
+  #define OLED_SET_COLUMN_ADDRESS_LO 0x02 //SH1106 only: 1st pixel starts on column 2
+#else
+  #define OLED_SET_COLUMN_ADDRESS_LO 0x00 
+#endif
+#define OLED_SET_COLUMN_ADDRESS_HI 0x10
 // -----
-
-#define WIDTH 128 /**< The width of the display in pixels */
-#define HEIGHT 64 /**< The height of the display in pixels */
+#ifdef OLED_96X96
+  #define WIDTH 96
+  #define HEIGHT 96
+#elif defined(OLED_128X64)
+  #define WIDTH 128
+  #define HEIGHT 96
+#else
+  #define WIDTH 128 /**< The width of the display in pixels */
+  #define HEIGHT 64 /**< The height of the display in pixels */
+#endif
 
 #define COLUMN_ADDRESS_END (WIDTH - 1) & 127   // 128 pixels wide
 #define PAGE_ADDRESS_END ((HEIGHT/8)-1) & 7    // 8 pages high
@@ -270,8 +306,7 @@ class Arduboy2Core
      *
      * \see LCDCommandMode() SPItransfer()
      */
-    void static LCDDataMode();
-
+    inline void static LCDDataMode() __attribute__((always_inline));
     /** \brief
      * Put the display into command mode.
      *
@@ -294,8 +329,7 @@ class Arduboy2Core
      *
      * \see LCDDataMode() sendLCDCommand() SPItransfer()
      */
-    void static LCDCommandMode();
-
+    inline void static LCDCommandMode() __attribute__((always_inline));
     /** \brief
      * Transfer a byte to the display.
      *

@@ -109,7 +109,7 @@ void Arduboy2Base::bootLogo()
 
 void Arduboy2Base::drawLogoBitmap(int16_t y)
 {
-  drawBitmap(20, y, arduboy_logo, 88, 16);
+  drawBitmap(20 - (64 - WIDTH / 2), y, arduboy_logo, 88, 16);
 }
 
 void Arduboy2Base::bootLogoCompressed()
@@ -119,7 +119,7 @@ void Arduboy2Base::bootLogoCompressed()
 
 void Arduboy2Base::drawLogoCompressed(int16_t y)
 {
-  drawCompressed(20, y, arduboy_logo_compressed);
+  drawCompressed(20 - (64 - WIDTH / 2), y, arduboy_logo_compressed);
 }
 
 void Arduboy2Base::bootLogoSpritesSelfMasked()
@@ -129,7 +129,7 @@ void Arduboy2Base::bootLogoSpritesSelfMasked()
 
 void Arduboy2Base::drawLogoSpritesSelfMasked(int16_t y)
 {
-  Sprites::drawSelfMasked(20, y, arduboy_logo_sprite, 0);
+  Sprites::drawSelfMasked(20 - (64 - WIDTH / 2), y, arduboy_logo_sprite, 0);
 }
 
 void Arduboy2Base::bootLogoSpritesOverwrite()
@@ -139,7 +139,7 @@ void Arduboy2Base::bootLogoSpritesOverwrite()
 
 void Arduboy2Base::drawLogoSpritesOverwrite(int16_t y)
 {
-  Sprites::drawOverwrite(20, y, arduboy_logo_sprite, 0);
+  Sprites::drawOverwrite(20 - (64 - WIDTH / 2), y, arduboy_logo_sprite, 0);
 }
 
 // bootLogoText() should be kept in sync with bootLogoShell()
@@ -306,25 +306,27 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
 
   asm volatile
   (
-    "mul %[width_offset], %A[y]\n"
-    "movw %[row_offset], r0\n"
-    "andi %A[row_offset], 0x80\n" // row_offset &= (~0b01111111);
-    "clr __zero_reg__\n"
-    "add %A[row_offset], %[x]\n"
-    // mask for only 0-7
-    "andi %A[y], 0x07\n"
-    // Z += y
-    "add r30, %A[y]\n"
-    "adc r31, __zero_reg__\n"
+    "mov  r16,%A[y]                             \n"
+    "andi r16, 0xF8                             \n" 
+    "mul  %[width_offset], r16                  \n"
+    "movw %[row_offset], r0                     \n"
+    "clr  __zero_reg__                          \n"
+    "add  %A[row_offset], %[x]                  \n"
+    "adc  %B[row_offset], __zero_reg__          \n"
+    // mask for only 0-7            
+    "andi %A[y], 0x07                           \n"
+    // Z += y           
+    "add  r30, %A[y]                            \n"
+    "adc  r31, __zero_reg__                     \n"
     // load correct bitshift from program RAM
-    "lpm %[bit], Z\n"
+    "lpm  %[bit], Z                              \n"
     : [row_offset] "=&x" (row_offset), // upper register (ANDI)
       [bit] "=r" (bit),
       [y] "+d" (y), // upper register (ANDI), must be writable
       "+z" (bsl) // is modified to point to the proper shift array element
     : [width_offset] "r" ((uint8_t)(WIDTH/8)),
       [x] "r" ((uint8_t)x)
-    :
+    : "r16"
   );
 
   if (color) {
@@ -624,24 +626,27 @@ void Arduboy2Base::fillScreen(uint8_t color)
     // if value is zero, skip assigning to 0xff
     "cpse %[color], __zero_reg__\n"
     "ldi %[color], 0xFF\n"
-    // counter = 0
-    "clr __tmp_reg__\n"
+    // counter = WIDTH * HEIGHT / 8 / 8
+    "ldi r24, %[cnt]\n"
     "loopto:\n"
-    // (4x) push zero into screen buffer,
+    // (8x) push zero into screen buffer,
     // then increment buffer position
     "st Z+, %[color]\n"
     "st Z+, %[color]\n"
     "st Z+, %[color]\n"
     "st Z+, %[color]\n"
-    // increase counter
-    "inc __tmp_reg__\n"
-    // repeat for 256 loops
-    // (until counter rolls over back to 0)
+    "st Z+, %[color]\n"
+    "st Z+, %[color]\n"
+    "st Z+, %[color]\n"
+    "st Z+, %[color]\n"
+    // decrease counter
+    "subi r24, 1\n"
+    // repeat for 128, 144 or 192 loops depending on screen resolution
     "brne loopto\n"
     : [color] "+d" (color),
       "+z" (bPtr)
-    :
-    :
+    : [cnt] "M" (WIDTH * HEIGHT / 8 / 8)
+    : "r24"
   );
 }
 
@@ -1140,9 +1145,9 @@ void Arduboy2::bootLogoText()
     }
 
     clear();
-    cursor_x = 23;
+    cursor_x = 23 - (64 - WIDTH / 2);
     cursor_y = y;
-    print("ARDUBOY");
+    print(F("ARDUBOY"));
     display();
     delayShort(27);
     // longer delay post boot, we put it inside the loop to
@@ -1173,7 +1178,7 @@ void Arduboy2::bootLogoExtra()
   if (c != 0xFF && c != 0x00)
   {
     uint8_t i = EEPROM_UNIT_NAME;
-    cursor_x = 50;
+    cursor_x = 50 - (64 - WIDTH / 2);
     cursor_y = 56;
 
     do
