@@ -133,8 +133,8 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
   const uint8_t ofs_stride = (w - rendered_width)*ofs_step;
   const uint8_t initial_bofs = ((start_h * w) + xOffset)*ofs_step;
 
-  uint8_t *bofs = (uint8_t *)bitmap + initial_bofs;
-  uint8_t *mask_ofs = !mask ? (uint8_t *)bitmap : (uint8_t *)mask;
+  const uint8_t *bofs = bitmap + initial_bofs;
+  const uint8_t *mask_ofs = !mask ? bitmap : mask;
   mask_ofs += initial_bofs + ofs_step - 1;
 
   for (uint8_t a = 0; a < loop_h; a++) {
