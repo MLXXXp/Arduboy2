@@ -6,6 +6,10 @@
 
 #include "Arduboy2Core.h"
 
+// Reserve the location of the bootloader's magic key
+// so it cannot be overwritten by program variables
+uint16_t bootloader_magic_key __attribute__((used)) __attribute__((address(MAGIC_KEY_POS)));
+
 const uint8_t PROGMEM lcdBootProgram[] = {
   // boot defaults are commented out but left here in case they
   // might prove useful for reference
