@@ -846,17 +846,19 @@ void Arduboy2Base::drawSlowXYBitmap
 }
 
 
-struct BitStreamReader {
+// Helper for drawCompressed()
+struct BitStreamReader
+{
   const uint8_t *source;
   uint16_t sourceIndex;
   uint8_t bitBuffer;
   uint8_t byteBuffer;
-  
+
   BitStreamReader(const uint8_t *source)
     : source(source), sourceIndex(), bitBuffer(), byteBuffer()
   {
   }
-  
+
   uint16_t readBits(uint16_t bitCount)
   {
     uint16_t result = 0;
@@ -868,25 +870,22 @@ struct BitStreamReader {
         this->byteBuffer = pgm_read_byte(&this->source[this->sourceIndex]);
         ++this->sourceIndex;
       }
-      
+
       if ((this->byteBuffer & this->bitBuffer) != 0)
         result |= (1 << i); // result |= bitshift_left[i];
-        
+
       this->bitBuffer <<= 1;
     }
     return result;
   }
 };
 
-
 void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color)
 {
   // set up decompress state
-
   BitStreamReader cs = BitStreamReader(bitmap);
 
   // read header
-
   int width = (int)cs.readBits(8) + 1;
   int height = (int)cs.readBits(8) + 1;
   uint8_t spanColour = (uint8_t)cs.readBits(1); // starting colour
@@ -896,7 +895,6 @@ void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap,
     return;
 
   // sy = sy - (frame * height);
-
   int yOffset = abs(sy) % 8;
   int startRow = sy / 8;
   if (sy < 0) {
@@ -909,7 +907,7 @@ void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap,
 
   int rowOffset = 0; // +(frame*rows);
   int columnOffset = 0;
-  
+
   uint8_t byte = 0x00;
   uint8_t bit = 0x01;
   while (rowOffset < rows) // + (frame*rows))
@@ -933,14 +931,15 @@ void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap,
         int bRow = startRow + rowOffset;
 
         //if (byte) // possible optimisation
-        if ((bRow <= (HEIGHT / 8) - 1) && (bRow > -2) && (columnOffset + sx <= (WIDTH - 1)) && (columnOffset + sx >= 0))
+        if ((bRow <= (HEIGHT / 8) - 1) && (bRow > -2) &&
+            (columnOffset + sx <= (WIDTH - 1)) && (columnOffset + sx >= 0))
         {
           int16_t offset = (bRow * WIDTH) + sx + columnOffset;
           if (bRow >= 0)
           {
             int16_t index = offset;
             uint8_t value = byte << yOffset;
-            
+
             if (color != 0)
               sBuffer[index] |= value;
             else
@@ -950,7 +949,7 @@ void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap,
           {
             int16_t index = offset + WIDTH;
             uint8_t value = byte >> (8 - yOffset);
-            
+
             if (color != 0)
               sBuffer[index] |= value;
             else
