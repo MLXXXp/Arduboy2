@@ -845,135 +845,134 @@ void Arduboy2Base::drawSlowXYBitmap
   }
 }
 
-typedef struct CSESSION {
-  int byte;
-  int bit;
-  const uint8_t *src;
-  int src_pos;
-} CSESSION;
-static CSESSION cs;
 
-static int getval(int bits)
-{
-  int val = 0;
-  int i;
-  for (i = 0; i < bits; i++)
+struct BitStreamReader {
+  const uint8_t *source;
+  uint16_t sourceIndex;
+  uint8_t bitBuffer;
+  uint8_t byteBuffer;
+  
+  BitStreamReader(const uint8_t *source)
+    : source(source), sourceIndex(), bitBuffer(), byteBuffer()
   {
-    if (cs.bit == 0x100)
-    {
-      cs.bit = 0x1;
-      cs.byte = pgm_read_byte(&cs.src[cs.src_pos]);
-      cs.src_pos ++;
-    }
-    if (cs.byte & cs.bit)
-      val += (1 << i);
-    cs.bit <<= 1;
   }
-  return val;
-}
+  
+  uint16_t readBits(uint16_t bitCount)
+  {
+    uint16_t result = 0;
+    for (uint16_t i = 0; i < bitCount; i++)
+    {
+      if (this->bitBuffer == 0)
+      {
+        this->bitBuffer = 0x1;
+        this->byteBuffer = pgm_read_byte(&this->source[this->sourceIndex]);
+        ++this->sourceIndex;
+      }
+      
+      if ((this->byteBuffer & this->bitBuffer) != 0)
+        result |= (1 << i); // result |= bitshift_left[i];
+        
+      this->bitBuffer <<= 1;
+    }
+    return result;
+  }
+};
+
 
 void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color)
 {
-  int bl, len;
-  int col;
-  int i;
-  int a, iCol;
-  int byte = 0;
-  int bit = 0;
-  int w, h;
-
   // set up decompress state
 
-  cs.src = bitmap;
-  cs.bit = 0x100;
-  cs.byte = 0;
-  cs.src_pos = 0;
+  BitStreamReader cs = BitStreamReader(bitmap);
 
   // read header
 
-  w = getval(8) + 1;
-  h = getval(8) + 1;
-
-  col = getval(1); // starting colour
+  int width = (int)cs.readBits(8) + 1;
+  int height = (int)cs.readBits(8) + 1;
+  uint8_t spanColour = (uint8_t)cs.readBits(1); // starting colour
 
   // no need to draw at all if we're offscreen
-  if (sx + w < 0 || sx > WIDTH - 1 || sy + h < 0 || sy > HEIGHT - 1)
+  if ((sx + width < 0) || (sx > WIDTH - 1) || (sy + height < 0) || (sy > HEIGHT - 1))
     return;
 
-  // sy = sy - (frame*h);
+  // sy = sy - (frame * height);
 
   int yOffset = abs(sy) % 8;
-  int sRow = sy / 8;
+  int startRow = sy / 8;
   if (sy < 0) {
-    sRow--;
+    startRow--;
     yOffset = 8 - yOffset;
   }
-  int rows = h / 8;
-  if (h % 8 != 0) rows++;
+  int rows = height / 8;
+  if ((height % 8) != 0)
+    ++rows;
 
-  a = 0; // +(frame*rows);
-  iCol = 0;
-
-  byte = 0; bit = 1;
-  while (a < rows) // + (frame*rows))
+  int rowOffset = 0; // +(frame*rows);
+  int columnOffset = 0;
+  
+  uint8_t byte = 0x00;
+  uint8_t bit = 0x01;
+  while (rowOffset < rows) // + (frame*rows))
   {
-    bl = 1;
-    while (!getval(1))
-      bl += 2;
+    uint16_t bitLength = 1;
+    while (cs.readBits(1) == 0)
+      bitLength += 2;
 
-    len = getval(bl) + 1; // span length
+    uint16_t len = cs.readBits(bitLength) + 1; // span length
 
     // draw the span
-
-
-    for (i = 0; i < len; i++)
+    for (uint16_t i = 0; i < len; ++i)
     {
-      if (col)
+      if (spanColour != 0)
         byte |= bit;
       bit <<= 1;
 
-      if (bit == 0x100) // reached end of byte
+      if (bit == 0) // reached end of byte
       {
         // draw
-
-        int bRow = sRow + a;
+        int bRow = startRow + rowOffset;
 
         //if (byte) // possible optimisation
-        if (bRow <= (HEIGHT / 8) - 1)
-          if (bRow > -2)
-            if (iCol + sx <= (WIDTH - 1))
-              if (iCol + sx >= 0) {
-
-                if (bRow >= 0)
-                {
-                  if (color)
-                    sBuffer[(bRow * WIDTH) + sx + iCol] |= byte << yOffset;
-                  else
-                    sBuffer[(bRow * WIDTH) + sx + iCol] &= ~(byte << yOffset);
-                }
-                if (yOffset && bRow < (HEIGHT / 8) - 1 && bRow > -2)
-                {
-                  if (color)
-                    sBuffer[((bRow + 1)*WIDTH) + sx + iCol] |= byte >> (8 - yOffset);
-                  else
-                    sBuffer[((bRow + 1)*WIDTH) + sx + iCol] &= ~(byte >> (8 - yOffset));
-                }
-              }
+        if ((bRow <= (HEIGHT / 8) - 1) && (bRow > -2) && (columnOffset + sx <= (WIDTH - 1)) && (columnOffset + sx >= 0))
+        {
+          int16_t offset = (bRow * WIDTH) + sx + columnOffset;
+          if (bRow >= 0)
+          {
+            int16_t index = offset;
+            uint8_t value = byte << yOffset;
+            
+            if (color != 0)
+              sBuffer[index] |= value;
+            else
+              sBuffer[index] &= ~value;
+          }
+          if ((yOffset != 0) && (bRow < (HEIGHT / 8) - 1))
+          {
+            int16_t index = offset + WIDTH;
+            uint8_t value = byte >> (8 - yOffset);
+            
+            if (color != 0)
+              sBuffer[index] |= value;
+            else
+              sBuffer[index] &= ~value;
+          }
+        }
 
         // iterate
-        iCol ++;
-        if (iCol >= w)
+        ++columnOffset;
+        if (columnOffset >= width)
         {
-          iCol = 0;
-          a ++;
+          columnOffset = 0;
+          ++rowOffset;
         }
 
         // reset byte
-        byte = 0; bit = 1;
+        byte = 0x00;
+        bit = 0x01;
       }
     }
 
-    col = 1 - col; // toggle colour for next span
+    spanColour ^= 0x01; // toggle colour bit (bit 0) for next span
   }
 }
 
