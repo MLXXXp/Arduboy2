@@ -313,6 +313,39 @@ void Arduboy2Core::paintScreen(const uint8_t *image)
 
 // paint from a memory buffer, this should be FAST as it's likely what
 // will be used by any buffer based subclass
+//
+// The following assembly code runs "open loop". It relies on instruction
+// execution times to allow time for each byte of data to be clocked out.
+// It is specifically tuned for a 16MHz CPU clock and SPI clocking at 8MHz.
+void Arduboy2Core::paintScreen(uint8_t image[], bool clear)
+{
+  uint16_t count;
+
+  asm volatile (
+    "   ldi   %A[count], %[len_lsb]               \n\t" //for (len = WIDTH * HEIGHT / 8)
+    "   ldi   %B[count], %[len_msb]               \n\t"
+    "1: ld    __tmp_reg__, %a[ptr]      ;2        \n\t" //tmp = *(image)
+    "   out   %[spdr], __tmp_reg__      ;1        \n\t" //SPDR = tmp
+    "   cpse  %[clear], __zero_reg__    ;1/2      \n\t" //if (clear) tmp = 0;
+    "   mov   __tmp_reg__, __zero_reg__ ;1        \n\t"
+    "2: sbiw  %A[count], 1              ;2        \n\t" //len --
+    "   sbrc  %A[count], 0              ;1/2      \n\t" //loop twice for cheap delay
+    "   rjmp  2b                        ;2        \n\t"
+    "   st    %a[ptr]+, __tmp_reg__     ;2        \n\t" //*(image++) = tmp
+    "   brne  1b                        ;1/2 :18  \n\t" //len > 0
+    "   in    __tmp_reg__, %[spsr]                \n\t" //read SPSR to clear SPIF
+    : [ptr]     "+&e" (image),
+      [count]   "=&w" (count)
+    : [spdr]    "I"   (_SFR_IO_ADDR(SPDR)),
+      [spsr]    "I"   (_SFR_IO_ADDR(SPSR)),
+      [len_msb] "M"   (WIDTH * (HEIGHT / 8 * 2) >> 8),   // 8: pixels per byte
+      [len_lsb] "M"   (WIDTH * (HEIGHT / 8 * 2) & 0xFF), // 2: for delay loop multiplier
+      [clear]   "r"   (clear)
+  );
+}
+#if 0
+// For reference, this is the "closed loop" C++ version of paintScreen()
+// used prior to the above version.
 void Arduboy2Core::paintScreen(uint8_t image[], bool clear)
 {
   uint8_t c;
@@ -349,6 +382,7 @@ void Arduboy2Core::paintScreen(uint8_t image[], bool clear)
   }
   while (!(SPSR & _BV(SPIF))) { } // wait for the last byte to be sent
 }
+#endif
 
 void Arduboy2Core::blank()
 {
