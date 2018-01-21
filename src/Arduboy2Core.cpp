@@ -261,8 +261,9 @@ void Arduboy2Core::safeMode()
 
 void Arduboy2Core::idle()
 {
-  set_sleep_mode(SLEEP_MODE_IDLE);
-  sleep_mode();
+  SMCR = _BV(SE); // select idle mode and enable sleeping
+  sleep_cpu();
+  SMCR = 0; // disable sleeping
 }
 
 void Arduboy2Core::bootPowerSaving()
