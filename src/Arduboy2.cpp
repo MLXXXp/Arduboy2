@@ -148,33 +148,28 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
 {
   digitalWriteRGB(RED_LED, RGB_ON);
 
-  for (int16_t y = -18; y <= 24; y++) {
+  for (int16_t y = -16; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
       digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
       return;
     }
 
-    if (y == -4) {
+    if (y == 4) {
       digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
       digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
     }
-    else if (y == 24) {
-      digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
-      digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
-    }
 
-    clear();
+    // Using display(CLEAR_BUFFER) instead of clear() may save code space.
+    // The extra time it takes to repaint the previous logo isn't an issue.
+    display(CLEAR_BUFFER);
     (*drawLogo)(y); // call the function that actually draws the logo
     display();
-    delayShort(27);
-    // longer delay post boot, we put it inside the loop to
-    // save the flash calling clear/delay again outside the loop
-    if (y==-16) {
-      delayShort(250);
-    }
+    delayShort(15);
   }
 
-  delayShort(700);
+  digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+  digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+  delayShort(400);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
 
   bootLogoExtra();
@@ -1119,40 +1114,33 @@ void Arduboy2::bootLogoText()
 {
   digitalWriteRGB(RED_LED, RGB_ON);
 
-  textSize = 2;
-
-  for (int8_t y = -18; y <= 24; y++) {
+  for (int16_t y = -16; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
       digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
-      textSize = 1;
       return;
     }
 
-    if (y == -4) {
+    if (y == 4) {
       digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
       digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
     }
-    else if (y == 24) {
-      digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
-      digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
-    }
 
-    clear();
+    // Using display(CLEAR_BUFFER) instead of clear() may save code space.
+    // The extra time it takes to repaint the previous logo isn't an issue.
+    display(CLEAR_BUFFER);
     cursor_x = 23;
     cursor_y = y;
-    print("ARDUBOY");
+    textSize = 2;
+    print(F("ARDUBOY"));
+    textSize = 1;
     display();
-    delayShort(27);
-    // longer delay post boot, we put it inside the loop to
-    // save the flash calling clear/delay again outside the loop
-    if (y==-16) {
-      delayShort(250);
-    }
+    delayShort(11);
   }
 
-  delayShort(700);
+  digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+  digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+  delayShort(400);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
-  textSize = 1;
 
   bootLogoExtra();
 }
