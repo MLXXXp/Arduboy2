@@ -485,21 +485,25 @@ uint8_t Arduboy2Core::buttonsState()
 {
   uint8_t buttons;
 
-  // using ports here is ~100 bytes smaller than digitalRead()
-#ifdef AB_DEVKIT
+#ifdef ARDUBOY_10
+  // up, right, left, down
+  buttons = ((~PINF) &
+              (_BV(UP_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
+               _BV(LEFT_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT)));
+  // A
+  if (bitRead(A_BUTTON_PORTIN, A_BUTTON_BIT) == 0) { buttons |= A_BUTTON; }
+  // B
+  if (bitRead(B_BUTTON_PORTIN, B_BUTTON_BIT) == 0) { buttons |= B_BUTTON; }
+#elif defined(AB_DEVKIT)
   // down, left, up
-  buttons = ((~PINB) & B01110000);
-  // right button
-  buttons = buttons | (((~PINC) & B01000000) >> 4);
-  // A and B
-  buttons = buttons | (((~PINF) & B11000000) >> 6);
-#elif defined(ARDUBOY_10)
-  // down, up, left right
-  buttons = ((~PINF) & B11110000);
-  // A (left)
-  buttons = buttons | (((~PINE) & B01000000) >> 3);
-  // B (right)
-  buttons = buttons | (((~PINB) & B00010000) >> 2);
+  buttons = ((~PINB) &
+              (_BV(DOWN_BUTTON_BIT) | _BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT)));
+  // right
+  if (bitRead(RIGHT_BUTTON_PORTIN, RIGHT_BUTTON_BIT) == 0) { buttons |= RIGHT_BUTTON; }
+  // A
+  if (bitRead(A_BUTTON_PORTIN, A_BUTTON_BIT) == 0) { buttons |= A_BUTTON; }
+  // B
+  if (bitRead(B_BUTTON_PORTIN, B_BUTTON_BIT) == 0) { buttons |= B_BUTTON; }
 #endif
 
   return buttons;
