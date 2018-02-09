@@ -19,13 +19,9 @@ Arduboy2Base::Arduboy2Base()
   currentButtonState = 0;
   previousButtonState = 0;
   // frame management
-  setFrameRate(60);
-  frameCount = -1;
-  nextFrameStart = 0;
+  setFrameDuration(16);
+  frameCount = 0;
   justRendered = false;
-  // init not necessary, will be reset after first use
-  // lastFrameStart
-  // lastFrameDurationMs
 }
 
 // functions called here should be public so users can create their
@@ -185,6 +181,11 @@ void Arduboy2Base::setFrameRate(uint8_t rate)
   eachFrameMillis = 1000 / rate;
 }
 
+void Arduboy2Base::setFrameDuration(uint8_t duration)
+{
+  eachFrameMillis = duration;
+}
+
 bool Arduboy2Base::everyXFrames(uint8_t frames)
 {
   return frameCount % frames == 0;
@@ -192,38 +193,27 @@ bool Arduboy2Base::everyXFrames(uint8_t frames)
 
 bool Arduboy2Base::nextFrame()
 {
-  unsigned long now = millis();
-  bool tooSoonForNextFrame = now < nextFrameStart;
+  uint8_t now = (uint8_t) millis();
+  uint8_t frameDurationMs = now - thisFrameStart;
 
   if (justRendered) {
-    lastFrameDurationMs = now - lastFrameStart;
+    lastFrameDurationMs = frameDurationMs;
     justRendered = false;
     return false;
   }
-  else if (tooSoonForNextFrame) {
-    // if we have MORE than 1ms to spare (hence our comparison with 2),
-    // lets sleep for power savings.  We don't compare against 1 to avoid
-    // potential rounding errors - say we're actually 0.5 ms away, but a 1
-    // is returned if we go to sleep we might sleep a full 1ms and then
-    // we'd be running the frame slighly late.  So the last 1ms we stay
-    // awake for perfect timing.
-
-    // This is likely trading power savings for absolute timing precision
-    // and the power savings might be the better goal. At 60 FPS trusting
-    // chance here might actually achieve a "truer" 60 FPS than the 16ms
-    // frame duration we get due to integer math.
-
-    // We should be woken up by timer0 every 1ms, so it's ok to sleep.
-    if ((uint8_t)(nextFrameStart - now) >= 2)
+  else if (frameDurationMs < eachFrameMillis) {
+    // Only idle if at least a full millisecond remains, since idle() may
+    // sleep the processor until the next millisecond timer interrupt.
+    if (++frameDurationMs < eachFrameMillis) {
       idle();
+    }
 
     return false;
   }
 
   // pre-render
   justRendered = true;
-  lastFrameStart = now;
-  nextFrameStart = now + eachFrameMillis;
+  thisFrameStart = now;
   frameCount++;
 
   return true;

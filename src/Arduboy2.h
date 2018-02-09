@@ -660,16 +660,46 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \details
    * Set the frame rate, in frames per second, used by `nextFrame()` to update
-   * frames at a given rate. If this function isn't used, the default rate will
-   * be 60.
+   * frames at a given rate. If this function or `setFrameDuration()`
+   * isn't used, the default rate will be 60 (actually 62.5, see note below).
    *
    * Normally, the frame rate would be set to the desired value once, at the
    * start of the game, but it can be changed at any time to alter the frame
    * update rate.
    *
-   * \see nextFrame()
+   * \note
+   * \parblock
+   * The given rate is internally converted to a frame duration in milliseconds,
+   * rounded down to the nearest integer. Therefore, the actual rate will be
+   * equal to or higher than the rate given.
+
+   * For example, 60 FPS would be 16.67ms per frame. This will be rounded down
+   * to 16ms, giving an actual frame rate of 62.5 FPS.
+   * \endparblock
+   *
+   * \see nextFrame() setFrameDuration()
    */
   void setFrameRate(uint8_t rate);
+
+  /** \brief
+   * Set the frame rate, used by the frame control functions, by giving
+   * the duration of each frame.
+   *
+   * \param duration The desired duration of each frame in milliseconds.
+   *
+   * \details
+   * Set the frame rate by specifying the duration of each frame in
+   * milliseconds. This is used by `nextFrame()` to update frames at a
+   * given rate. If this function or `setFrameRate()` isn't used,
+   * the default will be 16ms per frame.
+   *
+   * Normally, the frame rate would be set to the desired value once, at the
+   * start of the game, but it can be changed at any time to alter the frame
+   * update rate.
+   *
+   * \see nextFrame() setFrameRate()
+   */
+  void setFrameDuration(uint8_t duration);
 
   /** \brief
    * Indicate that it's time to render the next frame.
@@ -694,7 +724,7 @@ class Arduboy2Base : public Arduboy2Core
    * }
    * \endcode
    *
-   * \see setFrameRate() nextFrameDEV()
+   * \see setFrameRate() setFrameDuration() nextFrameDEV()
    */
   bool nextFrame();
 
@@ -1120,8 +1150,7 @@ class Arduboy2Base : public Arduboy2Core
 
   // For frame funcions
   uint8_t eachFrameMillis;
-  unsigned long lastFrameStart;
-  unsigned long nextFrameStart;
+  uint8_t thisFrameStart;
   bool justRendered;
   uint8_t lastFrameDurationMs;
 };
