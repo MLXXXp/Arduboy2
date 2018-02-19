@@ -8,7 +8,7 @@ Software License Agreements
 Licensed under the BSD 3-clause license:
 
 Arduboy2 library:
-Copyright (c) 2016-2017, Scott Allen
+Copyright (c) 2016-2018, Scott Allen
 All rights reserved.
 
 The Arduboy2 library was forked from the Arduboy library:
@@ -133,6 +133,12 @@ This library is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
+
+-------------------------------------------------------------------------------
+Placed in the public domain:
+
+BeepDemo example sketch:
+By Scott Allen
 
 ===============================================================================
 \endverbatim

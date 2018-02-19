@@ -8,6 +8,8 @@
 
 Arduboy2	KEYWORD1
 Arduboy2Base	KEYWORD1
+BeepPin1	KEYWORD1
+BeepPin2	KEYWORD1
 Sprites	KEYWORD1
 
 #######################################
@@ -97,6 +99,12 @@ width	KEYWORD2
 writeShowUnitNameFlag	KEYWORD2
 writeUnitID	KEYWORD2
 writeUnitName	KEYWORD2
+
+# Arduboy2Beep classes
+freq	KEYWORD2
+noTone	KEYWORD2
+timer	KEYWORD2
+tone	KEYWORD2
 
 # Sprites class
 drawErase	KEYWORD2

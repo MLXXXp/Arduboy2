@@ -129,11 +129,19 @@ Arduboy2 arduboy;
   arduboy.audio.off();
 ```
 
+### Simple tone generation
+
+The *BeepPin1* and *BeepPin2* classes are available to generate simple square wave tones using speaker pin 1 and speaker pin 2 respectively. These classes are documented in file *Arduboy2Beep.h*. Also, *BeepDemo* is included as one of the example sketches, which demonstrates basic use.
+
+NOTE: These functions will not work with a DevKit Arduboy because the speaker pins used cannot be directly controlled by a timer/counter. "Dummy" functions are provided so a sketch will compile and work properly but no sound will be produced.
+
 ### Ways to make more code space available to sketches
 
 #### Sound effects and music
 
-If you want your sketch to have sound, then using the *ArduboyTones* library will be more code efficient than using *ArduboyPlaytune* or most other sound libraries compatible with the Arduboy. *ArduboyTones* even produces less code than the [Arduino built in *tone()* function](https://www.arduino.cc/en/Reference/Tone). You'll have to decide on the appropriate library or functions you use to generate sound, based on the features required and how much memory you want it to use.
+If all you want is to play single tones, using the built in *BeepPin1* or *BeepPin2* classes will be very efficient.
+
+If you want to be able to play sequences of tones or background music, using the [*ArduboyTones*](https://github.com/MLXXXp/ArduboyTones) library will be more code efficient than using [*ArduboyPlaytune*](https://github.com/Arduboy/ArduboyPlayTune) or most other sound libraries compatible with the Arduboy. *ArduboyTones* even produces less code than the [Arduino built in *tone()* function](https://www.arduino.cc/en/Reference/Tone). You'll have to decide on the appropriate library or functions you use to generate sound, based on the features required and how much memory you want it to use.
 
 #### Remove the text functions
 

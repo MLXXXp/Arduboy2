@@ -17,7 +17,9 @@
 #define EE_FILE 2
 
 Arduboy2 arduboy;
+BeepPin1 beep;
 
+const unsigned int FRAME_RATE = 40; // Frame rate in frames per second
 const unsigned int COLUMNS = 13; //Columns of bricks
 const unsigned int ROWS = 4;     //Rows of bricks
 int dx = -1;        //Initial movement of ball
@@ -57,7 +59,8 @@ byte tick;
 void setup()
 {
   arduboy.begin();
-  arduboy.setFrameRate(40);
+  beep.begin();
+  arduboy.setFrameRate(FRAME_RATE);
   arduboy.initRandomSeed();
 }
 
@@ -66,6 +69,9 @@ void loop()
   // pause render until it's time for the next frame
   if (!(arduboy.nextFrame()))
     return;
+
+  // Handle the timing and stopping of tones
+  beep.timer();
 
   //Title screen loop switches from title screen
   //and high scores until FIRE is pressed
@@ -190,7 +196,7 @@ void moveBall()
       yb=60;
       released = false;
       lives--;
-      playTone(175, 250);
+      playToneTimed(175, 500);
       if (random(0, 2) == 0)
       {
         dx = 1;
@@ -347,7 +353,7 @@ void drawGameOver()
   arduboy.print("Score: ");
   arduboy.print(score);
   arduboy.display();
-  delay(4000);
+  arduboy.delayShort(4000);
 }
 
 void pause()
@@ -359,7 +365,7 @@ void pause()
   arduboy.display();
   while (paused)
   {
-    delay(150);
+    arduboy.delayShort(150);
     //Unpause if FIRE is pressed
     pad2 = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
     if (pad2 == true && oldpad2 == false && released)
@@ -410,7 +416,7 @@ boolean pollFireButton(int n)
 {
   for(int i = 0; i < n; i++)
   {
-    delay(15);
+    arduboy.delayShort(15);
     pad = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
     if(pad == true && oldpad == false)
     {
@@ -548,14 +554,14 @@ void enterInitials()
     }
     arduboy.drawLine(56, 28, 88, 28, 0);
     arduboy.drawLine(56 + (index*8), 28, 56 + (index*8) + 6, 28, 1);
-    delay(150);
+    arduboy.delayShort(70);
 
     if (arduboy.pressed(LEFT_BUTTON) || arduboy.pressed(B_BUTTON))
     {
       if (index > 0)
       {
         index--;
-        playTone(1046, 250);
+        playToneTimed(1046, 80);
       }
     }
 
@@ -564,14 +570,14 @@ void enterInitials()
       if (index < 2)
       {
         index++;
-        playTone(1046, 250);
+        playToneTimed(1046, 80);
       }
     }
 
-    if (arduboy.pressed(DOWN_BUTTON))
+    if (arduboy.pressed(UP_BUTTON))
     {
       initials[index]++;
-      playTone(523, 250);
+      playToneTimed(523, 80);
       // A-Z 0-9 :-? !-/ ' '
       if (initials[index] == '0')
       {
@@ -591,10 +597,10 @@ void enterInitials()
       }
     }
 
-    if (arduboy.pressed(UP_BUTTON))
+    if (arduboy.pressed(DOWN_BUTTON))
     {
       initials[index]--;
-      playTone(523, 250);
+      playToneTimed(523, 80);
       if (initials[index] == ' ') {
         initials[index] = '?';
       }
@@ -611,12 +617,11 @@ void enterInitials()
 
     if (arduboy.pressed(A_BUTTON))
     {
+      playToneTimed(1046, 80);
       if (index < 2)
       {
         index++;
-        playTone(1046, 250);
       } else {
-        playTone(1046, 250);
         return;
       }
     }
@@ -693,12 +698,19 @@ void enterHighScore(byte file)
   }
 }
 
-// Wrap the Arduino tone() function so that the pin doesn't have to be
-// specified each time. Also, don't play if audio is set to off.
-void playTone(unsigned int frequency, unsigned long duration)
+// Play a tone at the specified frequency for the specified duration.
+void playTone(unsigned int frequency, unsigned int duration)
 {
-  if (arduboy.audio.enabled() == true)
-  {
-    tone(PIN_SPEAKER_1, frequency, duration);
-  }
+  beep.tone(beep.freq(frequency), duration / (1000 / FRAME_RATE));
 }
+
+// Play a tone at the specified frequency for the specified duration using
+// a delay to time the tone.
+// Used when beep.timer() isn't being called.
+void playToneTimed(unsigned int frequency, unsigned int duration)
+{
+  beep.tone(beep.freq(frequency));
+  arduboy.delayShort(duration);
+  beep.noTone();
+}
+
