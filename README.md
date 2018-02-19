@@ -187,10 +187,7 @@ void Arduboy2Base::begin()
 
   bootLogo();
 
-  // wait for all buttons to be released
-  do {
-    delay(50);
-  } while (buttonsState());
+  waitNoButtons(); // wait for all buttons to be released
 }
 ```
 
@@ -213,13 +210,10 @@ For example: Let's say a sketch has its own code to enable, disable and save the
 
 //  bootLogo();
 
-  // wait for all buttons to be released
-  do {
-    delay(50);
-  } while (arduboy.buttonsState());
+//  waitNoButtons(); // wait for all buttons to be released
 ```
 
-This saves whatever code *blank()*, *systemButtons()* and *bootLogo()* would use.
+This saves whatever code *blank()*, *systemButtons()*, *bootLogo()* and *waitNoButtons()* would use.
 
 There are a few functions provided that are roughly equivalent to the standard functions used by *begin()* but which use less code space.
 

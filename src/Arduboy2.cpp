@@ -47,10 +47,7 @@ void Arduboy2Base::begin()
 //  bootLogoSpritesSelfMasked();
 //  bootLogoSpritesOverwrite();
 
-  // wait for all buttons to be released
-  do {
-    delayShort(50);
-  } while (buttonsState());
+  waitNoButtons(); // wait for all buttons to be released
 }
 
 void Arduboy2Base::flashlight()
@@ -173,6 +170,13 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
 
 // Virtual function overridden by derived class
 void Arduboy2Base::bootLogoExtra() { }
+
+// wait for all buttons to be released
+void Arduboy2Base::waitNoButtons() {
+  do {
+    delayShort(50); // simple button debounce
+  } while (buttonsState());
+}
 
 /* Frame management */
 

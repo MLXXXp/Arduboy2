@@ -95,6 +95,7 @@ setTextWrap	KEYWORD2
 SPItransfer	KEYWORD2
 systemButtons	KEYWORD2
 toggle	KEYWORD2
+waitNoButtons	KEYWORD2
 width	KEYWORD2
 writeShowUnitNameFlag	KEYWORD2
 writeUnitID	KEYWORD2

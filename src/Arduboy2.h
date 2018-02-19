@@ -335,6 +335,25 @@ class Arduboy2Base : public Arduboy2Core
   virtual void bootLogoExtra();
 
   /** \brief
+   * Wait until all buttons have been released.
+   *
+   * \details
+   * This function is called by `begin()` and can be called by a sketch
+   * after `boot()`.
+   *
+   * It won't return unless no buttons are being pressed. A short delay is
+   * performed each time before testing the state of the buttons to do a
+   * simple button debounce.
+   *
+   * This function is called at the end of `begin()` to make sure no buttons
+   * used to perform system start up actions are still being pressed, to
+   * prevent them from erroneously being detected by the sketch code itself.
+   *
+   * \see begin() boot()
+   */
+  void waitNoButtons();
+
+  /** \brief
    * Clear the display buffer.
    *
    * \details
