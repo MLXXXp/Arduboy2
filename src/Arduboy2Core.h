@@ -609,9 +609,44 @@ class Arduboy2Core
      * LEDs will light.
      * \endparblock
      *
-     * \see digitalWriteRGB()
+     * \see setRGBled(uint8_t, uint8_t) digitalWriteRGB() freeRGBled()
      */
     void static setRGBled(uint8_t red, uint8_t green, uint8_t blue);
+
+    /** \brief
+     * Set the brightness of one of the RGB LEDs without affecting the others.
+     *
+     * \param color The name of the LED to set. The value given should be one
+     * of RED_LED, GREEN_LED or BLUE_LED.
+     *
+     * \param val The brightness value for the LED, from 0 to 255.
+     *
+     * \note
+     * In order to use this function, the 3 parameter version must first be
+     * called at least once, in order to initialize the hardware.
+     *
+     * \details
+     * This 2 parameter version of the function will set the brightness of a
+     * single LED within the RGB LED without affecting the current brightness
+     * of the other two. See the description of the 3 parameter version of this
+     * function for more details on the RGB LED.
+     *
+     * \see setRGBled(uint8_t, uint8_t, uint8_t) digitalWriteRGB() freeRGBled()
+     */
+    void static setRGBled(uint8_t color, uint8_t val);
+
+
+    /** \brief
+     * Relinquish analog control of the RGB LED.
+     *
+     * \details
+     * Using the RGB LED in analog mode prevents further use of the LED in
+     * digital mode. This function will restore the pins used for the LED, so
+     * it can be used in digital mode.
+     *
+     * \see digitalWriteRGB() setRGBled()
+     */
+    void static freeRGBled();
 
     /** \brief
      * Set the RGB LEDs digitally, to either fully on or fully off.
@@ -638,14 +673,23 @@ class Arduboy2Core
      *     RGB_ON     RGB_ON     RGB_ON     White
      *
      * \note
+     * \parblock
+     * Using the RGB LED in analog mode will prevent digital control of the
+     * LED. To restore the ability to control the LED digitally, use the
+     * `freeRGBled()` function.
+     * \endparblock
+     *
+     * \note
+     * \parblock
      * Many of the Kickstarter Arduboys were accidentally shipped with the
      * RGB LED installed incorrectly. For these units, the green LED cannot be
      * lit. As long as the green led is set to off, turning on the red LED will
      * actually light the blue LED and turning on the blue LED will actually
      * light the red LED. If the green LED is turned on, none of the LEDs
      * will light.
+     * \endparblock
      *
-     * \see digitalWriteRGB(uint8_t, uint8_t) setRGBled()
+     * \see digitalWriteRGB(uint8_t, uint8_t) setRGBled() freeRGBled()
      */
     void static digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue);
 
@@ -663,7 +707,7 @@ class Arduboy2Core
      * the RGB LED either fully on or fully off. See the description of the
      * 3 parameter version of this function for more details on the RGB LED.
      *
-     * \see digitalWriteRGB(uint8_t, uint8_t, uint8_t) setRGBled()
+     * \see digitalWriteRGB(uint8_t, uint8_t, uint8_t) setRGBled() freeRGBled()
      */
     void static digitalWriteRGB(uint8_t color, uint8_t val);
 

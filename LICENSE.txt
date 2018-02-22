@@ -140,6 +140,9 @@ Placed in the public domain:
 BeepDemo example sketch:
 By Scott Allen
 
+RGBled example sketch:
+By Scott Allen
+
 ===============================================================================
 \endverbatim
  */
