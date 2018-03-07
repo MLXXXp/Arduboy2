@@ -78,7 +78,7 @@
  * The following is a basic example sketch, which will generate a tone when
  * a button is pressed.
  *
- * \code
+ * \code{.cpp}
  * #include <Arduboy2.h>
  * // There's no need to #include <Arduboy2Beep.h>
  * // It will be included in Arduboy2.h
@@ -135,7 +135,7 @@ class BeepPin1
    * tone).
    *
    * Example:
-   * \code
+   * \code{.cpp}
    * beep.tone(beep.freq(1000), 15);
    * while (beep.duration != 0) { } // wait for the tone to stop playing
    * \endcode
@@ -236,7 +236,7 @@ class BeepPin1
    * if necessary.
    *
    * Example:
-   * \code
+   * \code{.cpp}
    * beep.tone(beep.freq(440)); // play a 440Hz tone until stopped or replaced
    * \endcode
    *

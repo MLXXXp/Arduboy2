@@ -26,7 +26,7 @@
  * A user program can test this value to conditionally compile based on the
  * library version. For example:
  *
- * \code
+ * \code{.cpp}
  * // If the library is version 2.1.0 or higher
  * #if ARDUBOY_LIB_VER >= 20100
  *   // ... code that make use of a new feature added to V2.1.0
@@ -136,7 +136,7 @@ struct Point
  *
  * Example:
  *
- * \code
+ * \code{.cpp}
  * #include <Arduboy2.h>
  *
  * Arduboy2 arduboy;
@@ -316,7 +316,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * The prototype for the function provided to draw the logo is:
 
-   * \code
+   * \code{.cpp}
    * void drawLogo(int16_t y);
    * \endcode
    *
@@ -735,7 +735,7 @@ class Arduboy2Base : public Arduboy2Core
    * displaying the next frame.
    *
    * example:
-   * \code
+   * \code{.cpp}
    * void loop() {
    *   if (!arduboy.nextFrame()) {
    *     return; // go back to the start of the loop
@@ -790,7 +790,7 @@ class Arduboy2Base : public Arduboy2Core
    * For example, if you wanted to fire a shot every 5 frames while the A button
    * is being held down:
    *
-   * \code
+   * \code{.cpp}
    * if (arduboy.everyXFrames(5)) {
    *   if arduboy.pressed(A_BUTTON) {
    *     fireShot();
@@ -879,7 +879,7 @@ class Arduboy2Base : public Arduboy2Core
    * The `justPressed()` and `justReleased()` functions rely on this function.
    *
    * example:
-   * \code
+   * \code{.cpp}
    * void loop() {
    *   if (!arduboy.nextFrame()) {
    *     return;
@@ -1033,7 +1033,7 @@ class Arduboy2Base : public Arduboy2Core
    * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
    * hard coding a 6 when working with the unit name. For example, to allocate
    * a buffer and read the unit name into it:
-   * \code
+   * \code{.cpp}
    * // Buffer for maximum name length plus the terminator
    * char unitName[ARDUBOY_UNIT_NAME_LEN + 1];
    *
@@ -1117,7 +1117,7 @@ class Arduboy2Base : public Arduboy2Core
    * way that using `everyXFrames()` might.
    *
    * example:
-   * \code
+   * \code{.cpp}
    * // move for 10 frames when right button is pressed, if not already moving
    * if (!moving) {
    *   if (arduboy.justPressed(RIGHT_BUTTON)) {
@@ -1221,7 +1221,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * https://www.arduino.cc/en/Serial/Print
    *
    * Example:
-   * \code
+   * \code{.cpp}
    * int value = 42;
    *
    * arduboy.println("Hello World"); // Prints "Hello World" and then moves the

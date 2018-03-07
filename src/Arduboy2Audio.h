@@ -28,7 +28,7 @@
  *
  * Example:
  *
- * \code
+ * \code{.cpp}
  * #include <Arduboy2.h>
  *
  * Arduboy2 arduboy;
@@ -52,7 +52,7 @@
  * `enabled()` type function to be passed as a parameter in the constructor,
  * like so:
  *
- * \code
+ * \code{.cpp}
  * #include <Arduboy2.h>
  * #include <ArduboyTones.h>
  *
