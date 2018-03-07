@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map For Arduboy
+# Syntax Coloring Map For Arduboy2
 #######################################
 
 #######################################
@@ -10,6 +10,8 @@ Arduboy2	KEYWORD1
 Arduboy2Base	KEYWORD1
 BeepPin1	KEYWORD1
 BeepPin2	KEYWORD1
+Point	KEYWORD1
+Rect	KEYWORD1
 Sprites	KEYWORD1
 
 #######################################
@@ -62,6 +64,7 @@ freeRGBled	KEYWORD2
 getBuffer	KEYWORD2
 getCursorX	KEYWORD2
 getCursorY	KEYWORD2
+getPixel	KEYWORD2
 getTextBackground	KEYWORD2
 getTextColor	KEYWORD2
 getTextSize	KEYWORD2
@@ -121,6 +124,8 @@ drawSelfMasked	KEYWORD2
 #######################################
 
 ARDUBOY_LIB_VER	LITERAL1
+
+ARDUBOY_UNIT_NAME_LEN	LITERAL1
 
 EEPROM_STORAGE_SPACE_START	LITERAL1
 
