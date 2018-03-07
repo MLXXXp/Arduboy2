@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
+#include <avr/wdt.h>
 #include <limits.h>
 
 
@@ -251,6 +252,69 @@
 
 #define COLUMN_ADDRESS_END (WIDTH - 1) & 127   // 128 pixels wide
 #define PAGE_ADDRESS_END ((HEIGHT/8)-1) & 7    // 8 pages high
+
+/** \brief
+ * Eliminate the USB stack to free up code space.
+ *
+ * \note
+ * **WARNING:** Removing the USB code will make it impossible for sketch
+ * uploader programs to automatically force a reset into the bootloader!
+ * This means that a user will manually have to invoke a reset in order to
+ * upload a new sketch, after one without USB has be been installed.
+ * Be aware that the timing for the point that a reset must be initiated can
+ * be tricky, which could lead to some frustration on the user's part.
+ *
+ * \details
+ * \parblock
+ * This macro will cause the USB code, normally included in the sketch as part
+ * of the standard Arduino environment, to be eliminated. This will free up a
+ * fair amount of program space, and some RAM space as well, at the expense of
+ * disabling all USB functionality within the sketch (except as power input).
+ *
+ * The macro should be placed before the `setup()` function definition:
+ *
+ * \code{.cpp}
+ * #include <Arduboy2.h>
+ *
+ * Arduboy2 arduboy;
+ *
+ * // (Other variable declarations, etc.)
+ *
+ * // Eliminate the USB stack
+ * ARDUBOY_NO_USB
+ *
+ * void setup() {
+ *   arduboy.begin();
+ *   // any additional setup code
+ * }
+ * \endcode
+ *
+ * As stated in the warning above, without the USB code an uploader program
+ * will be unable to automatically force a reset into the bootloader to upload
+ * a new sketch. The user will have to manually invoke a reset. In addition to
+ * eliminating the USB code, this macro will check if the DOWN button is held
+ * when the sketch first starts and, if so, will call `exitToBootloader()` to
+ * start the bootloader for uploading. This makes it easier for the user than
+ * having to press the reset button.
+ *
+ * However, to make it even more convenient for a user to invoke the bootloader
+ * it is highly recommended that a sketch using this macro include a menu or
+ * prompt that allows the user to press the DOWN button within the sketch,
+ * which should cause `exitToBootloader()` to be called.
+ *
+ * At a minimum, the documentation for the sketch should clearly state that a
+ * manual reset will be required, and give detailed instructions on what the
+ * user must do to upload a new sketch.
+ * \endparblock
+ *
+ * \see Arduboy2Core::exitToBootloader()
+ */
+#define ARDUBOY_NO_USB int main() __attribute__ ((OS_main)); \
+int main() { \
+  Arduboy2Core::mainNoUSB(); \
+  return 0; \
+}
+
 
 /** \brief
  * Lower level functions generally dealing directly with the hardware.
@@ -761,6 +825,29 @@ class Arduboy2Core
      * of Arduino `delay()` will save a few bytes of code.
      */
     void static delayShort(uint16_t ms) __attribute__ ((noinline));
+
+    /** \brief
+     * Exit the sketch and start the bootloader
+     *
+     * \details
+     * The sketch will exit and the bootloader will be started in command mode.
+     * The effect will be similar to pressing the reset button.
+     *
+     * This function is intended to be used to allow uploading a new sketch,
+     * when the USB code has been removed to gain more code space.
+     * Ideally, the sketch would present a "New Sketch Upload" menu or prompt
+     * telling the user to "Press and hold the DOWN button when the procedure
+     * to upload a new sketch has been initiated". The sketch would then wait
+     * for the DOWN button to be pressed and then call this function.
+     *
+     * \see ARDUBOY_NO_USB
+     */
+    void static exitToBootloader();
+
+    // Replacement main() that eliminates the USB stack code.
+    // Used by the ARDUBOY_NO_USB macro. This should not be called
+    // directly from a sketch.
+    void static mainNoUSB();
 
   protected:
     // internals

@@ -117,10 +117,10 @@ void Arduboy2Core::bootPins()
            _BV(B_BUTTON_BIT);
   // Port B INPUT or LOW (none)
   // Port B inputs
-  DDRB &= ~(_BV(B_BUTTON_BIT));
+  DDRB &= ~(_BV(B_BUTTON_BIT) | _BV(SPI_MISO_BIT));
   // Port B outputs
   DDRB |= _BV(RED_LED_BIT) | _BV(GREEN_LED_BIT) | _BV(BLUE_LED_BIT) |
-          _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT);
+          _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT) | _BV(SPI_SS_BIT);
 
   // Port C
   // Speaker: Not set here. Controlled by audio class
@@ -158,9 +158,11 @@ void Arduboy2Core::bootPins()
            _BV(BLUE_LED_BIT);
   // Port B INPUT or LOW (none)
   // Port B inputs
-  DDRB &= ~(_BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT));
+  DDRB &= ~(_BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
+            _BV(SPI_MISO_BIT));
   // Port B outputs
-  DDRB |= _BV(BLUE_LED_BIT) | _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT);
+  DDRB |= _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT) | _BV(SPI_SS_BIT) |
+          _BV(BLUE_LED_BIT);
 
   // Port C INPUT_PULLUP or HIGH
   PORTC |= _BV(RIGHT_BUTTON_BIT);
@@ -269,10 +271,10 @@ void Arduboy2Core::idle()
 void Arduboy2Core::bootPowerSaving()
 {
   // disable Two Wire Interface (I2C) and the ADC
+  // All other bits will be written with 0 so will be enabled
   PRR0 = _BV(PRTWI) | _BV(PRADC);
   // disable USART1
-  PRR1 = _BV(PRUSART1);
-  // All other bits will be written with 0 so will be enabled
+  PRR1 |= _BV(PRUSART1);
 }
 
 // Shut down the display
@@ -553,5 +555,76 @@ uint8_t Arduboy2Core::buttonsState()
 void Arduboy2Core::delayShort(uint16_t ms)
 {
   delay((unsigned long) ms);
+}
+
+void Arduboy2Core::exitToBootloader()
+{
+  cli();
+  // set bootloader magic key
+  // storing two uint8_t instead of one uint16_t saves an instruction
+  //  when high and low bytes of the magic key are the same
+  *(uint8_t *)MAGIC_KEY_POS = lowByte(MAGIC_KEY);
+  *(uint8_t *)(MAGIC_KEY_POS + 1) = highByte(MAGIC_KEY);
+  // enable watchdog timer reset, with 16ms timeout
+  wdt_reset();
+  WDTCSR = (_BV(WDCE) | _BV(WDE));
+  WDTCSR = _BV(WDE);
+  while (true) { }
+}
+
+// Replacement main() that eliminates the USB stack code.
+// Used by the ARDUBOY_NO_USB macro. This should not be called
+// directly from a sketch.
+
+void Arduboy2Core::mainNoUSB()
+{
+  // disable USB
+  UDCON = _BV(DETACH);
+  UDIEN = 0;
+  UDINT = 0;
+  USBCON = _BV(FRZCLK);
+  UHWCON = 0;
+  power_usb_disable();
+
+  init();
+
+  // This would normally be done in the USB code that uses the TX and RX LEDs
+  TX_RX_LED_INIT;
+
+  // Set the DOWN button pin for INPUT_PULLUP
+  bitSet(DOWN_BUTTON_PORT, DOWN_BUTTON_BIT);
+  bitClear(DOWN_BUTTON_DDR, DOWN_BUTTON_BIT);
+
+  // Delay to give time for the pin to be pulled high if it was floating
+  delayShort(10);
+
+  // if the DOWN button is pressed
+  if (bitRead(DOWN_BUTTON_PORTIN, DOWN_BUTTON_BIT) == 0) {
+    exitToBootloader();
+  }
+
+  // The remainder is a copy of the Arduino main() function with the
+  // USB code and other unneeded code commented out.
+  // init() was called above.
+  // The call to function initVariant() is commented out to fix compiler
+  // error: "multiple definition of 'main'".
+  // The return statement is removed since this function is type void.
+
+//  init();
+
+//  initVariant();
+
+//#if defined(USBCON)
+//  USBDevice.attach();
+//#endif
+
+  setup();
+
+  for (;;) {
+    loop();
+//    if (serialEventRun) serialEventRun();
+  }
+
+//  return 0;
 }
 
