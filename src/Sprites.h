@@ -8,14 +8,7 @@
 #define Sprites_h
 
 #include "Arduboy2.h"
-
-#define SPRITE_MASKED 1
-#define SPRITE_UNMASKED 2
-#define SPRITE_OVERWRITE 2
-#define SPRITE_PLUS_MASK 3
-#define SPRITE_IS_MASK 250
-#define SPRITE_IS_MASK_ERASE 251
-#define SPRITE_AUTO_MODE 255
+#include "SpritesCommon.h"
 
 /** \brief
  * A class for drawing animated sprites from image and mask bitmaps.
@@ -49,11 +42,35 @@
  *
  * Data for each frame after the first one immediately follows the previous
  * frame. Frame numbers start at 0.
-
+ *
  * \note
+ * \parblock
+ * A separate `SpritesB` class is available as an alternative to this class.
+ * The only difference is that the `SpritesB` class is optimized for small
+ * code size rather than for execution speed. One or the other can be used
+ * depending on whether size or speed is more important.
+ *
+ * Even if the speed is acceptable when using `SpritesB`, you should still try
+ * using `Sprites`. In some cases `Sprites` will produce less code than
+ * `SpritesB`, notably when only one of the functions is used.
+ *
+ * You can easily switch between using the `Sprites` class or the `SpritesB`
+ * class by using one or the other to create an object instance:
+ *
+ * \code{.cpp}
+ * Sprites sprites;  // Use this to optimize for execution speed
+ * SpritesB sprites; // Use this to (likely) optimize for code size
+ * \endcode
+ * \endparblock
+ *
+ * \note
+ * \parblock
  * In the example patterns given in each Sprites function description,
  * a # character represents a bit set to 1 and
  * a - character represents a bit set to 0.
+ * \endparblock
+ *
+ * \see SpritesB
  */
 class Sprites
 {

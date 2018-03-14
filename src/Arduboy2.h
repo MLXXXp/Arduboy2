@@ -12,6 +12,7 @@
 #include "Arduboy2Core.h"
 #include "Arduboy2Beep.h"
 #include "Sprites.h"
+#include "SpritesB.h"
 #include <Print.h>
 #include <limits.h>
 
@@ -277,8 +278,7 @@ class Arduboy2Base : public Arduboy2Core
   void bootLogoCompressed();
 
   /** \brief
-   * Display the boot logo sequence using the `Sprites` class
-   * `drawSelfMasked()` function.
+   * Display the boot logo sequence using `Sprites::drawSelfMasked()`.
    *
    * \details
    * This function can be called by a sketch after `boot()` as an alternative to
@@ -290,8 +290,7 @@ class Arduboy2Base : public Arduboy2Core
   void bootLogoSpritesSelfMasked();
 
   /** \brief
-   * Display the boot logo sequence using the `Sprites` class
-   * `drawOverwrite()` function.
+   * Display the boot logo sequence using `Sprites::drawOverwrite()`.
    *
    * \details
    * This function can be called by a sketch after `boot()` as an alternative to
@@ -301,6 +300,30 @@ class Arduboy2Base : public Arduboy2Core
    * \see bootLogo() begin() boot() Sprites
    */
   void bootLogoSpritesOverwrite();
+
+  /** \brief
+   * Display the boot logo sequence using `SpritesB::drawSelfMasked()`.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative to
+   * `bootLogo()`. This may reduce code size if the sketch itself uses
+   * `SpritesB` class functions.
+   *
+   * \see bootLogo() begin() boot() SpritesB
+   */
+  void bootLogoSpritesBSelfMasked();
+
+  /** \brief
+   * Display the boot logo sequence using `SpritesB::drawOverwrite()`.
+   *
+   * \details
+   * This function can be called by a sketch after `boot()` as an alternative to
+   * `bootLogo()`. This may reduce code size if the sketch itself uses
+   * `SpritesB` class functions.
+   *
+   * \see bootLogo() begin() boot() SpritesB
+   */
+  void bootLogoSpritesBOverwrite();
 
   /** \brief
    * Display the boot logo sequence using the provided function
@@ -1163,6 +1186,8 @@ class Arduboy2Base : public Arduboy2Core
   static void drawLogoCompressed(int16_t y);
   static void drawLogoSpritesSelfMasked(int16_t y);
   static void drawLogoSpritesOverwrite(int16_t y);
+  static void drawLogoSpritesBSelfMasked(int16_t y);
+  static void drawLogoSpritesBOverwrite(int16_t y);
 
   // For button handling
   uint8_t currentButtonState;

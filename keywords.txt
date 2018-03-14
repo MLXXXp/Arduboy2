@@ -13,6 +13,7 @@ BeepPin2	KEYWORD1
 Point	KEYWORD1
 Rect	KEYWORD1
 Sprites	KEYWORD1
+SpritesB	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -25,6 +26,8 @@ boot	KEYWORD2
 bootLogo	KEYWORD2
 bootLogoCompressed	KEYWORD2
 bootLogoShell	KEYWORD2
+bootLogoSpritesBOverwrite	KEYWORD2
+bootLogoSpritesBSelfMasked	KEYWORD2
 bootLogoSpritesOverwrite	KEYWORD2
 bootLogoSpritesSelfMasked	KEYWORD2
 bootLogoText	KEYWORD2

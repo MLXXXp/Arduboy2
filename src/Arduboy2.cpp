@@ -41,11 +41,13 @@ void Arduboy2Base::begin()
   audio.begin();
 
   bootLogo();
-  // alternative logo functions. Work the same a bootLogo() but may reduce
+  // alternative logo functions. Work the same as bootLogo() but may reduce
   // memory size if the sketch uses the same bitmap drawing function
 //  bootLogoCompressed();
 //  bootLogoSpritesSelfMasked();
 //  bootLogoSpritesOverwrite();
+//  bootLogoSpritesBSelfMasked();
+//  bootLogoSpritesBOverwrite();
 
   waitNoButtons(); // wait for all buttons to be released
 }
@@ -133,6 +135,26 @@ void Arduboy2Base::bootLogoSpritesOverwrite()
 void Arduboy2Base::drawLogoSpritesOverwrite(int16_t y)
 {
   Sprites::drawOverwrite(20, y, arduboy_logo_sprite, 0);
+}
+
+void Arduboy2Base::bootLogoSpritesBSelfMasked()
+{
+  bootLogoShell(drawLogoSpritesBSelfMasked);
+}
+
+void Arduboy2Base::drawLogoSpritesBSelfMasked(int16_t y)
+{
+  SpritesB::drawSelfMasked(20, y, arduboy_logo_sprite, 0);
+}
+
+void Arduboy2Base::bootLogoSpritesBOverwrite()
+{
+  bootLogoShell(drawLogoSpritesBOverwrite);
+}
+
+void Arduboy2Base::drawLogoSpritesBOverwrite(int16_t y)
+{
+  SpritesB::drawOverwrite(20, y, arduboy_logo_sprite, 0);
 }
 
 // bootLogoText() should be kept in sync with bootLogoShell()

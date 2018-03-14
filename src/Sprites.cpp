@@ -81,13 +81,12 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
   // xOffset technically doesn't need to be 16 bit but the math operations
   // are measurably faster if it is
   uint16_t xOffset, ofs;
-  int8_t yOffset = abs(y) % 8;
+  int8_t yOffset = y & 7;
   int8_t sRow = y / 8;
   uint8_t loop_h, start_h, rendered_width;
 
   if (y < 0 && yOffset > 0) {
     sRow--;
-    yOffset = 8 - yOffset;
   }
 
   // if the left side of the render is offscreen skip those loops
