@@ -48,8 +48,10 @@
                             // with 0x00
 
 // EEPROM_SYS_FLAGS values
-#define SYS_FLAG_UNAME 0    // Display the unit name on the logo screen
+#define SYS_FLAG_UNAME 0      // Display the unit name on the logo screen
 #define SYS_FLAG_UNAME_MASK _BV(SYS_FLAG_UNAME)
+#define SYS_FLAG_SHOW_LOGO 1  // Show the logo sequence during boot up
+#define SYS_FLAG_SHOW_LOGO_MASK _BV(SYS_FLAG_SHOW_LOGO)
 
 /** \brief
  * Start of EEPROM storage space for sketches.
@@ -251,17 +253,11 @@ class Arduboy2Base : public Arduboy2Core
    * The Arduboy logo scrolls down from the top of the screen to the center
    * while the RGB LEDs light in sequence.
    *
-   * If the RIGHT button is pressed while the logo is scrolling down,
-   * the boot logo sequence will be aborted. This can be useful for
-   * developers who wish to quickly start testing, or anyone else who is
-   * impatient and wants to go straight to the actual sketch.
+   * The `bootLogoShell()` helper function is used to perform the actual
+   * sequence. The documentation for `bootLogoShell()` provides details on how
+   * it operates.
    *
-   * This function calls `bootLogoExtra()` after the logo stops scrolling down,
-   * which derived classes can implement to add additional information to the
-   * logo screen. The `Arduboy2` class uses this to display the unit name.
-   *
-   * \see begin() boot() Arduboy2::bootLogoExtra() bootLogoShell()
-   * Arduboy2::bootLogoText()
+   * \see begin() boot() bootLogoShell() Arduboy2::bootLogoText()
    */
   void bootLogo();
 
@@ -337,8 +333,20 @@ class Arduboy2Base : public Arduboy2Core
    * with a reference to a function which will do the actual drawing of the
    * logo.
    *
+   * This function calls `bootLogoExtra()` after the logo stops scrolling down,
+   * which derived classes can implement to add additional information to the
+   * logo screen. The `Arduboy2` class uses this to display the unit name.
+   *
+   * If the RIGHT button is pressed while the logo is scrolling down,
+   * the boot logo sequence will be aborted. This can be useful for
+   * developers who wish to quickly start testing, or anyone else who is
+   * impatient and wants to go straight to the actual sketch.
+   *
+   * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
+   * will return without executing the logo display sequence.
+   *
    * The prototype for the function provided to draw the logo is:
-
+   *
    * \code{.cpp}
    * void drawLogo(int16_t y);
    * \endcode
@@ -349,7 +357,7 @@ class Arduboy2Base : public Arduboy2Core
    * sequence. If the logo height is not 16 pixels, the Y value can be adjusted
    * to compensate.
    *
-   * \see bootLogo() boot()
+   * \see bootLogo() boot() Arduboy2::bootLogoExtra()
    */
   void bootLogoShell(void (*drawLogo)(int16_t));
 
@@ -1097,6 +1105,38 @@ class Arduboy2Base : public Arduboy2Core
   void writeUnitName(char* name);
 
   /** \brief
+   * Read the "Show Boot Logo" flag in system EEPROM.
+   *
+   * \return `true` if the flag is set to indicate that the boot logo sequence
+   * should be displayed. `false` if the flag is set to not display the
+   * boot logo sequence.
+   *
+   * \details
+   * The "Show Boot Logo" flag is used to determine whether the system
+   * boot logo sequence is to be displayed when the system boots up.
+   * This function returns the value of this flag.
+   *
+   * \see writeShowBootLogoFlag() bootLogo()
+   */
+  bool readShowBootLogoFlag();
+
+  /** \brief
+   * Write the "Show Boot Logo" flag in system EEPROM.
+   *
+   * \param val If `true` the flag is set to indicate that the boot logo
+   * sequence should be displayed. If `false` the flag is set to not display
+   * the boot logo sequence.
+   *
+   * \details
+   * The "Show Boot Logo" flag is used to determine whether the system
+   * boot logo sequence is to be displayed when the system boots up.
+   * This function allows the flag to be saved with the desired value.
+   *
+   * \see readShowBootLogoFlag() bootLogo()
+   */
+  void writeShowBootLogoFlag(bool val);
+
+  /** \brief
    * Read the "Show Unit Name" flag in system EEPROM.
    *
    * \return `true` if the flag is set to indicate that the unit name should
@@ -1275,6 +1315,14 @@ class Arduboy2 : public Print, public Arduboy2Base
    * to display text. However, the logo will not look as good when printed as
    * text as it does with the bitmap used by `bootLogo()`.
    *
+   * If the RIGHT button is pressed while the logo is scrolling down,
+   * the boot logo sequence will be aborted. This can be useful for
+   * developers who wish to quickly start testing, or anyone else who is
+   * impatient and wants to go straight to the actual sketch.
+   *
+   * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
+   * will return without executing the logo display sequence.
+   *
    * \see bootLogo() boot() Arduboy2::bootLogoExtra()
    */
   void bootLogoText();
@@ -1289,7 +1337,8 @@ class Arduboy2 : public Print, public Arduboy2Base
    * the bottom of the screen. This function pauses for a short time to allow
    * the name to be seen.
    *
-   * The name is not displayed if the "Show Unit Name" flag is not set.
+   * If the SYS_FLAG_UNAME flag in system EEPROM is cleared, this function
+   * will return without showing the unit name or pausing.
    *
    * \note
    * This function would not normally be called directly from within a sketch

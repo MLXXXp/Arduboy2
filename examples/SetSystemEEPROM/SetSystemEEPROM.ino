@@ -1,24 +1,40 @@
-// =======================================================================
-// Manage an Arduboy's unit name and ID stored in the system EEPROM area
-// =======================================================================
-
-/*
-  ----------------------------------------------------------------------------
-  The area in EEPROM reserved by the library for global system use includes
-  space to store a Unit Name and Unit ID. These can be read by sketches,
-  using the readUnitName() and readUnitID() functions. Also, the Arduboy2
-  class will display the Unit Name at the end of the boot logo sequence,
-  if possible, during start up.
-
-  This sketch allows the Unit Name and Unit ID to be set or changed and saved.
-  ----------------------------------------------------------------------------
-*/
-
-// Version 2.0
+// ========================================
+// Manage an Arduboy's system EEPROM area
+// ========================================
 
 /*
 ------------------------------------------------------------------------------
-Copyright (c) 2017, Scott Allen
+This sketch allows manipulation of the following values in system EEPROM:
+
+- The Unit Name. This is a 6 character field that can be read by sketches
+  using the readUnitName() function. Also, the Arduboy2 class will display
+  the Unit Name at the end of the boot logo sequence, if possible, during
+  start up.
+
+- The Unit ID. This is a 16 bit value that can be read by sketches using the
+  readUnitID() function.
+
+- The "Show Unit Name" flag. This flag indicates whether or not the Unit Name
+  should be displayed at the end of the boot logo sequence in circumstances
+  where it's possible to do so.
+
+- The "Show Boot Logo" flag. This flag indicates whether or not to display
+  the boot logo sequence during start up.
+
+This sketch also allows:
+
+- The entire System EEPROM area to be reset back to default values.
+
+- The entire User EEPROM area to be reset. This will clear the high scores
+  and any other data saved by ALL sketches that have ever been installed.
+------------------------------------------------------------------------------
+*/
+
+// Version 1.0
+
+/*
+------------------------------------------------------------------------------
+Copyright (c) 2018, Scott Allen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -47,6 +63,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <Arduboy2.h>
+#include <EEPROM.h>
 
 // The frame rate determines the button auto-repeat rate for unit name entry
 #define FRAME_RATE 10
@@ -65,16 +82,36 @@ const char StrYes[] PROGMEM = "YES";
 const char StrNo[] PROGMEM = "NO";
 const char StrSaveQ[] PROGMEM = "SAVE?";
 const char StrSaved[] PROGMEM = "SAVED";
-const char StrShowNameQ1[] PROGMEM = "Show Unit Name";
+const char StrShowNameQ1[] PROGMEM = "LEFT:show unit name";
 const char StrShowNameQ2[] PROGMEM = "on logo screen?";
+const char StrShowLogoQ[] PROGMEM = "RIGHT:show boot logo?";
 const char StrBtnChangeName[] PROGMEM = "UP:change Unit Name";
 const char StrBtnChangeID[] PROGMEM = "DOWN:change Unit ID";
-const char StrBtnShowName[] PROGMEM = "LEFT:set \"show name\"";
+const char StrBtnFlags[] PROGMEM = "LEFT:flags";
+const char StrBtnReset[] PROGMEM = "RIGHT:reset";
 const char StrBtnMenu[] PROGMEM = "A:menu";
 const char StrBtnSave[] PROGMEM = "B:save";
 const char StrBtnYes[] PROGMEM = "A:yes";
 const char StrBtnNo[] PROGMEM = "B:no";
 const char StrBtnTestLogo[] PROGMEM = "DOWN:test boot logo";
+const char StrNoLogo1[] PROGMEM = "\"SHOW BOOT LOGO\"";
+const char StrNoLogo2[] PROGMEM = "flag is OFF";
+const char StrBtnResetSys[] PROGMEM = "UP:reset system";
+const char StrBtnResetUser[] PROGMEM = "Down:reset user";
+const char StrEEPROM[] PROGMEM = "EEPROM";
+const char StrResetSys1[] PROGMEM = "EEPROM reserved for";
+const char StrResetSys2[] PROGMEM = "system use will be";
+const char StrResetSys3[] PROGMEM = "reset to defaults!";
+const char StrResetUser1[] PROGMEM = "EEPROM containing";
+const char StrResetUser2[] PROGMEM = "ALL saved sketch data";
+const char StrResetUser3[] PROGMEM = "will be erased!";
+const char StrAreYouSureQ[] PROGMEM = "ARE YOU SURE?";
+const char StrBtnResetYes[] PROGMEM = "YES:hold A, press B";
+const char StrBtnResetNo[] PROGMEM = "NO:any D-pad button";
+const char StrWriting[] PROGMEM = "WRITING...";
+const char StrSystem[] PROGMEM = "SYSTEM";
+const char StrUser[] PROGMEM = "USER";
+const char StrReset[] PROGMEM = "RESET";
 const char StrHex[] PROGMEM = "hex";
 const char StrDecimal[] PROGMEM = "decimal";
 
@@ -83,22 +120,24 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define SMALL_SPACE 4 // The number of pixels for a small space between groups
 
 // Defines for text and field locations
-#define MENU_BTN_CHANGE_NAME_X 0
+#define MENU_BTN_CHANGE_NAME_X centerStr_P(StrBtnChangeName)
 #define MENU_BTN_CHANGE_NAME_Y 0
 #define MENU_NAME_X centerStrLen(ARDUBOY_UNIT_NAME_LEN)
 #define MENU_NAME_Y (MENU_BTN_CHANGE_NAME_Y + CHAR_HEIGHT + 3)
 
-#define MENU_BTN_CHANGE_ID_X 0
+#define MENU_BTN_CHANGE_ID_X centerStr_P(StrBtnChangeID)
 #define MENU_BTN_CHANGE_ID_Y 26
 #define MENU_HEADING_HEX_X (centerStr_P(StrHex) - (WIDTH / 4))
 #define MENU_HEADING_DECIMAL_X (centerStr_P(StrDecimal) + (WIDTH / 4))
 #define MENU_HEADINGS_Y (MENU_BTN_CHANGE_ID_Y + CHAR_HEIGHT + 1)
-#define MENU_ID_HEX_X (centerStrLen(5) - (WIDTH / 4)) 
-#define MENU_ID_DECIMAL_X (centerStrLen(5) + (WIDTH / 4)) 
+#define MENU_ID_HEX_X (centerStrLen(5) - (WIDTH / 4))
+#define MENU_ID_DECIMAL_X (centerStrLen(5) + (WIDTH / 4))
 #define MENU_ID_Y (MENU_HEADINGS_Y + CHAR_HEIGHT + 1)
 
-#define MENU_BTN_SHOW_NAME_X 0
-#define MENU_BTN_SHOW_NAME_Y 56
+#define MENU_BTN_FLAGS_X 0
+#define MENU_BTN_FLAGS_Y 56
+#define MENU_BTN_RESET_X rightStr_P(StrBtnReset)
+#define MENU_BTN_RESET_Y MENU_BTN_FLAGS_Y
 
 
 #define NAME_TITLE_X centerStr_P(StrName)
@@ -157,32 +196,103 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define ID_SAVE_X (ID_SAVE_Q_X + ((strlen_P(StrSaveQ) * CHAR_WIDTH) + CHAR_WIDTH))
 #define ID_SAVE_Y (ID_LARGE_Y + 1)
 
-#define SHOW_NAME_BTN_MENU_X 0
-#define SHOW_NAME_BTN_MENU_Y 0
-#define SHOW_NAME_BTN_SAVE_X rightStr_P(StrBtnSave)
-#define SHOW_NAME_BTN_SAVE_Y SHOW_NAME_BTN_MENU_Y
-#define SHOW_NAME_Q_1_X centerStr_P(StrShowNameQ1)
-#define SHOW_NAME_Q_1_Y 12
-#define SHOW_NAME_Q_2_X centerStr_P(StrShowNameQ2)
-#define SHOW_NAME_Q_2_Y (SHOW_NAME_Q_1_Y + 8)
-#define SHOW_NAME_YES_X ((WIDTH / 2) - ((strlen_P(StrYes) + 1) * CHAR_WIDTH * 2))
-#define SHOW_NAME_YES_Y 34
-#define SHOW_NAME_NO_X ((WIDTH / 2) + (CHAR_WIDTH * 2))
-#define SHOW_NAME_NO_Y SHOW_NAME_YES_Y
-#define SHOW_NAME_TEST_X 0
-#define SHOW_NAME_TEST_Y 56
-#define SHOW_NAME_SAVED_X centerStr2_P(StrSaved)
-#define SHOW_NAME_SAVED_Y ((HEIGHT / 2) - CHAR_HEIGHT)
+#define FLAGS_BTN_MENU_X 0
+#define FLAGS_BTN_MENU_Y 0
+#define FLAGS_BTN_SAVE_X rightStr_P(StrBtnSave)
+#define FLAGS_BTN_SAVE_Y FLAGS_BTN_MENU_Y
+#define FLAGS_NAME_Q_1_X centerStr_P(StrShowNameQ1)
+#define FLAGS_NAME_Q_1_Y 9
+#define FLAGS_NAME_Q_2_X centerStr_P(StrShowNameQ2)
+#define FLAGS_NAME_Q_2_Y (FLAGS_NAME_Q_1_Y + 8)
+#define FLAGS_NAME_YES_X ((WIDTH / 2) - ((strlen_P(StrYes) + 1) * CHAR_WIDTH))
+#define FLAGS_NAME_YES_Y (FLAGS_NAME_Q_2_Y + CHAR_HEIGHT)
+#define FLAGS_NAME_NO_X ((WIDTH / 2) + (CHAR_WIDTH))
+#define FLAGS_NAME_NO_Y FLAGS_NAME_YES_Y
+#define FLAGS_LOGO_Q_X centerStr_P(StrShowLogoQ)
+#define FLAGS_LOGO_Q_Y 37
+#define FLAGS_LOGO_YES_X ((WIDTH / 2) - ((strlen_P(StrYes) + 1) * CHAR_WIDTH))
+#define FLAGS_LOGO_YES_Y FLAGS_LOGO_Q_Y + CHAR_HEIGHT
+#define FLAGS_LOGO_NO_X ((WIDTH / 2) + (CHAR_WIDTH))
+#define FLAGS_LOGO_NO_Y FLAGS_LOGO_YES_Y
+#define FLAGS_TEST_X centerStr_P(StrBtnTestLogo)
+#define FLAGS_TEST_Y 56
+
+#define FLAGS_SAVED_X centerStr2_P(StrSaved)
+#define FLAGS_SAVED_Y ((HEIGHT / 2) - CHAR_HEIGHT)
+
+#define FLAGS_NO_LOGO_1_X centerStr_P(StrNoLogo1)
+#define FLAGS_NO_LOGO_1_Y ((HEIGHT / 2) - CHAR_HEIGHT - 1)
+#define FLAGS_NO_LOGO_2_X centerStr_P(StrNoLogo2)
+#define FLAGS_NO_LOGO_2_Y (FLAGS_NO_LOGO_1_Y + CHAR_HEIGHT + 2)
+
+#define RESET_BTN_MENU_X centerStr_P(StrBtnMenu)
+#define RESET_BTN_MENU_Y 0
+#define RESET_BTN_SYS_X centerStr_P(StrBtnResetSys)
+#define RESET_BTN_SYS_Y 16
+#define RESET_BTN_SYS_EEPROM_X centerStr_P(StrEEPROM)
+#define RESET_BTN_SYS_EEPROM_Y (RESET_BTN_SYS_Y + CHAR_HEIGHT)
+#define RESET_BTN_USER_X centerStr_P(StrBtnResetUser)
+#define RESET_BTN_USER_Y 40
+#define RESET_BTN_USER_EEPROM_X centerStr_P(StrEEPROM)
+#define RESET_BTN_USER_EEPROM_Y (RESET_BTN_USER_Y + CHAR_HEIGHT)
+
+#define RESET_SYS_TEXT_1_X centerStr_P(StrResetSys1)
+#define RESET_SYS_TEXT_1_Y 0
+#define RESET_SYS_TEXT_2_X centerStr_P(StrResetSys2)
+#define RESET_SYS_TEXT_2_Y (RESET_SYS_TEXT_1_Y + CHAR_HEIGHT)
+#define RESET_SYS_TEXT_3_X centerStr_P(StrResetSys3)
+#define RESET_SYS_TEXT_3_Y (RESET_SYS_TEXT_2_Y + CHAR_HEIGHT)
+#define RESET_SYS_SURE_Q_X centerStr_P(StrAreYouSureQ)
+#define RESET_SYS_SURE_Q_Y 32
+#define RESET_SYS_BTN_YES_X centerStr_P(StrBtnResetYes)
+#define RESET_SYS_BTN_YES_Y 48
+#define RESET_SYS_BTN_NO_X centerStr_P(StrBtnResetYes)
+#define RESET_SYS_BTN_NO_Y (RESET_SYS_BTN_YES_Y + CHAR_HEIGHT)
+
+#define RESET_SYS_CONFIRMED_1_X centerStr2_P(StrSystem)
+#define RESET_SYS_CONFIRMED_1_Y 7
+#define RESET_SYS_CONFIRMED_2_X centerStr2_P(StrEEPROM)
+#define RESET_SYS_CONFIRMED_2_Y (RESET_SYS_CONFIRMED_1_Y + (CHAR_HEIGHT * 2) + 2)
+#define RESET_SYS_CONFIRMED_3_X centerStr2_P(StrReset)
+#define RESET_SYS_CONFIRMED_3_Y (RESET_SYS_CONFIRMED_2_Y + (CHAR_HEIGHT * 2) + 2)
+
+#define RESET_USER_TEXT_1_X centerStr_P(StrResetUser1)
+#define RESET_USER_TEXT_1_Y 0
+#define RESET_USER_TEXT_2_X centerStr_P(StrResetUser2)
+#define RESET_USER_TEXT_2_Y (RESET_USER_TEXT_1_Y + CHAR_HEIGHT)
+#define RESET_USER_TEXT_3_X centerStr_P(StrResetUser3)
+#define RESET_USER_TEXT_3_Y (RESET_USER_TEXT_2_Y + CHAR_HEIGHT)
+#define RESET_USER_SURE_Q_X centerStr_P(StrAreYouSureQ)
+#define RESET_USER_SURE_Q_Y 32
+#define RESET_USER_BTN_YES_X centerStr_P(StrBtnResetYes)
+#define RESET_USER_BTN_YES_Y 48
+#define RESET_USER_BTN_NO_X centerStr_P(StrBtnResetYes)
+#define RESET_USER_BTN_NO_Y (RESET_USER_BTN_YES_Y + CHAR_HEIGHT)
+
+#define RESET_USER_CONFIRMED_1_X centerStr2_P(StrUser)
+#define RESET_USER_CONFIRMED_1_Y 7
+#define RESET_USER_CONFIRMED_2_X centerStr2_P(StrEEPROM)
+#define RESET_USER_CONFIRMED_2_Y (RESET_USER_CONFIRMED_1_Y + (CHAR_HEIGHT * 2) + 2)
+#define RESET_USER_CONFIRMED_3_X centerStr2_P(StrReset)
+#define RESET_USER_CONFIRMED_3_Y (RESET_USER_CONFIRMED_2_Y + (CHAR_HEIGHT * 2) + 2)
+
+#define RESET_USER_WRITING_X centerStr2_P(StrWriting)
+#define RESET_USER_WRITING_Y ((HEIGHT / 2) - (CHAR_HEIGHT - 1))
+
+// EEPROM addresses
+#define EEPROM_START     (0x0000)
+#define EEPROM_SIZE      (1024)
+#define EEPROM_END       (EEPROM_START + EEPROM_SIZE - 1)
 
 // Calculation of the number of frames to wait before button auto-repeat starts
 #define DELAY_FRAMES (REPEAT_DELAY / (1000 / FRAME_RATE))
 
 // The Arduino "magic" has trouble creating prototypes for functions called
 // by pointers, so they're declared here manually
-void stateMain(), stateName(), stateID(), stateShowName();
-void stateSaveName(), stateSaveID();
-void screenMain(), screenName(), screenID(), screenShowName();
-void screenSaveName(), screenSaveID();
+void stateMain(), stateName(), stateID(), stateFlags(), stateReset();
+void stateSaveName(), stateSaveID(), stateResetSys(), stateResetUser();
+void screenMain(), screenName(), screenID(), screenFlags(), screenReset();
+void screenSaveName(), screenSaveID(), screenResetSys(), screenResetUser();
 
 Arduboy2 arduboy;
 
@@ -193,16 +303,20 @@ uint16_t unitID;
 byte idIndex;
 
 boolean showNameFlag;
+boolean showLogoFlag;
 
 // Assign numbers for each state/screen
 enum State : byte {
   sMain,
   sName,
   sID,
-  sShowName,
+  sFlags,
+  sReset,
   sSaveName,
   sSaveID,
-  sMAX = sSaveID
+  sResetSys,
+  sResetUser,
+  sMAX = sResetUser
 };
 
 byte currentState;
@@ -212,9 +326,12 @@ void (*stateFunc[sMAX + 1])() = {
   stateMain,
   stateName,
   stateID,
-  stateShowName,
+  stateFlags,
+  stateReset,
   stateSaveName,
-  stateSaveID
+  stateSaveID,
+  stateResetSys,
+  stateResetUser
 };
 
 // Function pointer array for screen drawing
@@ -222,9 +339,12 @@ void (*screenFunc[sMAX + 1])() = {
   screenMain,
   screenName,
   screenID,
-  screenShowName,
+  screenFlags,
+  screenReset,
   screenSaveName,
-  screenSaveID
+  screenSaveID,
+  screenResetSys,
+  screenResetUser
 };
 
 unsigned int delayCount = 0;
@@ -276,7 +396,10 @@ void stateMain() {
     setState(sID);
   }
   else if (arduboy.justPressed(LEFT_BUTTON)) {
-    setState(sShowName);
+    setState(sFlags);
+  }
+  else if (arduboy.justPressed(RIGHT_BUTTON)) {
+    setState(sReset);
   }
 }
 
@@ -350,26 +473,43 @@ void stateID() {
   }
 }
 
-// STATE: Set "Show Unit Name" flag
-void stateShowName() {
-  if (arduboy.justPressed(RIGHT_BUTTON)) {
+// STATE: Set system flags
+void stateFlags() {
+  if (arduboy.justPressed(LEFT_BUTTON)) {
     showNameToggle();
   }
-  else if (arduboy.justPressed(LEFT_BUTTON)) {
-    showNameToggle();
+  else if (arduboy.justPressed(RIGHT_BUTTON)) {
+    showLogoToggle();
   }
   else if (arduboy.justPressed(A_BUTTON)) {
     setState(sMain);
   }
   else if (arduboy.justPressed(B_BUTTON)) {
-    saveShowName();
-    setState(sShowName);
+    saveFlags();
+    setState(sFlags);
   }
   else if (arduboy.justPressed(DOWN_BUTTON)) {
     showNameFlag = arduboy.readShowUnitNameFlag();
-    arduboy.bootLogo();
-    delay(1000);
-    setState(sShowName);
+    if ((showLogoFlag = arduboy.readShowBootLogoFlag()) == true) {
+      arduboy.bootLogo();
+    }
+    else {
+      displayNoLogo();
+    }
+    setState(sFlags);
+  }
+}
+
+// STATE: Reset EEPROM areas
+void stateReset() {
+  if (arduboy.justPressed(UP_BUTTON)) {
+    setState(sResetSys);
+  }
+  else if (arduboy.justPressed(DOWN_BUTTON)) {
+    setState(sResetUser);
+  }
+  else if (arduboy.justPressed(A_BUTTON)) {
+    setState(sMain);
   }
 }
 
@@ -392,6 +532,34 @@ void stateSaveID() {
   }
   else if (arduboy.justPressed(B_BUTTON)) {
     setState(sID);
+  }
+}
+
+// STATE: Prompt to reset system EEPROM
+void stateResetSys() {
+  if (arduboy.justPressed(B_BUTTON) && arduboy.pressed(A_BUTTON)) {
+    resetSysEEPROM();
+    setState(sReset);
+  }
+  else if (arduboy.justPressed(UP_BUTTON) ||
+           arduboy.justPressed(DOWN_BUTTON) ||
+           arduboy.justPressed(RIGHT_BUTTON) ||
+           arduboy.justPressed(LEFT_BUTTON)) {
+    setState(sReset);
+  }
+}
+
+// STATE: Prompt to reset user EEPROM
+void stateResetUser() {
+  if (arduboy.justPressed(B_BUTTON) && arduboy.pressed(A_BUTTON)) {
+    resetUserEEPROM();
+    setState(sReset);
+  }
+  else if (arduboy.justPressed(UP_BUTTON) ||
+           arduboy.justPressed(DOWN_BUTTON) ||
+           arduboy.justPressed(RIGHT_BUTTON) ||
+           arduboy.justPressed(LEFT_BUTTON)) {
+    setState(sReset);
   }
 }
 
@@ -418,7 +586,8 @@ void screenMain() {
   printIDHex(MENU_ID_HEX_X, MENU_ID_Y);
   printIDDecimal(MENU_ID_DECIMAL_X, MENU_ID_Y);
 
-  printStr_P(MENU_BTN_SHOW_NAME_X, MENU_BTN_SHOW_NAME_Y, StrBtnShowName);
+  printStr_P(MENU_BTN_FLAGS_X, MENU_BTN_FLAGS_Y, StrBtnFlags);
+  printStr_P(MENU_BTN_RESET_X, MENU_BTN_RESET_Y, StrBtnReset);
 }
 
 // DISPLAY: Change unit name
@@ -440,18 +609,29 @@ void screenID() {
   printIDCursors();
 }
 
-// DISPLAY: Set "Show Unit Name" flag
-void screenShowName() {
-  printStr_P(SHOW_NAME_BTN_MENU_X, SHOW_NAME_BTN_MENU_Y, StrBtnMenu);
-  printStr_P(SHOW_NAME_BTN_SAVE_X, SHOW_NAME_BTN_SAVE_Y, StrBtnSave);
-  printStr_P(SHOW_NAME_Q_1_X, SHOW_NAME_Q_1_Y, StrShowNameQ1);
-  printStr_P(SHOW_NAME_Q_2_X, SHOW_NAME_Q_2_Y, StrShowNameQ2);
-  arduboy.setTextSize(2);
-  printStr_P(SHOW_NAME_YES_X, SHOW_NAME_YES_Y, StrYes);
-  printStr_P(SHOW_NAME_NO_X, SHOW_NAME_NO_Y, StrNo);
-  arduboy.setTextSize(1);
+// DISPLAY: Set system flags
+void screenFlags() {
+  printStr_P(FLAGS_BTN_MENU_X, FLAGS_BTN_MENU_Y, StrBtnMenu);
+  printStr_P(FLAGS_BTN_SAVE_X, FLAGS_BTN_SAVE_Y, StrBtnSave);
+  printStr_P(FLAGS_NAME_Q_1_X, FLAGS_NAME_Q_1_Y, StrShowNameQ1);
+  printStr_P(FLAGS_NAME_Q_2_X, FLAGS_NAME_Q_2_Y, StrShowNameQ2);
+  printStr_P(FLAGS_NAME_YES_X, FLAGS_NAME_YES_Y, StrYes);
+  printStr_P(FLAGS_NAME_NO_X, FLAGS_NAME_NO_Y, StrNo);
   printShowNameCursor();
-  printStr_P(SHOW_NAME_TEST_X, SHOW_NAME_TEST_Y, StrBtnTestLogo);
+  printStr_P(FLAGS_LOGO_Q_X, FLAGS_LOGO_Q_Y, StrShowLogoQ);
+  printStr_P(FLAGS_LOGO_YES_X, FLAGS_LOGO_YES_Y, StrYes);
+  printStr_P(FLAGS_LOGO_NO_X, FLAGS_LOGO_NO_Y, StrNo);
+  printShowLogoCursor();
+  printStr_P(FLAGS_TEST_X, FLAGS_TEST_Y, StrBtnTestLogo);
+}
+
+// DISPLAY: Reset EEPROM areas
+void screenReset() {
+  printStr_P(RESET_BTN_MENU_X, RESET_BTN_MENU_Y, StrBtnMenu);
+  printStr_P(RESET_BTN_SYS_X, RESET_BTN_SYS_Y, StrBtnResetSys);
+  printStr_P(RESET_BTN_SYS_EEPROM_X, RESET_BTN_SYS_EEPROM_Y, StrEEPROM);
+  printStr_P(RESET_BTN_USER_X, RESET_BTN_USER_Y, StrBtnResetUser);
+  printStr_P(RESET_BTN_USER_EEPROM_X, RESET_BTN_USER_EEPROM_Y, StrEEPROM);
 }
 
 // DISPLAY: Prompt to save the unit name
@@ -472,20 +652,72 @@ void screenSaveID() {
   printIDLarge(ID_SAVE_X, ID_SAVE_Y);
 }
 
-// Save the "Show Unit Name" flag and overlay the "SAVED" message on the screen
-void saveShowName() {
-  arduboy.writeShowUnitNameFlag(showNameFlag);
-  arduboy.fillRect(SHOW_NAME_SAVED_X - 4, SHOW_NAME_SAVED_Y - 4,
-                   strlen_P(StrSaved) * CHAR_WIDTH * 2 + 6, CHAR_HEIGHT * 2 + 6);
-  arduboy.setTextColor(BLACK);
-  arduboy.setTextBackground(WHITE);
-  arduboy.setTextSize(2);
-  printStr_P(SHOW_NAME_SAVED_X, SHOW_NAME_SAVED_Y, StrSaved);
-  arduboy.setTextSize(1);
-  arduboy.setTextColor(WHITE);
-  arduboy.setTextBackground(BLACK);
+// DISPLAY: Propmt to reset the system EEPROM area
+void screenResetSys() {
+  printStr_P(RESET_SYS_TEXT_1_X, RESET_SYS_TEXT_1_Y, StrResetSys1);
+  printStr_P(RESET_SYS_TEXT_2_X, RESET_SYS_TEXT_2_Y, StrResetSys2);
+  printStr_P(RESET_SYS_TEXT_3_X, RESET_SYS_TEXT_3_Y, StrResetSys3);
+  printStr_P(RESET_SYS_SURE_Q_X, RESET_SYS_SURE_Q_Y, StrAreYouSureQ);
+  printStr_P(RESET_SYS_BTN_YES_X, RESET_SYS_BTN_YES_Y, StrBtnResetYes);
+  printStr_P(RESET_SYS_BTN_NO_X, RESET_SYS_BTN_NO_Y, StrBtnResetNo);
+}
+
+// DISPLAY: Propmt to reset the user EEPROM area
+void screenResetUser() {
+  printStr_P(RESET_USER_TEXT_1_X, RESET_USER_TEXT_1_Y, StrResetUser1);
+  printStr_P(RESET_USER_TEXT_2_X, RESET_USER_TEXT_2_Y, StrResetUser2);
+  printStr_P(RESET_USER_TEXT_3_X, RESET_USER_TEXT_3_Y, StrResetUser3);
+  printStr_P(RESET_USER_SURE_Q_X, RESET_USER_SURE_Q_Y, StrAreYouSureQ);
+  printStr_P(RESET_USER_BTN_YES_X, RESET_USER_BTN_YES_Y, StrBtnResetYes);
+  printStr_P(RESET_USER_BTN_NO_X, RESET_USER_BTN_NO_Y, StrBtnResetNo);
+}
+
+// Display a message indicating "Show boot logo" flag is off
+void displayNoLogo() {
+  arduboy.clear();
+  printStr_P(FLAGS_NO_LOGO_1_X, FLAGS_NO_LOGO_1_Y, StrNoLogo1);
+  printStr_P(FLAGS_NO_LOGO_2_X, FLAGS_NO_LOGO_2_Y, StrNoLogo2);
   arduboy.display();
-  delay(1000);
+  arduboy.delayShort(2000);
+}
+
+// Save the system flags and overlay the "SAVED" message on the screen
+void saveFlags() {
+  arduboy.writeShowUnitNameFlag(showNameFlag);
+  arduboy.writeShowBootLogoFlag(showLogoFlag);
+  printStrLargeRev_P(FLAGS_SAVED_X, FLAGS_SAVED_Y, StrSaved);
+  arduboy.display();
+  arduboy.delayShort(1500);
+}
+
+// Reset the system EEPROM area and display the confirmation message
+void resetSysEEPROM() {
+  for (unsigned int i = EEPROM_START; i < EEPROM_STORAGE_SPACE_START; i++) {
+    EEPROM.update(i, 0xFF);
+  }
+  arduboy.clear();
+  printStrLargeRev_P(RESET_SYS_CONFIRMED_1_X, RESET_SYS_CONFIRMED_1_Y, StrSystem);
+  printStrLargeRev_P(RESET_SYS_CONFIRMED_2_X, RESET_SYS_CONFIRMED_2_Y, StrEEPROM);
+  printStrLargeRev_P(RESET_SYS_CONFIRMED_3_X, RESET_SYS_CONFIRMED_3_Y, StrReset);
+  arduboy.display();
+  arduboy.delayShort(2000);
+}
+
+// Reset the user EEPROM area and display the confirmation message
+void resetUserEEPROM() {
+  arduboy.clear();
+  arduboy.setTextSize(2);
+  printStr_P(RESET_USER_WRITING_X, RESET_USER_WRITING_Y, StrWriting);
+  arduboy.setTextSize(1);
+  arduboy.display(CLEAR_BUFFER);
+  for (unsigned int i = EEPROM_STORAGE_SPACE_START; i <= EEPROM_END; i++) {
+    EEPROM.update(i, 0xFF);
+  }
+  printStrLargeRev_P(RESET_USER_CONFIRMED_1_X, RESET_USER_CONFIRMED_1_Y, StrUser);
+  printStrLargeRev_P(RESET_USER_CONFIRMED_2_X, RESET_USER_CONFIRMED_2_Y, StrEEPROM);
+  printStrLargeRev_P(RESET_USER_CONFIRMED_3_X, RESET_USER_CONFIRMED_3_Y, StrReset);
+  arduboy.display();
+  arduboy.delayShort(2000);
 }
 
 // --------------------- Printing Functions ------------------------------
@@ -541,12 +773,24 @@ void printIDCursors() {
 // Print the current "Show Unit Name" cursor
 void printShowNameCursor() {
   if (showNameFlag) {
-    arduboy.fillRect(SHOW_NAME_YES_X, SHOW_NAME_YES_Y + (CHAR_HEIGHT * 2),
-                     (strlen_P(StrYes) * CHAR_WIDTH - 1) * 2, 2);
+    arduboy.drawFastHLine(FLAGS_NAME_YES_X, FLAGS_NAME_YES_Y + (CHAR_HEIGHT),
+                          (strlen_P(StrYes) * CHAR_WIDTH - 1));
   }
   else {
-    arduboy.fillRect(SHOW_NAME_NO_X, SHOW_NAME_NO_Y + (CHAR_HEIGHT * 2),
-                     (strlen_P(StrNo) * CHAR_WIDTH - 1) * 2, 2);
+    arduboy.drawFastHLine(FLAGS_NAME_NO_X, FLAGS_NAME_NO_Y + (CHAR_HEIGHT),
+                          (strlen_P(StrNo) * CHAR_WIDTH - 1));
+  }
+}
+
+// Print the current "Show boot logo" cursor
+void printShowLogoCursor() {
+  if (showLogoFlag) {
+    arduboy.drawFastHLine(FLAGS_LOGO_YES_X, FLAGS_LOGO_YES_Y + (CHAR_HEIGHT),
+                          (strlen_P(StrYes) * CHAR_WIDTH - 1));
+  }
+  else {
+    arduboy.drawFastHLine(FLAGS_LOGO_NO_X, FLAGS_LOGO_NO_Y + (CHAR_HEIGHT),
+                          (strlen_P(StrNo) * CHAR_WIDTH - 1));
   }
 }
 
@@ -710,15 +954,28 @@ void printBinaryNybble(int x, int y, byte val) {
   }
 }
 
+// Print a constant string in large size and reversed
+void printStrLargeRev_P(int x, int y, const char* string) {
+  arduboy.fillRect(x - 4, y - 4,
+                   strlen_P(string) * CHAR_WIDTH * 2 + 6, CHAR_HEIGHT * 2 + 6);
+  arduboy.setTextColor(BLACK);
+  arduboy.setTextBackground(WHITE);
+  arduboy.setTextSize(2);
+  printStr_P(x, y, string);
+  arduboy.setTextSize(1);
+  arduboy.setTextColor(WHITE);
+  arduboy.setTextBackground(BLACK);
+}
 
 // ---------------- Control and Utility Functions ------------------------
 
-// Get the current unit name and ID, and the "Show Unit Name" flag, from EEPROM
+// Get the current unit name and ID, and the system flags, from EEPROM
 void readEEPROM() {
   memset(unitName, 0, sizeof(unitName));
   arduboy.readUnitName(unitName);
   unitID = arduboy.readUnitID();
   showNameFlag = arduboy.readShowUnitNameFlag();
+  showLogoFlag = arduboy.readShowBootLogoFlag();
 }
 
 // Increment the name character at the cursor position
@@ -797,6 +1054,12 @@ void idCursorLeft() {
 // Toggle the "Show Unit Name" selection
 void showNameToggle() {
   showNameFlag = !showNameFlag;
+  drawScreen();
+}
+
+// Toggle the "Show boot logo" selection
+void showLogoToggle() {
+  showLogoFlag = !showLogoFlag;
   drawScreen();
 }
 

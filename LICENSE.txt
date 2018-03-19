@@ -23,8 +23,8 @@ https://github.com/adafruit/Adafruit_SSD1306
 Copyright (c) 2012, Adafruit Industries
 All rights reserved.
 
-SetNameAndID example sketch:
-Copyright (c) 2017, Scott Allen
+SetSystemEEPROM example sketch:
+Copyright (c) 2018, Scott Allen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

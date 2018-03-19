@@ -161,6 +161,10 @@ void Arduboy2Base::drawLogoSpritesBOverwrite(int16_t y)
 // if changes are made to one, equivalent changes should be made to the other
 void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
 {
+  if (!readShowBootLogoFlag()) {
+    return;
+  }
+
   digitalWriteRGB(RED_LED, RGB_ON);
 
   for (int16_t y = -16; y <= 24; y++) {
@@ -1089,6 +1093,19 @@ void Arduboy2Base::writeUnitName(char* name)
   }
 }
 
+bool Arduboy2Base::readShowBootLogoFlag()
+{
+  return (EEPROM.read(EEPROM_SYS_FLAGS) & SYS_FLAG_SHOW_LOGO_MASK);
+}
+
+void Arduboy2Base::writeShowBootLogoFlag(bool val)
+{
+  uint8_t flags = EEPROM.read(EEPROM_SYS_FLAGS);
+
+  bitWrite(flags, SYS_FLAG_SHOW_LOGO, val);
+  EEPROM.update(EEPROM_SYS_FLAGS, flags);
+}
+
 bool Arduboy2Base::readShowUnitNameFlag()
 {
   return (EEPROM.read(EEPROM_SYS_FLAGS) & SYS_FLAG_UNAME_MASK);
@@ -1128,6 +1145,10 @@ Arduboy2::Arduboy2()
 // if changes are made to one, equivalent changes should be made to the other
 void Arduboy2::bootLogoText()
 {
+  if (!readShowBootLogoFlag()) {
+    return;
+  }
+
   digitalWriteRGB(RED_LED, RGB_ON);
 
   for (int16_t y = -16; y <= 24; y++) {
