@@ -178,7 +178,7 @@ void Arduboy2Base::begin()
 {
   boot(); // raw hardware
 
-  blank(); // blank the display
+  display(); // blank the display (sBuffer is global, so cleared automatically)
 
   flashlight(); // light the RGB LED and screen if UP button is being held.
 
@@ -201,7 +201,7 @@ For example: Let's say a sketch has its own code to enable, disable and save the
   arduboy.boot(); // raw hardware
 
 // *** This particular sketch clears the display soon, so it doesn't need this:
-//  blank(); // blank the display
+//  display(); // blank the display (sBuffer is global, so cleared automatically)
 
   arduboy.flashlight(); // light the RGB LED and screen if UP button is being held.
 
@@ -215,7 +215,7 @@ For example: Let's say a sketch has its own code to enable, disable and save the
 //  waitNoButtons(); // wait for all buttons to be released
 ```
 
-This saves whatever code *blank()*, *systemButtons()*, *bootLogo()* and *waitNoButtons()* would use.
+This saves whatever code *display()*, *systemButtons()*, *bootLogo()* and *waitNoButtons()* would use.
 
 There are a few functions provided that are roughly equivalent to the standard functions used by *begin()* but which use less code space.
 
@@ -428,7 +428,7 @@ The *beginNoLogo()* function has been removed. Instead, *boot()* can be used wit
 
 ```cpp
   arduboy.boot();
-  arduboy.blank();
+  arduboy.display();
   arduboy.flashlight();
   arduboy.audio.begin();
 ```

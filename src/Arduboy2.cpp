@@ -31,7 +31,7 @@ void Arduboy2Base::begin()
 {
   boot(); // raw hardware
 
-  blank(); // blank the display
+  display(); // blank the display (sBuffer is global, so cleared automatically)
 
   flashlight(); // light the RGB LED and screen if UP button is being held.
 
