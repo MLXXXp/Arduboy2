@@ -250,9 +250,11 @@ void Arduboy2Core::safeMode()
   {
     digitalWriteRGB(RED_LED, RGB_ON);
 
+#ifndef ARDUBOY_CORE // for Arduboy core timer 0 should remain enabled
     // prevent the bootloader magic number from being overwritten by timer 0
     // when a timer variable overlaps the magic number location
     power_timer0_disable();
+#endif
 
     while (true) { }
   }
