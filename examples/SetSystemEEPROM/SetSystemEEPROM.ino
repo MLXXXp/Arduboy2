@@ -18,6 +18,9 @@ This sketch allows manipulation of the following values in system EEPROM:
   should be displayed at the end of the boot logo sequence in circumstances
   where it's possible to do so.
 
+- The "Show RGB LEDs with Boot Logo" flag. This flag indicates whether or not
+  to flash the RGB LEDs while the boot logo is scrolling down.
+
 - The "Show Boot Logo" flag. This flag indicates whether or not to display
   the boot logo sequence during start up.
 
@@ -30,7 +33,7 @@ This sketch also allows:
 ------------------------------------------------------------------------------
 */
 
-// Version 1.0
+// Version 2.0
 
 /*
 ------------------------------------------------------------------------------
@@ -78,13 +81,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // All the constant stings
 const char StrName[] PROGMEM = "NAME";
 const char StrID[] PROGMEM = "ID";
+const char StrFlags[] PROGMEM = "FLAGS";
 const char StrYes[] PROGMEM = "YES";
 const char StrNo[] PROGMEM = "NO";
 const char StrSaveQ[] PROGMEM = "SAVE?";
 const char StrSaved[] PROGMEM = "SAVED";
-const char StrShowNameQ1[] PROGMEM = "LEFT:show unit name";
-const char StrShowNameQ2[] PROGMEM = "on logo screen?";
-const char StrShowLogoQ[] PROGMEM = "RIGHT:show boot logo?";
 const char StrBtnChangeName[] PROGMEM = "UP:change Unit Name";
 const char StrBtnChangeID[] PROGMEM = "DOWN:change Unit ID";
 const char StrBtnFlags[] PROGMEM = "LEFT:flags";
@@ -93,7 +94,10 @@ const char StrBtnMenu[] PROGMEM = "A:menu";
 const char StrBtnSave[] PROGMEM = "B:save";
 const char StrBtnYes[] PROGMEM = "A:yes";
 const char StrBtnNo[] PROGMEM = "B:no";
-const char StrBtnTestLogo[] PROGMEM = "DOWN:test boot logo";
+const char StrShowLogoQ[] PROGMEM = "show boot logo?";
+const char StrShowLEDsQ[] PROGMEM = "show boot LEDs?";
+const char StrShowNameQ[] PROGMEM = "show unit name?";
+const char StrBtnTestLogo[] PROGMEM = "UP+DOWN:test logo";
 const char StrNoLogo1[] PROGMEM = "\"SHOW BOOT LOGO\"";
 const char StrNoLogo2[] PROGMEM = "flag is OFF";
 const char StrBtnResetSys[] PROGMEM = "UP:reset system";
@@ -196,24 +200,22 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define ID_SAVE_X (ID_SAVE_Q_X + ((strlen_P(StrSaveQ) * CHAR_WIDTH) + CHAR_WIDTH))
 #define ID_SAVE_Y (ID_LARGE_Y + 1)
 
+#define FLAGS_TITLE_X centerStr_P(StrFlags)
+#define FLAGS_TITLE_Y 0
+
 #define FLAGS_BTN_MENU_X 0
 #define FLAGS_BTN_MENU_Y 0
 #define FLAGS_BTN_SAVE_X rightStr_P(StrBtnSave)
 #define FLAGS_BTN_SAVE_Y FLAGS_BTN_MENU_Y
-#define FLAGS_NAME_Q_1_X centerStr_P(StrShowNameQ1)
-#define FLAGS_NAME_Q_1_Y 9
-#define FLAGS_NAME_Q_2_X centerStr_P(StrShowNameQ2)
-#define FLAGS_NAME_Q_2_Y (FLAGS_NAME_Q_1_Y + 8)
-#define FLAGS_NAME_YES_X ((WIDTH / 2) - ((strlen_P(StrYes) + 1) * CHAR_WIDTH))
-#define FLAGS_NAME_YES_Y (FLAGS_NAME_Q_2_Y + CHAR_HEIGHT)
-#define FLAGS_NAME_NO_X ((WIDTH / 2) + (CHAR_WIDTH))
-#define FLAGS_NAME_NO_Y FLAGS_NAME_YES_Y
-#define FLAGS_LOGO_Q_X centerStr_P(StrShowLogoQ)
-#define FLAGS_LOGO_Q_Y 37
-#define FLAGS_LOGO_YES_X ((WIDTH / 2) - ((strlen_P(StrYes) + 1) * CHAR_WIDTH))
-#define FLAGS_LOGO_YES_Y FLAGS_LOGO_Q_Y + CHAR_HEIGHT
-#define FLAGS_LOGO_NO_X ((WIDTH / 2) + (CHAR_WIDTH))
-#define FLAGS_LOGO_NO_Y FLAGS_LOGO_YES_Y
+
+#define FLAGS_LOGO_Y 14
+#define FLAGS_LEDS_Y 27
+#define FLAGS_NAME_Y 40
+
+#define FLAGS_Q_X  (CHAR_WIDTH * 2)
+#define FLAGS_SET_X rightStr_P(StrYes)
+#define FLAGS_CURSOR_X 0
+
 #define FLAGS_TEST_X centerStr_P(StrBtnTestLogo)
 #define FLAGS_TEST_Y 56
 
@@ -302,8 +304,18 @@ byte nameIndex;
 uint16_t unitID;
 byte idIndex;
 
-boolean showNameFlag;
 boolean showLogoFlag;
+boolean showLEDsFlag;
+boolean showNameFlag;
+
+// Selected flag
+enum SelectedFlag : byte {
+  selFlagLogo,
+  selFlagLEDs,
+  selFlagName
+};
+
+byte currentFlag;
 
 // Assign numbers for each state/screen
 enum State : byte {
@@ -475,27 +487,33 @@ void stateID() {
 
 // STATE: Set system flags
 void stateFlags() {
-  if (arduboy.justPressed(LEFT_BUTTON)) {
-    showNameToggle();
-  }
-  else if (arduboy.justPressed(RIGHT_BUTTON)) {
-    showLogoToggle();
-  }
-  else if (arduboy.justPressed(A_BUTTON)) {
-    setState(sMain);
-  }
-  else if (arduboy.justPressed(B_BUTTON)) {
-    saveFlags();
-    setState(sFlags);
-  }
-  else if (arduboy.justPressed(DOWN_BUTTON)) {
+  if (arduboy.pressed(UP_BUTTON + DOWN_BUTTON)) {
     showNameFlag = arduboy.readShowUnitNameFlag();
+    showLEDsFlag = arduboy.readShowBootLogoLEDsFlag();
     if ((showLogoFlag = arduboy.readShowBootLogoFlag()) == true) {
       arduboy.bootLogo();
     }
     else {
       displayNoLogo();
     }
+    currentFlag = selFlagLogo;
+    setState(sFlags);
+  }
+  else if (arduboy.justPressed(UP_BUTTON)) {
+    flagsCursorUp();
+  }
+  else if (arduboy.justPressed(DOWN_BUTTON)) {
+    flagsCursorDown();
+  }
+  else if (arduboy.justPressed(RIGHT_BUTTON) ||
+           arduboy.justPressed(LEFT_BUTTON)) {
+    flagToggle();
+  }
+  else if (arduboy.justPressed(A_BUTTON)) {
+    setState(sMain);
+  }
+  else if (arduboy.justPressed(B_BUTTON)) {
+    saveFlags();
     setState(sFlags);
   }
 }
@@ -576,6 +594,7 @@ void drawScreen() {
 void screenMain() {
   readEEPROM();
   nameIndex = idIndex = 0;
+  currentFlag = selFlagLogo;
 
   printStr_P(MENU_BTN_CHANGE_NAME_X, MENU_BTN_CHANGE_NAME_Y, StrBtnChangeName);
   printName(MENU_NAME_X, MENU_NAME_Y);
@@ -613,15 +632,11 @@ void screenID() {
 void screenFlags() {
   printStr_P(FLAGS_BTN_MENU_X, FLAGS_BTN_MENU_Y, StrBtnMenu);
   printStr_P(FLAGS_BTN_SAVE_X, FLAGS_BTN_SAVE_Y, StrBtnSave);
-  printStr_P(FLAGS_NAME_Q_1_X, FLAGS_NAME_Q_1_Y, StrShowNameQ1);
-  printStr_P(FLAGS_NAME_Q_2_X, FLAGS_NAME_Q_2_Y, StrShowNameQ2);
-  printStr_P(FLAGS_NAME_YES_X, FLAGS_NAME_YES_Y, StrYes);
-  printStr_P(FLAGS_NAME_NO_X, FLAGS_NAME_NO_Y, StrNo);
-  printShowNameCursor();
-  printStr_P(FLAGS_LOGO_Q_X, FLAGS_LOGO_Q_Y, StrShowLogoQ);
-  printStr_P(FLAGS_LOGO_YES_X, FLAGS_LOGO_YES_Y, StrYes);
-  printStr_P(FLAGS_LOGO_NO_X, FLAGS_LOGO_NO_Y, StrNo);
-  printShowLogoCursor();
+  printStr_P(FLAGS_TITLE_X, FLAGS_TITLE_Y, StrFlags);
+  printStr_P(FLAGS_Q_X, FLAGS_LOGO_Y, StrShowLogoQ);
+  printStr_P(FLAGS_Q_X, FLAGS_LEDS_Y, StrShowLEDsQ);
+  printStr_P(FLAGS_Q_X, FLAGS_NAME_Y, StrShowNameQ);
+  printFlagSettings();
   printStr_P(FLAGS_TEST_X, FLAGS_TEST_Y, StrBtnTestLogo);
 }
 
@@ -685,6 +700,7 @@ void displayNoLogo() {
 void saveFlags() {
   arduboy.writeShowUnitNameFlag(showNameFlag);
   arduboy.writeShowBootLogoFlag(showLogoFlag);
+  arduboy.writeShowBootLogoLEDsFlag(showLEDsFlag);
   printStrLargeRev_P(FLAGS_SAVED_X, FLAGS_SAVED_Y, StrSaved);
   arduboy.display();
   arduboy.delayShort(1500);
@@ -770,28 +786,57 @@ void printIDCursors() {
                         ID_BINARY_Y + CHAR_HEIGHT + 1, CHAR_WIDTH * 4 - 1);
 }
 
-// Print the current "Show Unit Name" cursor
-void printShowNameCursor() {
-  if (showNameFlag) {
-    arduboy.drawFastHLine(FLAGS_NAME_YES_X, FLAGS_NAME_YES_Y + (CHAR_HEIGHT),
-                          (strlen_P(StrYes) * CHAR_WIDTH - 1));
+// Print the values and cursor for the flags
+void printFlagSettings() {
+  int cursorY;
+  byte cursorLen = strlen_P(StrYes) * CHAR_WIDTH - 1 ;
+
+  if (showLogoFlag) {
+    printStr_P(FLAGS_SET_X, FLAGS_LOGO_Y, StrYes);
   }
   else {
-    arduboy.drawFastHLine(FLAGS_NAME_NO_X, FLAGS_NAME_NO_Y + (CHAR_HEIGHT),
-                          (strlen_P(StrNo) * CHAR_WIDTH - 1));
+    printStr_P(FLAGS_SET_X, FLAGS_LOGO_Y, StrNo);
   }
+
+  if (showLEDsFlag) {
+    printStr_P(FLAGS_SET_X, FLAGS_LEDS_Y, StrYes);
+  }
+  else {
+    printStr_P(FLAGS_SET_X, FLAGS_LEDS_Y, StrNo);
+  }
+
+  if (showNameFlag) {
+    printStr_P(FLAGS_SET_X, FLAGS_NAME_Y, StrYes);
+  }
+  else {
+    printStr_P(FLAGS_SET_X, FLAGS_NAME_Y, StrNo);
+  }
+
+  switch (currentFlag) {
+   case selFlagLEDs:
+    cursorY = FLAGS_LEDS_Y;
+    if (!showLEDsFlag) {
+      cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
+    }
+    break;
+   case selFlagName:
+    cursorY = FLAGS_NAME_Y;
+    if (!showNameFlag) {
+      cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
+    }
+    break;
+   default: // selFlagLogo
+    cursorY = FLAGS_LOGO_Y;
+    if (!showLogoFlag) {
+      cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
+    }
+    break;
 }
 
-// Print the current "Show boot logo" cursor
-void printShowLogoCursor() {
-  if (showLogoFlag) {
-    arduboy.drawFastHLine(FLAGS_LOGO_YES_X, FLAGS_LOGO_YES_Y + (CHAR_HEIGHT),
-                          (strlen_P(StrYes) * CHAR_WIDTH - 1));
-  }
-  else {
-    arduboy.drawFastHLine(FLAGS_LOGO_NO_X, FLAGS_LOGO_NO_Y + (CHAR_HEIGHT),
-                          (strlen_P(StrNo) * CHAR_WIDTH - 1));
-  }
+  arduboy.setCursor(FLAGS_CURSOR_X, cursorY);
+  arduboy.print('\x10');
+
+  arduboy.drawFastHLine(FLAGS_SET_X, cursorY + CHAR_HEIGHT, cursorLen);
 }
 
 // Print the unit name in normal size including an extent underline
@@ -974,8 +1019,9 @@ void readEEPROM() {
   memset(unitName, 0, sizeof(unitName));
   arduboy.readUnitName(unitName);
   unitID = arduboy.readUnitID();
-  showNameFlag = arduboy.readShowUnitNameFlag();
   showLogoFlag = arduboy.readShowBootLogoFlag();
+  showLEDsFlag = arduboy.readShowBootLogoLEDsFlag();
+  showNameFlag = arduboy.readShowUnitNameFlag();
 }
 
 // Increment the name character at the cursor position
@@ -1051,15 +1097,51 @@ void idCursorLeft() {
   drawScreen();
 }
 
-// Toggle the "Show Unit Name" selection
-void showNameToggle() {
-  showNameFlag = !showNameFlag;
+// Move the Flags cursor down
+void flagsCursorDown() {
+  switch (currentFlag) {
+   case selFlagLogo:
+    currentFlag = selFlagLEDs;
+    break;
+   case selFlagLEDs:
+    currentFlag = selFlagName;
+    break;
+   case selFlagName:
+    currentFlag = selFlagLogo;
+    break;
+  }
   drawScreen();
 }
 
-// Toggle the "Show boot logo" selection
-void showLogoToggle() {
-  showLogoFlag = !showLogoFlag;
+// Move the Flags cursor up
+void flagsCursorUp() {
+  switch (currentFlag) {
+   case selFlagName:
+    currentFlag = selFlagLEDs;
+    break;
+   case selFlagLEDs:
+    currentFlag = selFlagLogo;
+    break;
+   case selFlagLogo:
+    currentFlag = selFlagName;
+    break;
+  }
+  drawScreen();
+}
+
+// Toggle the currently selected flag
+void flagToggle() {
+  switch (currentFlag) {
+   case selFlagLogo:
+    showLogoFlag = !showLogoFlag;
+    break;
+   case selFlagLEDs:
+    showLEDsFlag = !showLEDsFlag;
+    break;
+   case selFlagName:
+    showNameFlag = !showNameFlag;
+    break;
+  }
   drawScreen();
 }
 

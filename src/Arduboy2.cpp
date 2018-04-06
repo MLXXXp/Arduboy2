@@ -163,11 +163,15 @@ void Arduboy2Base::drawLogoSpritesBOverwrite(int16_t y)
 // if changes are made to one, equivalent changes should be made to the other
 void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
 {
+  bool showLEDs = readShowBootLogoLEDsFlag();
+
   if (!readShowBootLogoFlag()) {
     return;
   }
 
-  digitalWriteRGB(RED_LED, RGB_ON);
+  if (showLEDs) {
+    digitalWriteRGB(RED_LED, RGB_ON);
+  }
 
   for (int16_t y = -16; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
@@ -175,7 +179,7 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
       return;
     }
 
-    if (y == 4) {
+    if (showLEDs && y == 4) {
       digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
       digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
     }
@@ -188,8 +192,10 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
     delayShort(15);
   }
 
-  digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
-  digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+  if (showLEDs) {
+    digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+    digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+  }
   delayShort(400);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
 
@@ -1121,6 +1127,19 @@ void Arduboy2Base::writeShowUnitNameFlag(bool val)
   EEPROM.update(EEPROM_SYS_FLAGS, flags);
 }
 
+bool Arduboy2Base::readShowBootLogoLEDsFlag()
+{
+  return (EEPROM.read(EEPROM_SYS_FLAGS) & SYS_FLAG_SHOW_LOGO_LEDS_MASK);
+}
+
+void Arduboy2Base::writeShowBootLogoLEDsFlag(bool val)
+{
+  uint8_t flags = EEPROM.read(EEPROM_SYS_FLAGS);
+
+  bitWrite(flags, SYS_FLAG_SHOW_LOGO_LEDS, val);
+  EEPROM.update(EEPROM_SYS_FLAGS, flags);
+}
+
 void Arduboy2Base::swap(int16_t& a, int16_t& b)
 {
   int16_t temp = a;
@@ -1147,11 +1166,15 @@ Arduboy2::Arduboy2()
 // if changes are made to one, equivalent changes should be made to the other
 void Arduboy2::bootLogoText()
 {
+  bool showLEDs = readShowBootLogoLEDsFlag();
+
   if (!readShowBootLogoFlag()) {
     return;
   }
 
-  digitalWriteRGB(RED_LED, RGB_ON);
+  if (showLEDs) {
+    digitalWriteRGB(RED_LED, RGB_ON);
+  }
 
   for (int16_t y = -16; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
@@ -1159,7 +1182,7 @@ void Arduboy2::bootLogoText()
       return;
     }
 
-    if (y == 4) {
+    if (showLEDs && y == 4) {
       digitalWriteRGB(RED_LED, RGB_OFF);    // red LED off
       digitalWriteRGB(GREEN_LED, RGB_ON);   // green LED on
     }
@@ -1176,8 +1199,10 @@ void Arduboy2::bootLogoText()
     delayShort(11);
   }
 
-  digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
-  digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+  if (showLEDs) {
+    digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
+    digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
+  }
   delayShort(400);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
 

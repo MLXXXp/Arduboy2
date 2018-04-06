@@ -48,10 +48,12 @@
                             // with 0x00
 
 // EEPROM_SYS_FLAGS values
-#define SYS_FLAG_UNAME 0      // Display the unit name on the logo screen
+#define SYS_FLAG_UNAME 0           // Display the unit name on the logo screen
 #define SYS_FLAG_UNAME_MASK _BV(SYS_FLAG_UNAME)
-#define SYS_FLAG_SHOW_LOGO 1  // Show the logo sequence during boot up
+#define SYS_FLAG_SHOW_LOGO 1       // Show the logo sequence during boot up
 #define SYS_FLAG_SHOW_LOGO_MASK _BV(SYS_FLAG_SHOW_LOGO)
+#define SYS_FLAG_SHOW_LOGO_LEDS 2  // Flash the RGB led during the boot logo
+#define SYS_FLAG_SHOW_LOGO_LEDS_MASK _BV(SYS_FLAG_SHOW_LOGO_LEDS)
 
 /** \brief
  * Start of EEPROM storage space for sketches.
@@ -341,6 +343,9 @@ class Arduboy2Base : public Arduboy2Core
    * the boot logo sequence will be aborted. This can be useful for
    * developers who wish to quickly start testing, or anyone else who is
    * impatient and wants to go straight to the actual sketch.
+   *
+   * If the SYS_FLAG_SHOW_LOGO_LEDS flag in system EEPROM is cleared,
+   * the RGB LEDs will not be flashed during the logo display sequence.
    *
    * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
    * will return without executing the logo display sequence.
@@ -1169,6 +1174,37 @@ class Arduboy2Base : public Arduboy2Core
   void writeShowUnitNameFlag(bool val);
 
   /** \brief
+   * Read the "Show LEDs with boot logo" flag in system EEPROM.
+   *
+   * \return `true` if the flag is set to indicate that the RGB LEDs should be
+   * flashed. `false` if the flag is set to leave the LEDs off.
+   *
+   * \details
+   * The "Show LEDs with boot logo" flag is used to determine whether the
+   * RGB LEDs should be flashed in sequence while the boot logo is being
+   * displayed. This function returns the value of this flag.
+   *
+   * \see writeShowBootLogoLEDsFlag()
+   */
+  bool readShowBootLogoLEDsFlag();
+
+  /** \brief
+   * Write the "Show LEDs with boot logo" flag in system EEPROM.
+   *
+   * \param val If `true` the flag is set to indicate that the RGB LEDs should
+   * be flashed. If `false` the flag is set to leave the LEDs off.
+   *
+   * \details
+   * The "Show LEDs with boot logo" flag is used to determine whether the
+   * RGB LEDs should be flashed in sequence while the boot logo is being
+   * displayed. This function allows the flag to be saved with the desired
+   * value.
+   *
+   * \see readShowBootLogoLEDsFlag()
+   */
+  void writeShowBootLogoLEDsFlag(bool val);
+
+  /** \brief
    * A counter which is incremented once per frame.
    *
    * \details
@@ -1319,6 +1355,9 @@ class Arduboy2 : public Print, public Arduboy2Base
    * the boot logo sequence will be aborted. This can be useful for
    * developers who wish to quickly start testing, or anyone else who is
    * impatient and wants to go straight to the actual sketch.
+   *
+   * If the SYS_FLAG_SHOW_LOGO_LEDS flag in system EEPROM is cleared,
+   * the RGB LEDs will not be flashed during the logo display sequence.
    *
    * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
    * will return without executing the logo display sequence.

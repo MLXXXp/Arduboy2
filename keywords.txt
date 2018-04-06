@@ -88,6 +88,7 @@ paintScreen	KEYWORD2
 pollButtons	KEYWORD2
 pressed	KEYWORD2
 readShowBootLogoFlag	KEYWORD2
+readShowBootLogoLEDsFlag	KEYWORD2
 readShowUnitNameFlag	KEYWORD2
 readUnitID	KEYWORD2
 readUnitName	KEYWORD2
@@ -107,6 +108,7 @@ toggle	KEYWORD2
 waitNoButtons	KEYWORD2
 width	KEYWORD2
 writeShowBootLogoFlag	KEYWORD2
+writeShowBootLogoLEDsFlag	KEYWORD2
 writeShowUnitNameFlag	KEYWORD2
 writeUnitID	KEYWORD2
 writeUnitName	KEYWORD2
