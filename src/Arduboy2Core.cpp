@@ -592,6 +592,8 @@ void Arduboy2Core::mainNoUSB()
 
   // This would normally be done in the USB code that uses the TX and RX LEDs
   TX_RX_LED_INIT;
+  TXLED0;
+  RXLED0;
 
   // Set the DOWN button pin for INPUT_PULLUP
   bitSet(DOWN_BUTTON_PORT, DOWN_BUTTON_BIT);
