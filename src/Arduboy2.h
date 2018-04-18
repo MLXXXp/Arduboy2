@@ -693,6 +693,19 @@ class Arduboy2Base : public Arduboy2Core
   uint8_t* getBuffer();
 
   /** \brief
+   * Create a seed suitable for use with a random number generator.
+   *
+   * \details
+   * The seed is generated with a random value derived from entropy from an
+   * ADC reading of a floating pin combined with the microseconds since boot.
+   *
+   * This method is still most effective when called after a semi-random time,
+   * such as after a user hits a button to start a game or other semi-random
+   * event.
+   */
+  unsigned long generateRandomSeed();
+
+  /** \brief
    * Seed the random number generator with a random value.
    *
    * \details
