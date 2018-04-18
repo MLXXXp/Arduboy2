@@ -275,7 +275,7 @@ int Arduboy2Base::cpuLoad()
   return lastFrameDurationMs*100 / eachFrameMillis;
 }
 
-void Arduboy2Base::initRandomSeed()
+unsigned long Arduboy2Base::generateRandomSeed()
 {
   power_adc_enable(); // ADC on
 
@@ -283,9 +283,16 @@ void Arduboy2Base::initRandomSeed()
   ADCSRA |= _BV(ADSC); // start conversion (ADMUX has been pre-set in boot())
   while (bit_is_set(ADCSRA, ADSC)) { } // wait for conversion complete
 
-  randomSeed(((unsigned long)ADC << 16) + micros());
+  unsigned long seed = (static_cast<unsigned long>(ADC) << 16) + micros();
 
   power_adc_disable(); // ADC off
+  
+  return seed;
+}
+
+void Arduboy2Base::initRandomSeed()
+{
+  randomSeed(generateRandomSeed);
 }
 
 /* Graphics */
