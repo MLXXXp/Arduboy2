@@ -64,6 +64,7 @@ flashlight	KEYWORD2
 flipVertical	KEYWORD2
 flipHorizontal	KEYWORD2
 freeRGBled	KEYWORD2
+generateRandomSeed	KEYWORD2
 getBuffer	KEYWORD2
 getCursorX	KEYWORD2
 getCursorY	KEYWORD2

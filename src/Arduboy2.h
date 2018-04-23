@@ -695,13 +695,17 @@ class Arduboy2Base : public Arduboy2Core
   /** \brief
    * Create a seed suitable for use with a random number generator.
    *
+   * \return A random value that can be used to seed a random number generator.
+   *
    * \details
-   * The seed is generated with a random value derived from entropy from an
+   * The returned value will be a random value derived from entropy from an
    * ADC reading of a floating pin combined with the microseconds since boot.
    *
    * This method is still most effective when called after a semi-random time,
    * such as after a user hits a button to start a game or other semi-random
    * event.
+   *
+   * \see initRandomSeed()
    */
   unsigned long generateRandomSeed();
 
@@ -711,11 +715,14 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * The Arduino random number generator is seeded with a random value
    * derived from entropy from an ADC reading of a floating pin combined with
-   * the microseconds since boot.
+   * the microseconds since boot. The seed value is provided by calling the
+   * `generateRandomSeed()` function.
    *
    * This method is still most effective when called after a semi-random time,
    * such as after a user hits a button to start a game or other semi-random
    * event.
+   *
+   * \see generateRandomSeed()
    */
   void initRandomSeed();
 

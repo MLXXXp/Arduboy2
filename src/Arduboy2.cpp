@@ -277,22 +277,24 @@ int Arduboy2Base::cpuLoad()
 
 unsigned long Arduboy2Base::generateRandomSeed()
 {
+  unsigned long seed;
+
   power_adc_enable(); // ADC on
 
   // do an ADC read from an unconnected input pin
   ADCSRA |= _BV(ADSC); // start conversion (ADMUX has been pre-set in boot())
   while (bit_is_set(ADCSRA, ADSC)) { } // wait for conversion complete
 
-  unsigned long seed = (static_cast<unsigned long>(ADC) << 16) + micros();
+  seed = ((unsigned long)ADC << 16) + micros();
 
   power_adc_disable(); // ADC off
-  
+
   return seed;
 }
 
 void Arduboy2Base::initRandomSeed()
 {
-  randomSeed(generateRandomSeed);
+  randomSeed(generateRandomSeed());
 }
 
 /* Graphics */
