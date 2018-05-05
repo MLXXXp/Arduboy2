@@ -314,13 +314,25 @@ const uint8_t bitshift_left[] PROGMEM = {
 
 void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
 {
+  drawPixelMaybe(int16_t x, int16_t y, uint8_t color);
+}
+
+// Draw a pixel, tell me whether it has been done.
+// The intent for inlining is to let drawPixel strip away the return part
+// and make drawPixelRaw a tail call.
+inline bool drawPixelMaybe(int16_t x, int16_t y, uint8_t color)
+{
   #ifdef PIXEL_SAFE_MODE
-  if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
+  if (!validPixel(x, y))
   {
-    return;
+    return false;
   }
   #endif
+  drawPixelRaw(x, y, color);
+  return true;
+}
 
+void Arduboy2Base::drawPixelRaw(int16_t x, int16_t y, uint8_t color)
   uint16_t row_offset;
   uint8_t bit;
 
@@ -501,6 +513,13 @@ void Arduboy2Base::fillCircleHelper
 void Arduboy2Base::drawLine
 (int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color)
 {
+  #ifdef PIXEL_SAFE_MODE
+  // No need to draw
+  if (!(validPixel(x0, y0) || validPixel(x1, y1))) {
+    return;
+  }
+  #endif
+
   // bresenham's algorithm - thx wikpedia
   bool steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
@@ -519,6 +538,9 @@ void Arduboy2Base::drawLine
 
   int16_t err = dx / 2;
   int8_t ystep;
+  
+  bool initial_validity = steep ? validPixel(y0, x0) : validPixel(x0, y0);
+  bool valid;
 
   if (y0 < y1)
   {
@@ -533,11 +555,16 @@ void Arduboy2Base::drawLine
   {
     if (steep)
     {
-      drawPixel(y0, x0, color);
+      valid = drawPixel(y0, x0, color);
     }
     else
     {
-      drawPixel(x0, y0, color);
+      valid = drawPixel(x0, y0, color);
+    }
+
+    // We have reached the end of valid pixels.
+    if (initial_validity && !valid) {
+      break;
     }
 
     err -= dy;
@@ -561,10 +588,14 @@ void Arduboy2Base::drawRect
 void Arduboy2Base::drawFastVLine
 (int16_t x, int16_t y, uint8_t h, uint8_t color)
 {
+  // Do x bounds checks
+  if (x < 0 || x >= WIDTH)
+    return;
+
   int end = y+h;
   for (int a = max(0,y); a < min(end,HEIGHT); a++)
   {
-    drawPixel(x,a,color);
+    drawPixelRaw(x,a,color);
   }
 }
 

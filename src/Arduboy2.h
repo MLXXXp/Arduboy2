@@ -431,6 +431,20 @@ class Arduboy2Base : public Arduboy2Core
   void display(bool clear);
 
   /** \brief
+   * Tells whether a given coordinate points to a valid pixel.
+   * 
+   * \param x The X coordinate of the pixel.
+   * \param y The Y coordinate of the pixel.
+   * 
+   * \details
+   * This function returns true if x is in the interval [0, WIDTH) and y is in
+   * the interval [0, HEIGHT).
+   */
+  bool validPixel(int16_t x, int16_t y) {
+    return !(x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1));
+  }
+
+  /** \brief
    * Set a single pixel in the display buffer to the specified color.
    *
    * \param x The X coordinate of the pixel.
@@ -443,6 +457,10 @@ class Arduboy2Base : public Arduboy2Core
    * If the `color` parameter isn't included, the pixel will be set to WHITE.
    */
   void drawPixel(int16_t x, int16_t y, uint8_t color = WHITE);
+
+  // Draw a pixel without checking.
+  // (Not officially part of the API)
+  void drawPixelRaw(int16_t x, int16_t y, uint8_t color);
 
   /** \brief
    * Returns the state of the given pixel in the screen buffer.
