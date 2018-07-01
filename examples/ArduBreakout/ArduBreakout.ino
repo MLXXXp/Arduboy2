@@ -92,9 +92,9 @@ void loop()
     //Selects Font
     //Draws the new level
     level = 1;
+    initialDraw=true;
     newLevel();
     score = 0;
-    initialDraw=true;
   }
 
   if (lives>0)
@@ -383,7 +383,8 @@ void Score()
   score += (level*10);
 }
 
-void newLevel(){
+void newLevel()
+{
   //Undraw paddle
   arduboy.drawRect(xPaddle, 63, 11, 1, 0);
 
@@ -408,7 +409,8 @@ void newLevel(){
     }
   }
 
-  arduboy.display();
+  if (!initialDraw) arduboy.clear();
+  else arduboy.display();
 }
 
 //Used to delay images while reading button input
@@ -713,4 +715,3 @@ void playToneTimed(unsigned int frequency, unsigned int duration)
   arduboy.delayShort(duration);
   beep.noTone();
 }
-
