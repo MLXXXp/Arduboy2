@@ -33,23 +33,24 @@ void Arduboy2Base::begin()
 
   display(); // blank the display (sBuffer is global, so cleared automatically)
 
-  flashlight(); // light the RGB LED and screen if UP button is being held.
+  // flashlight(); // light the RGB LED and screen if UP button is being held.
 
   // check for and handle buttons held during start up for system control
-  systemButtons();
+  // systemButtons();
 
-  audio.begin();
+  audio.on(); // changed from audio.begin() because EEPROM state may
+              // not necessarily follow Arduboy rules on a watchX!
 
-  bootLogo();
   // alternative logo functions. Work the same as bootLogo() but may reduce
   // memory size if the sketch uses the same bitmap drawing function
+//  bootLogo();
 //  bootLogoCompressed();
 //  bootLogoSpritesSelfMasked();
 //  bootLogoSpritesOverwrite();
 //  bootLogoSpritesBSelfMasked();
 //  bootLogoSpritesBOverwrite();
 
-  waitNoButtons(); // wait for all buttons to be released
+  // waitNoButtons(); // wait for all buttons to be released
 }
 
 void Arduboy2Base::flashlight()
@@ -279,7 +280,7 @@ unsigned long Arduboy2Base::generateRandomSeed()
 {
   unsigned long seed;
 
-  power_adc_enable(); // ADC on
+  // power_adc_enable(); // ADC on
 
   // do an ADC read from an unconnected input pin
   ADCSRA |= _BV(ADSC); // start conversion (ADMUX has been pre-set in boot())
@@ -287,7 +288,7 @@ unsigned long Arduboy2Base::generateRandomSeed()
 
   seed = ((unsigned long)ADC << 16) + micros();
 
-  power_adc_disable(); // ADC off
+  // power_adc_disable(); // ADC off
 
   return seed;
 }

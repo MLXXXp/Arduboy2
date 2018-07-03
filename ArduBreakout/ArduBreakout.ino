@@ -11,7 +11,7 @@
  version 2.1 of the License, or (at your option) any later version.
  */
 
-#include <Arduboy2.h>
+#include "Arduboy2.h"
 
 // block in EEPROM to save high scores
 #define EE_FILE 2
@@ -19,7 +19,8 @@
 Arduboy2 arduboy;
 BeepPin1 beep;
 
-const unsigned int FRAME_RATE = 40; // Frame rate in frames per second
+const unsigned int FRAME_RATE = 30; // Frame rate in frames per second
+const unsigned int MENU_FRAME_RATE = 2; // Frame rate in frames per second
 const unsigned int COLUMNS = 13; //Columns of bricks
 const unsigned int ROWS = 4;     //Rows of bricks
 int dx = -1;        //Initial movement of ball
@@ -55,6 +56,9 @@ byte topBrick;
 byte bottomBrick;
 
 byte tick;
+
+uint8_t brightness = 0; // how bright the LEDs are
+int8_t fadeAmount = 1; // how many points to fade the LEDs by
 
 void setup()
 {
@@ -102,7 +106,7 @@ void loop()
     drawPaddle();
 
     //Pause game if FIRE pressed
-    pad = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
+    pad = arduboy.pressed(DOWN_BUTTON);
 
     if(pad == true && oldpad == false && released)
     {
@@ -142,18 +146,18 @@ void movePaddle()
   //Move right
   if(xPaddle < WIDTH - 12)
   {
-    if (arduboy.pressed(RIGHT_BUTTON))
+    if (arduboy.pressed(UP_BUTTON))
     {
-      xPaddle+=2;
+      xPaddle+=3;
     }
   }
 
   //Move left
   if(xPaddle > 0)
   {
-    if (arduboy.pressed(LEFT_BUTTON))
+    if (arduboy.pressed(B_BUTTON))
     {
-      xPaddle-=2;
+      xPaddle-=3;
     }
   }
 }
@@ -295,7 +299,7 @@ void moveBall()
     xb=xPaddle + 5;
 
     //Release ball if FIRE pressed
-    pad3 = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
+    pad3 = arduboy.pressed(DOWN_BUTTON);
     if (pad3 == true && oldpad3 == false)
     {
       released = true;
@@ -367,7 +371,7 @@ void pause()
   {
     arduboy.delayShort(150);
     //Unpause if FIRE is pressed
-    pad2 = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
+    pad2 = arduboy.pressed(DOWN_BUTTON);
     if (pad2 == true && oldpad2 == false && released)
     {
         arduboy.fillRect(52, 45, 30, 11, 0);
@@ -383,8 +387,7 @@ void Score()
   score += (level*10);
 }
 
-void newLevel()
-{
+void newLevel(){
   //Undraw paddle
   arduboy.drawRect(xPaddle, 63, 11, 1, 0);
 
@@ -418,10 +421,23 @@ boolean pollFireButton(int n)
 {
   for(int i = 0; i < n; i++)
   {
-    arduboy.delayShort(15);
-    pad = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
+    // set the brightness of the LEDs
+    arduboy.setRGBled(brightness, 255 - brightness, 0);
+
+    // change the brightness for next time through the loop
+    brightness = brightness + fadeAmount;
+
+    // reverse the direction of the fading at the ends of the fade
+    if (brightness == 0 || brightness == 255) fadeAmount = -fadeAmount;
+
+    arduboy.delayShort(10);
+    pad = arduboy.pressed(DOWN_BUTTON);
     if(pad == true && oldpad == false)
     {
+      brightness = 0; // how bright the LEDs are
+      fadeAmount = 1; // how many points to fade the LEDs by
+      arduboy.setRGBled(0, 0, 0); // set the brightness of the LEDs
+
       oldpad3 = true; //Forces pad loop 3 to run once
       return true;
     }
@@ -528,6 +544,9 @@ void enterInitials()
 {
   byte index = 0;
 
+  // Lower the frame rate otherwise the intials input is too fast
+  arduboy.setFrameRate(MENU_FRAME_RATE);
+
   arduboy.clear();
 
   initials[0] = ' ';
@@ -558,7 +577,7 @@ void enterInitials()
     arduboy.drawLine(56 + (index*8), 28, 56 + (index*8) + 6, 28, 1);
     arduboy.delayShort(70);
 
-    if (arduboy.pressed(LEFT_BUTTON) || arduboy.pressed(B_BUTTON))
+    if (arduboy.pressed(LEFT_BUTTON))
     {
       if (index > 0)
       {
@@ -617,13 +636,16 @@ void enterInitials()
       }
     }
 
-    if (arduboy.pressed(A_BUTTON))
+    if (arduboy.pressed(B_BUTTON))
     {
       playToneTimed(1046, 80);
       if (index < 2)
       {
         index++;
       } else {
+        // Go back to standard frame rate
+        arduboy.setFrameRate(FRAME_RATE);
+
         return;
       }
     }
@@ -715,3 +737,4 @@ void playToneTimed(unsigned int frequency, unsigned int duration)
   arduboy.delayShort(duration);
   beep.noTone();
 }
+

@@ -110,87 +110,52 @@ void Arduboy2Core::setCPUSpeed8MHz()
 // This routine must be modified if any pins are moved to a different port
 void Arduboy2Core::bootPins()
 {
-#ifdef ARDUBOY_10
-
   // Port B INPUT_PULLUP or HIGH
-  PORTB |= _BV(RED_LED_BIT) | _BV(GREEN_LED_BIT) | _BV(BLUE_LED_BIT) |
-           _BV(B_BUTTON_BIT);
-  // Port B INPUT or LOW (none)
+  PORTB |= _BV(B_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT);
+  // Port B INPUT or LOW
+  PORTB &= ~(_BV(SPEAKER_BIT));
   // Port B inputs
-  DDRB &= ~(_BV(B_BUTTON_BIT) | _BV(SPI_MISO_BIT));
-  // Port B outputs
-  DDRB |= _BV(RED_LED_BIT) | _BV(GREEN_LED_BIT) | _BV(BLUE_LED_BIT) |
-          _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT) | _BV(SPI_SS_BIT);
-
-  // Port C
-  // Speaker: Not set here. Controlled by audio class
-
-  // Port D INPUT_PULLUP or HIGH
-  PORTD |= _BV(CS_BIT);
-  // Port D INPUT or LOW
-  PORTD &= ~(_BV(RST_BIT));
-  // Port D inputs (none)
-  // Port D outputs
-  DDRD |= _BV(RST_BIT) | _BV(CS_BIT) | _BV(DC_BIT);
-
-  // Port E INPUT_PULLUP or HIGH
-  PORTE |= _BV(A_BUTTON_BIT);
-  // Port E INPUT or LOW (none)
-  // Port E inputs
-  DDRE &= ~(_BV(A_BUTTON_BIT));
-  // Port E outputs (none)
-
-  // Port F INPUT_PULLUP or HIGH
-  PORTF |= _BV(LEFT_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
-           _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT);
-  // Port F INPUT or LOW
-  PORTF &= ~(_BV(RAND_SEED_IN_BIT));
-  // Port F inputs
-  DDRF &= ~(_BV(LEFT_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
-            _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
-            _BV(RAND_SEED_IN_BIT));
-  // Port F outputs (none)
-
-#elif defined(AB_DEVKIT)
-
-  // Port B INPUT_PULLUP or HIGH
-  PORTB |= _BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
-           _BV(BLUE_LED_BIT);
-  // Port B INPUT or LOW (none)
-  // Port B inputs
-  DDRB &= ~(_BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
+  DDRB &= ~(_BV(B_BUTTON_BIT) | _BV(UP_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT) |
             _BV(SPI_MISO_BIT));
   // Port B outputs
   DDRB |= _BV(SPI_MOSI_BIT) | _BV(SPI_SCK_BIT) | _BV(SPI_SS_BIT) |
-          _BV(BLUE_LED_BIT);
+          _BV(SPEAKER_BIT);
 
-  // Port C INPUT_PULLUP or HIGH
-  PORTC |= _BV(RIGHT_BUTTON_BIT);
-  // Port C INPUT or LOW (none)
+  // Port C INPUT_PULLUP or HIGH (none)
+  // Port C INPUT or LOW
+  PORTC &= ~(_BV(BATT_STAT_BIT) | _BV(LEDL_BIT));
   // Port C inputs
-  DDRC &= ~(_BV(RIGHT_BUTTON_BIT));
-  // Port C outputs (none)
+  DDRC &= ~(_BV(BATT_STAT_BIT));
+  // Port C outputs
+  DDRC |= _BV(LEDL_BIT);
 
-  // Port D INPUT_PULLUP or HIGH
-  PORTD |= _BV(CS_BIT);
+  // Port D INPUT_PULLUP or HIGH (none)
   // Port D INPUT or LOW
-  PORTD &= ~(_BV(RST_BIT));
-  // Port D inputs (none)
+  PORTD &= ~(_BV(I2C_SCL_BIT) | _BV(I2C_SDA_BIT) | _BV(BLE_IRQ_BIT) |
+             _BV(RTC_INT_BIT) | _BV(BATT_EN_BIT) | _BV(BATT_LVL_BIT) |
+             _BV(LEDR_BIT));
+  // Port D inputs
+  DDRD &= ~(_BV(I2C_SCL_BIT) | _BV(I2C_SDA_BIT) | _BV(BLE_IRQ_BIT) |
+            _BV(RTC_INT_BIT) | _BV(BATT_LVL_BIT));
   // Port D outputs
-  DDRD |= _BV(RST_BIT) | _BV(CS_BIT) | _BV(DC_BIT);
+  DDRD |= _BV(BATT_EN_BIT) | _BV(LEDR_BIT);
 
-  // Port E (none)
+  // Port E INPUT_PULLUP or HIGH (none)
+  // Port E INPUT or LOW
+  PORTE &= ~(_BV(MPU_INT_BIT));
+  // Port E inputs
+  DDRE &= ~(_BV(MPU_INT_BIT));
+  // Port E outputs (none)
 
   // Port F INPUT_PULLUP or HIGH
-  PORTF |= _BV(A_BUTTON_BIT) | _BV(B_BUTTON_BIT);
+  PORTF |= _BV(CS_BIT) | _BV(BLE_CS_BIT) | _BV(BLE_RST_BIT);
   // Port F INPUT or LOW
-  PORTF &= ~(_BV(RAND_SEED_IN_BIT));
+  PORTF &= ~(_BV(RAND_SEED_IN_BIT) | _BV(RST_BIT));
   // Port F inputs
-  DDRF &= ~(_BV(A_BUTTON_BIT) | _BV(B_BUTTON_BIT) | _BV(RAND_SEED_IN_BIT));
-  // Port F outputs (none)
-  // Speaker: Not set here. Controlled by audio class
-
-#endif
+  DDRF &= ~(_BV(RAND_SEED_IN_BIT));
+  // Port F outputs
+  DDRF |= _BV(CS_BIT) | _BV(RST_BIT) | _BV(DC_BIT) |
+          _BV(BLE_CS_BIT) | _BV(BLE_RST_BIT);
 }
 
 void Arduboy2Core::bootOLED()
@@ -272,9 +237,6 @@ void Arduboy2Core::idle()
 
 void Arduboy2Core::bootPowerSaving()
 {
-  // disable Two Wire Interface (I2C) and the ADC
-  // All other bits will be written with 0 so will be enabled
-  PRR0 = _BV(PRTWI) | _BV(PRADC);
   // disable USART1
   PRR1 |= _BV(PRUSART1);
 }
@@ -432,95 +394,60 @@ void Arduboy2Core::flipHorizontal(bool flipped)
 
 void Arduboy2Core::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
 {
-#ifdef ARDUBOY_10 // RGB, all the pretty colors
-  // timer 0: Fast PWM, OC0A clear on compare / set at top
-  // We must stay in Fast PWM mode because timer 0 is used for system timing.
-  // We can't use "inverted" mode because it won't allow full shut off.
-  TCCR0A = _BV(COM0A1) | _BV(WGM01) | _BV(WGM00);
-  OCR0A = 255 - green;
-  // timer 1: Phase correct PWM 8 bit
-  // OC1A and OC1B set on up-counting / clear on down-counting (inverted). This
-  // allows the value to be directly loaded into the OCR with common anode LED.
-  TCCR1A = _BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0) | _BV(WGM10);
-  OCR1AL = blue;
-  OCR1BL = red;
-#elif defined(AB_DEVKIT)
-  // only blue on DevKit, which is not PWM capable
-  (void)red;    // parameter unused
-  (void)green;  // parameter unused
-  bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, blue ? RGB_ON : RGB_OFF);
-#endif
+  (void) blue; // parameter not used
+
+  // from http://r6500.blogspot.com/2014/12/fast-pwm-on-arduino-leonardo.html
+  TCCR4D = 0; // timer 4, Fast PWM
+  TCCR4B = _BV(CS41); // 187500Hz
+  PLLFRQ = (PLLFRQ & 0xCF) | _BV(PLLTM1) | _BV(PLLTM0); // 96MHz/2 = 48MHz
+  OCR4C = 255; // terminal count for timer 4 PWM
+
+  // timer 4A (LEDL / Arduino pin 13)
+  TCCR4A |= _BV(COM4A1) | _BV(PWM4A);
+  OCR4A = red;
+
+  // timer 4D (LEDR / Arduino pin 6)
+  TCCR4C |= _BV(COM4D1) | _BV(PWM4D);
+  OCR4D = green;
 }
 
 void Arduboy2Core::setRGBled(uint8_t color, uint8_t val)
 {
-#ifdef ARDUBOY_10
   if (color == RED_LED)
   {
-    OCR1BL = val;
+    OCR4A = val; // (LEDL / Arduino pin 13)
   }
   else if (color == GREEN_LED)
   {
-    OCR0A = 255 - val;
+    OCR4D = val; // (LEDR / Arduino pin 6)
   }
-  else if (color == BLUE_LED)
-  {
-    OCR1AL = val;
-  }
-#elif defined(AB_DEVKIT)
-  // only blue on DevKit, which is not PWM capable
-  if (color == BLUE_LED)
-  {
-    bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, val ? RGB_ON : RGB_OFF);
-  }
-#endif
 }
 
 void Arduboy2Core::freeRGBled()
 {
-#ifdef ARDUBOY_10
   // clear the COM bits to return the pins to normal I/O mode
-  TCCR0A = _BV(WGM01) | _BV(WGM00);
-  TCCR1A = _BV(WGM10);
-#endif
+  TCCR4A = 0;
+  TCCR4C = 0;
 }
 
 void Arduboy2Core::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
-#ifdef ARDUBOY_10
-  bitWrite(RED_LED_PORT, RED_LED_BIT, red);
-  bitWrite(GREEN_LED_PORT, GREEN_LED_BIT, green);
-  bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, blue);
-#elif defined(AB_DEVKIT)
-  // only blue on DevKit
-  (void)red;    // parameter unused
-  (void)green;  // parameter unused
-  bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, blue);
-#endif
+  (void) blue; // parameter not used
+
+  bitWrite(LEDL_PORT, LEDL_BIT, red);
+  bitWrite(LEDR_PORT, LEDR_BIT, green);
 }
 
 void Arduboy2Core::digitalWriteRGB(uint8_t color, uint8_t val)
 {
-#ifdef ARDUBOY_10
   if (color == RED_LED)
   {
-    bitWrite(RED_LED_PORT, RED_LED_BIT, val);
+    bitWrite(LEDL_PORT, LEDL_BIT, val);
   }
   else if (color == GREEN_LED)
   {
-    bitWrite(GREEN_LED_PORT, GREEN_LED_BIT, val);
+    bitWrite(LEDR_PORT, LEDR_BIT, val);
   }
-  else if (color == BLUE_LED)
-  {
-    bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, val);
-  }
-#elif defined(AB_DEVKIT)
-  // only blue on DevKit
-  if (color == BLUE_LED)
-  {
-    bitWrite(BLUE_LED_PORT, BLUE_LED_BIT, val);
-  }
-#endif
 }
 
 /* Buttons */
@@ -529,26 +456,9 @@ uint8_t Arduboy2Core::buttonsState()
 {
   uint8_t buttons;
 
-#ifdef ARDUBOY_10
-  // up, right, left, down
-  buttons = ((~PINF) &
-              (_BV(UP_BUTTON_BIT) | _BV(RIGHT_BUTTON_BIT) |
-               _BV(LEFT_BUTTON_BIT) | _BV(DOWN_BUTTON_BIT)));
-  // A
-  if (bitRead(A_BUTTON_PORTIN, A_BUTTON_BIT) == 0) { buttons |= A_BUTTON; }
-  // B
-  if (bitRead(B_BUTTON_PORTIN, B_BUTTON_BIT) == 0) { buttons |= B_BUTTON; }
-#elif defined(AB_DEVKIT)
-  // down, left, up
-  buttons = ((~PINB) &
-              (_BV(DOWN_BUTTON_BIT) | _BV(LEFT_BUTTON_BIT) | _BV(UP_BUTTON_BIT)));
-  // right
-  if (bitRead(RIGHT_BUTTON_PORTIN, RIGHT_BUTTON_BIT) == 0) { buttons |= RIGHT_BUTTON; }
-  // A
-  if (bitRead(A_BUTTON_PORTIN, A_BUTTON_BIT) == 0) { buttons |= A_BUTTON; }
-  // B
-  if (bitRead(B_BUTTON_PORTIN, B_BUTTON_BIT) == 0) { buttons |= B_BUTTON; }
-#endif
+  // up, down, B
+  buttons = ((~PINB) & (_BV(UP_BUTTON_BIT) | _BV(B_BUTTON_BIT) |
+                        _BV(DOWN_BUTTON_BIT)));
 
   return buttons;
 }
