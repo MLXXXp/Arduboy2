@@ -8,6 +8,15 @@
 #include "ab_logo.c"
 #include "glcdfont.c"
 
+//================================
+//========== class Rect ==========
+//================================
+
+Rect::Rect(int16_t x, int16_t y, uint8_t width, uint8_t height)
+ : x(x), y(y), width(width), height(height)
+{
+}
+
 //========================================
 //========== class Arduboy2Base ==========
 //========================================
