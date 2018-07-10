@@ -121,6 +121,10 @@ struct Point
 {
   int16_t x; /**< The X coordinate of the point */
   int16_t y; /**< The Y coordinate of the point */
+
+  Point() = default; /**< The default constructor */
+
+  Point(int16_t x, int16_t y); /**< The fully initialising constructor */
 };
 
 //==================================
