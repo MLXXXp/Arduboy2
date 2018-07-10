@@ -104,6 +104,10 @@ struct Rect
   int16_t y;      /**< The Y coordinate of the top left corner */
   uint8_t width;  /**< The width of the rectangle */
   uint8_t height; /**< The height of the rectangle */
+  
+  Rect() = default; /**< The default constructor of the point */
+  
+  Rect(int16_t x, int16_t y, uint8_t width, uint8_t height); /**< The fully initialising constructor of the point */ 
 };
 
 /** \brief
