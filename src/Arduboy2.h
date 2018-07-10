@@ -1026,7 +1026,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \see Point Rect
    */
-  bool collide(Point point, Rect rect);
+  static bool collide(Point point, Rect rect);
 
   /** \brief
    * Test if a rectangle is intersecting with another rectangle.
@@ -1043,7 +1043,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \see Rect
    */
-  bool collide(Rect rect1, Rect rect2);
+  static bool collide(Rect rect1, Rect rect2);
 
   /** \brief
    * Read the unit ID from system EEPROM.
