@@ -6,6 +6,8 @@
 
 #include "Arduboy2Core.h"
 
+#include <avr/wdt.h>
+
 const uint8_t PROGMEM lcdBootProgram[] = {
   // boot defaults are commented out but left here in case they
   // might prove useful for reference
