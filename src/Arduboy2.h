@@ -14,7 +14,6 @@
 #include "Sprites.h"
 #include "SpritesB.h"
 #include <Print.h>
-#include <limits.h>
 
 /** \brief
  * Library version
