@@ -31,7 +31,7 @@ void Arduboy2Base::begin()
 {
   boot(); // raw hardware
 
-  display(); // blank the display (sBuffer is global, so cleared automatically)
+  display(CLEAR_BUFFER); //sBuffer is global, so cleared automatically)
 
   flashlight(); // light the RGB LED and screen if UP button is being held.
 
@@ -308,9 +308,9 @@ void Arduboy2Base::clear()
 // Used by drawPixel to help with left bitshifting since AVR has no
 // multiple bit shift instruction.  We can bit shift from a lookup table
 // in flash faster than we can calculate the bit shifts on the CPU.
-const uint8_t bitshift_left[] PROGMEM = {
-  _BV(0), _BV(1), _BV(2), _BV(3), _BV(4), _BV(5), _BV(6), _BV(7)
-};
+//const uint8_t bitshift_left[] PROGMEM = {
+//  _BV(0), _BV(1), _BV(2), _BV(3), _BV(4), _BV(5), _BV(6), _BV(7)
+//};
 
 void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
 {
@@ -324,46 +324,35 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
   uint16_t row_offset;
   uint8_t bit;
 
-  // uint8_t row = (uint8_t)y / 8;
-  // row_offset = (row*WIDTH) + (uint8_t)x;
-  // bit = _BV((uint8_t)y % 8);
-
-  // the above math can also be rewritten more simply as;
-  //   row_offset = (y * WIDTH/8) & ~0b01111111 + (uint8_t)x;
-  // which is what the below assembler does
-
-  // local variable for the bitshift_left array pointer,
-  // which can be declared a read-write operand
-  const uint8_t* bsl = bitshift_left;
-
   asm volatile
   (
-    "mul %[width_offset], %A[y]\n"
-    "movw %[row_offset], r0\n"
-    "andi %A[row_offset], 0x80\n" // row_offset &= (~0b01111111);
-    "clr __zero_reg__\n"
-    "add %A[row_offset], %[x]\n"
-    // mask for only 0-7
-    "andi %A[y], 0x07\n"
-    // Z += y
-    "add r30, %A[y]\n"
-    "adc r31, __zero_reg__\n"
-    // load correct bitshift from program RAM
-    "lpm %[bit], Z\n"
-    : [row_offset] "=&x" (row_offset), // upper register (ANDI)
-      [bit] "=r" (bit),
-      [y] "+d" (y), // upper register (ANDI), must be writable
-      "+z" (bsl) // is modified to point to the proper shift array element
-    : [width_offset] "r" ((uint8_t)(WIDTH/8)),
-      [x] "r" ((uint8_t)x)
+    // bit = 1 << (y & 7)
+    "ldi  %[bit], 1                    \n" //bit = 1;
+    "sbrc %[y], 1                      \n" //if (y & _BV(1)) bit = 4;
+    "ldi  %[bit], 4                    \n"
+    "sbrc %[y], 0                      \n" //if (y & _BV(0)) bit = bit << 1;
+    "lsl  %[bit]                       \n"
+    "sbrc %[y], 2                      \n" //if (y & _BV(2)) bit = (bit << 4) | (bit >> 4);
+    "swap %[bit]                       \n" 
+    //row_offset = y / 8 * WIDTH + x;
+    "andi %A[y], 0xf8                  \n"
+    "mul  %[width_offset], %A[y]       \n"
+    "movw %[row_offset], r0            \n"
+    "clr  __zero_reg__                 \n"
+    "add  %A[row_offset], %[x]         \n"
+#if WIDTH != 128
+    "adc  %B[row_offset], __zero_reg__ \n" // only none 128 width can overflow
+#endif
+    : [row_offset]   "=&x" (row_offset),   // upper register (ANDI)
+      [bit]          "=&d" (bit),          // upper register (LDI)
+      [y]            "+d"  (y)             // upper register (ANDI), must be writable
+    : [width_offset] "r"   ((uint8_t)(WIDTH/8)),
+      [x]            "r"   ((uint8_t)x)
     :
   );
-
-  if (color) {
-    sBuffer[row_offset] |=   bit;
-  } else {
-    sBuffer[row_offset] &= ~ bit;
-  }
+  uint8_t data = sBuffer[row_offset] | bit;
+  if (!color) data ^= bit;
+  sBuffer[row_offset] = data;
 }
 
 uint8_t Arduboy2Base::getPixel(uint8_t x, uint8_t y)
