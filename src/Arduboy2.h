@@ -449,7 +449,7 @@ class Arduboy2Base : public Arduboy2Core
    * specified color. The values WHITE or BLACK can be used for the color.
    * If the `color` parameter isn't included, the pixel will be set to WHITE.
    */
-  void drawPixel(int16_t x, int16_t y, uint8_t color = WHITE);
+  static void drawPixel(int16_t x, int16_t y, uint8_t color = WHITE);
 
   /** \brief
    * Returns the state of the given pixel in the screen buffer.
