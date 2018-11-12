@@ -103,6 +103,10 @@ struct Rect
   int16_t y;      /**< The Y coordinate of the top left corner */
   uint8_t width;  /**< The width of the rectangle */
   uint8_t height; /**< The height of the rectangle */
+  
+  Rect() = default; /**< The default constructor of the point */
+  
+  Rect(int16_t x, int16_t y, uint8_t width, uint8_t height); /**< The fully initialising constructor of the point */ 
 };
 
 /** \brief
@@ -117,6 +121,10 @@ struct Point
 {
   int16_t x; /**< The X coordinate of the point */
   int16_t y; /**< The Y coordinate of the point */
+  
+  Point() = default; /**< The default constructor of the point */
+  
+  Point(int16_t x, int16_t y); /**< The fully initialising constructor of the point */ 
 };
 
 //==================================
@@ -1018,7 +1026,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \see Point Rect
    */
-  bool collide(Point point, Rect rect);
+  static bool collide(Point point, Rect rect);
 
   /** \brief
    * Test if a rectangle is intersecting with another rectangle.
@@ -1035,7 +1043,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \see Rect
    */
-  bool collide(Rect rect1, Rect rect2);
+  static bool collide(Rect rect1, Rect rect2);
 
   /** \brief
    * Read the unit ID from system EEPROM.
