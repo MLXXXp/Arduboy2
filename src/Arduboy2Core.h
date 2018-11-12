@@ -10,7 +10,6 @@
 #include <Arduino.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
-#include <avr/wdt.h>
 #include <limits.h>
 
 
