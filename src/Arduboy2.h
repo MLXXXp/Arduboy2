@@ -440,7 +440,7 @@ class Arduboy2Base : public Arduboy2Core
    * This function returns true if x is in the interval [0, WIDTH) and y is in
    * the interval [0, HEIGHT).
    */
-  bool validPixel(int16_t x, int16_t y) {
+  static constexpr bool validPixel(int16_t x, int16_t y) {
     return !(x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1));
   }
 
