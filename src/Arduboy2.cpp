@@ -343,7 +343,7 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
     "sbrc %[y], 0                      \n" //if (y & _BV(0)) bit = bit << 1;
     "lsl  %[bit]                       \n"
     "sbrc %[y], 2                      \n" //if (y & _BV(2)) bit = (bit << 4) | (bit >> 4);
-    "swap %[bit]                       \n" 
+    "swap %[bit]                       \n"
     //row_offset = y / 8 * WIDTH + x;
     "andi %A[y], 0xf8                  \n" //row_offset = (y & 0xF8) * WIDTH / 8
     "mul  %[width_offset], %A[y]       \n"
@@ -364,6 +364,27 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
   if (!(color & _BV(0))) data ^= bit;
   sBuffer[row_offset] = data;
 }
+#if 0
+// For reference, this is the C++ equivalent
+void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
+{
+  #ifdef PIXEL_SAFE_MODE
+  if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
+  {
+    return;
+  }
+  #endif
+
+  uint16_t row_offset;
+  uint8_t bit;
+
+  bit = 1 << (y & 7);
+  row_offset = (y & 0xF8) * WIDTH / 8 + x;
+  uint8_t data = sBuffer[row_offset] | bit;
+  if (!color) data ^= bit;
+  sBuffer[row_offset] = data;
+}
+#endif
 
 uint8_t Arduboy2Base::getPixel(uint8_t x, uint8_t y)
 {
