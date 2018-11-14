@@ -88,6 +88,10 @@
 #define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
 
 
+//=============================================
+//========== Rect (rectangle) object ==========
+//=============================================
+
 /** \brief
  * A rectangle object for collision functions.
  *
@@ -96,6 +100,7 @@
  * given width and height.
  *
  * \see Arduboy2Base::collide(Point, Rect) Arduboy2Base::collide(Rect, Rect)
+ *      Point
  */
 struct Rect
 {
@@ -104,10 +109,25 @@ struct Rect
   uint8_t width;  /**< The width of the rectangle */
   uint8_t height; /**< The height of the rectangle */
 
-  Rect() = default; /**< The default constructor */
+  /** \brief
+   * The default constructor
+   */
+  Rect() = default;
 
-  Rect(int16_t x, int16_t y, uint8_t width, uint8_t height); /**< The fully initialising constructor */
+  /** \brief
+   * The fully initializing constructor
+   *
+   * \param x The X coordinate of the top left corner. Copied to variable `x`.
+   * \param y The Y coordinate of the top left corner. Copied to variable `y`.
+   * \param width The width of the rectangle. Copied to variable `width`.
+   * \param height The height of the rectangle. Copied to variable `height`.
+   */
+  Rect(int16_t x, int16_t y, uint8_t width, uint8_t height);
 };
+
+//==================================
+//========== Point object ==========
+//==================================
 
 /** \brief
  * An object to define a single point for collision functions.
@@ -115,16 +135,25 @@ struct Rect
  * \details
  * The location of the point is given by X and Y coordinates.
  *
- * \see Arduboy2Base::collide(Point, Rect)
+ * \see Arduboy2Base::collide(Point, Rect) Rect
  */
 struct Point
 {
   int16_t x; /**< The X coordinate of the point */
   int16_t y; /**< The Y coordinate of the point */
 
-  Point() = default; /**< The default constructor */
+  /** \brief
+   * The default constructor
+   */
+  Point() = default;
 
-  Point(int16_t x, int16_t y); /**< The fully initialising constructor */
+  /** \brief
+   * The fully initializing constructor
+   *
+   * \param x The X coordinate of the point. Copied to variable `x`.
+   * \param y The Y coordinate of the point. Copied to variable `y`.
+   */
+  Point(int16_t x, int16_t y);
 };
 
 //==================================
