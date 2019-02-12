@@ -678,7 +678,7 @@ void Arduboy2Base::fillScreen(uint8_t color)
     "ldi %[color], 0xFF\n"
     // counter = 0
     "clr __tmp_reg__\n"
-    "loopto:\n"
+    "1:\n"
     // (4x) push zero into screen buffer,
     // then increment buffer position
     "st Z+, %[color]\n"
@@ -689,7 +689,7 @@ void Arduboy2Base::fillScreen(uint8_t color)
     "inc __tmp_reg__\n"
     // repeat for 256 loops
     // (until counter rolls over back to 0)
-    "brne loopto\n"
+    "brne 1b\n"
     : [color] "+d" (color),
       "+z" (bPtr)
     :
