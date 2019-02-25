@@ -1390,6 +1390,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * \see Arduboy2::write()
    */
+  using Print::write;
 
   /** \brief
    * Display the boot logo sequence using printed text instead of a bitmap.
