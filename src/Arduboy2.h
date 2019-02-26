@@ -580,7 +580,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \param color The fill color (optional; defaults to WHITE).
    */
-  void fillScreen(uint8_t color = WHITE) __attribute__ ((noinline));
+  void fillScreen(uint8_t color = WHITE);
 
   /** \brief
    * Draw a rectangle with rounded corners.
