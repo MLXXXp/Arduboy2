@@ -435,23 +435,15 @@ class Arduboy2Core
      * Get the width of the display in pixels.
      *
      * \return The width of the display in pixels.
-     *
-     * \note
-     * In most cases, the defined value `WIDTH` would be better to use instead
-     * of this function.
      */
-    uint8_t static width();
+    constexpr uint8_t static width() { return WIDTH; }
 
     /** \brief
      * Get the height of the display in pixels.
      *
      * \return The height of the display in pixels.
-     *
-     * \note
-     * In most cases, the defined value `HEIGHT` would be better to use instead
-     * of this function.
      */
-    uint8_t static height();
+    constexpr uint8_t static height() { return HEIGHT; }
 
     /** \brief
      * Get the current state of all buttons as a bitmask.
