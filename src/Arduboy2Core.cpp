@@ -298,10 +298,6 @@ void Arduboy2Core::displayOn()
   bootOLED();
 }
 
-uint8_t Arduboy2Core::width() { return WIDTH; }
-
-uint8_t Arduboy2Core::height() { return HEIGHT; }
-
 
 /* Drawing */
 
