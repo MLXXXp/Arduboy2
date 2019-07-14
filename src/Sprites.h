@@ -89,6 +89,9 @@ class Sprites
      * An array containing the image frames, and another array containing
      * corresponding mask frames, are used to draw a sprite.
      *
+     * For the mask array, the width and height are not included but must
+     * contain data of the same dimensions as the corresponding image array.
+     *
      * Bits set to 1 in the mask indicate that the pixel will be set to the
      * value of the corresponding image bit. Bits set to 0 in the mask will be
      * left unchanged.
