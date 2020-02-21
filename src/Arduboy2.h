@@ -122,7 +122,10 @@ struct Rect
    * \param width The width of the rectangle. Copied to variable `width`.
    * \param height The height of the rectangle. Copied to variable `height`.
    */
-  Rect(int16_t x, int16_t y, uint8_t width, uint8_t height);
+  constexpr Rect(int16_t x, int16_t y, uint8_t width, uint8_t height)
+    : x(x), y(y), width(width), height(height)
+  {
+  }
 };
 
 //==================================
@@ -153,7 +156,10 @@ struct Point
    * \param x The X coordinate of the point. Copied to variable `x`.
    * \param y The Y coordinate of the point. Copied to variable `y`.
    */
-  Point(int16_t x, int16_t y);
+  constexpr Point(int16_t x, int16_t y)
+    : x(x), y(y)
+  {
+  }
 };
 
 //==================================
