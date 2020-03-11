@@ -1315,6 +1315,29 @@ class Arduboy2Base : public Arduboy2Core
    */
   static uint8_t sBuffer[(HEIGHT*WIDTH)/8];
 
+  /** \brief
+   * The bitmap for the ARDUBOY logo in `drawBitmap()` format.
+   *
+   * \see bootLogo() drawBitmap()
+   */
+  static const PROGMEM uint8_t arduboy_logo[];
+
+  /** \brief
+   * The bitmap for the ARDUBOY logo in `drawCompressed()` format.
+   *
+   * \see bootLogoCompressed() drawCompressed()
+   */
+  static const PROGMEM uint8_t arduboy_logo_compressed[];
+
+  /** \brief
+   * The bitmap for the ARDUBOY logo in `Sprites` class
+   * `drawSelfMasked()` or `drawOverwrite()` format.
+   *
+   * \see bootLogoSpritesSelfMasked() bootLogoSpritesOverwrite()
+   * bootLogoSpritesBSelfMasked() bootLogoSpritesBOverwrite()
+   */
+  static const PROGMEM uint8_t arduboy_logo_sprite[];
+
  protected:
   // helper function for sound enable/disable system control
   void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
@@ -1504,6 +1527,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * writing text.
    *
    * \see Print write() setTextColor() setTextBackground() setTextSize()
+   * font5x7
    */
   void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size);
 
@@ -1646,6 +1670,31 @@ class Arduboy2 : public Print, public Arduboy2Base
    * Clear the display buffer and set the text cursor to location 0, 0
    */
   void clear();
+
+  /** \brief
+   * The font used for text functions.
+   *
+   * \details
+   * This is a 5 pixel by 7 pixel font. Each character is actually coded as
+   * 8 pixels high to allow a 1 pixel descender below the baseline.
+   * Many symbols also use the 8th pixel. The library functions add a 1 pixel
+   * space after each character to separate them, so characters written at
+   * size 1 will occupy a 6 x 8 pixel area when drawn.
+   *
+   * The character set represented is code page 437, also known as OEM 437,
+   * OEM-US, PC-8 or DOS Latin US.
+   *
+   * The data for this font is from file `glcdfont.c` in the
+   * [Adafruit GFX graphics library](https://github.com/adafruit/Adafruit-GFX-Library).
+   *
+   * \note
+   * Because of the extra blank pixel added to the right of each character,
+   * the line drawing characters in the font won't touch on the left and right
+   * sides, as originally intended.
+   *
+   * \see drawChar()
+   */
+  static const PROGMEM uint8_t font5x7[];
 
  protected:
   int16_t cursor_x;

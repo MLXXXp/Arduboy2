@@ -5,8 +5,6 @@
  */
 
 #include "Arduboy2.h"
-#include "ab_logo.c"
-#include "glcdfont.c"
 
 //========================================
 //========== class Arduboy2Base ==========
@@ -1279,7 +1277,7 @@ void Arduboy2::drawChar
 {
   uint8_t line;
   bool draw_background = bg != color;
-  const unsigned char* bitmap = font + c * 5;
+  const uint8_t* bitmap = font5x7 + c * 5;
 
   if ((x >= WIDTH) ||              // Clip right
       (y >= HEIGHT) ||             // Clip bottom
