@@ -345,7 +345,7 @@ class Arduboy2Core
      * app should be able to sleep maybe half the time in between rendering
      * it's own frames.
      */
-    void static idle();
+    static void idle();
 
     /** \brief
      * Put the display into data mode.
@@ -361,7 +361,7 @@ class Arduboy2Core
      *
      * \see LCDCommandMode() SPItransfer()
      */
-    void static LCDDataMode();
+    static void LCDDataMode();
 
     /** \brief
      * Put the display into command mode.
@@ -385,7 +385,7 @@ class Arduboy2Core
      *
      * \see LCDDataMode() sendLCDCommand() SPItransfer()
      */
-    void static LCDCommandMode();
+    static void LCDCommandMode();
 
     /** \brief
      * Transfer a byte to the display.
@@ -400,7 +400,7 @@ class Arduboy2Core
      *
      * \see LCDDataMode() LCDCommandMode() sendLCDCommand()
      */
-    void static SPItransfer(uint8_t data);
+    static void SPItransfer(uint8_t data);
 
     /** \brief
      * Turn the display off.
@@ -413,7 +413,7 @@ class Arduboy2Core
      *
      * \see displayOn()
      */
-    void static displayOff();
+    static void displayOff();
 
     /** \brief
      * Turn the display on.
@@ -429,21 +429,21 @@ class Arduboy2Core
      *
      * \see displayOff()
      */
-    void static displayOn();
+    static void displayOn();
 
     /** \brief
      * Get the width of the display in pixels.
      *
      * \return The width of the display in pixels.
      */
-    constexpr uint8_t static width() { return WIDTH; }
+    static constexpr uint8_t width() { return WIDTH; }
 
     /** \brief
      * Get the height of the display in pixels.
      *
      * \return The height of the display in pixels.
      */
-    constexpr uint8_t static height() { return HEIGHT; }
+    static constexpr uint8_t height() { return HEIGHT; }
 
     /** \brief
      * Get the current state of all buttons as a bitmask.
@@ -458,7 +458,7 @@ class Arduboy2Core
      *
      * LEFT_BUTTON, RIGHT_BUTTON, UP_BUTTON, DOWN_BUTTON, A_BUTTON, B_BUTTON
      */
-    uint8_t static buttonsState();
+    static uint8_t buttonsState();
 
     /** \brief
      * Paint 8 pixels vertically to the display.
@@ -490,7 +490,7 @@ class Arduboy2Core
      *     . . . . . . . . (end of page 1)  X . X . . . . . (end of page 1)
      *     . . . . . . . . (page 2)         . . . . . . . . (page 2)
      */
-    void static paint8Pixels(uint8_t pixels);
+    static void paint8Pixels(uint8_t pixels);
 
     /** \brief
      * Paints an entire image directly to the display from program memory.
@@ -508,7 +508,7 @@ class Arduboy2Core
      *
      * \see paint8Pixels()
      */
-    void static paintScreen(const uint8_t *image);
+    static void paintScreen(const uint8_t *image);
 
     /** \brief
      * Paints an entire image directly to the display from an array in RAM.
@@ -532,7 +532,7 @@ class Arduboy2Core
      *
      * \see paint8Pixels()
      */
-    void static paintScreen(uint8_t image[], bool clear = false);
+    static void paintScreen(uint8_t image[], bool clear = false);
 
     /** \brief
      * Blank the display screen by setting all pixels off.
@@ -541,7 +541,7 @@ class Arduboy2Core
      * All pixels on the screen will be written with a value of 0 to turn
      * them off.
      */
-    void static blank();
+    static void blank();
 
     /** \brief
      * Invert the entire display or set it back to normal.
@@ -558,7 +558,7 @@ class Arduboy2Core
      * until it is set back to non-inverted mode by calling this function with
      * `false`.
      */
-    void static invert(bool inverse);
+    static void invert(bool inverse);
 
     /** \brief
      * Turn all display pixels on or display the buffer contents.
@@ -579,7 +579,7 @@ class Arduboy2Core
      *
      * \see invert()
      */
-    void static allPixelsOn(bool on);
+    static void allPixelsOn(bool on);
 
     /** \brief
      * Flip the display vertically or set it back to normal.
@@ -597,7 +597,7 @@ class Arduboy2Core
      *
      * \see flipHorizontal()
      */
-    void static flipVertical(bool flipped);
+    static void flipVertical(bool flipped);
 
     /** \brief
      * Flip the display horizontally or set it back to normal.
@@ -615,7 +615,7 @@ class Arduboy2Core
      *
      * \see flipVertical()
      */
-    void static flipHorizontal(bool flipped);
+    static void flipHorizontal(bool flipped);
 
     /** \brief
      * Send a single command byte to the display.
@@ -631,7 +631,7 @@ class Arduboy2Core
      * Sending improper commands to the display can place it into invalid or
      * unexpected states, possibly even causing physical damage.
      */
-    void static sendLCDCommand(uint8_t command);
+    static void sendLCDCommand(uint8_t command);
 
     /** \brief
      * Set the light output of the RGB LED.
@@ -665,7 +665,7 @@ class Arduboy2Core
      *
      * \see setRGBled(uint8_t, uint8_t) digitalWriteRGB() freeRGBled()
      */
-    void static setRGBled(uint8_t red, uint8_t green, uint8_t blue);
+    static void setRGBled(uint8_t red, uint8_t green, uint8_t blue);
 
     /** \brief
      * Set the brightness of one of the RGB LEDs without affecting the others.
@@ -687,7 +687,7 @@ class Arduboy2Core
      *
      * \see setRGBled(uint8_t, uint8_t, uint8_t) digitalWriteRGB() freeRGBled()
      */
-    void static setRGBled(uint8_t color, uint8_t val);
+    static void setRGBled(uint8_t color, uint8_t val);
 
 
     /** \brief
@@ -700,7 +700,7 @@ class Arduboy2Core
      *
      * \see digitalWriteRGB() setRGBled()
      */
-    void static freeRGBled();
+    static void freeRGBled();
 
     /** \brief
      * Set the RGB LEDs digitally, to either fully on or fully off.
@@ -745,7 +745,7 @@ class Arduboy2Core
      *
      * \see digitalWriteRGB(uint8_t, uint8_t) setRGBled() freeRGBled()
      */
-    void static digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue);
+    static void digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue);
 
     /** \brief
      * Set one of the RGB LEDs digitally, to either fully on or fully off.
@@ -763,7 +763,7 @@ class Arduboy2Core
      *
      * \see digitalWriteRGB(uint8_t, uint8_t, uint8_t) setRGBled() freeRGBled()
      */
-    void static digitalWriteRGB(uint8_t color, uint8_t val);
+    static void digitalWriteRGB(uint8_t color, uint8_t val);
 
     /** \brief
      * Initialize the Arduboy's hardware.
@@ -780,7 +780,7 @@ class Arduboy2Core
      *
      * \see Arduboy2Base::begin()
      */
-    void static boot();
+    static void boot();
 
     /** \brief
      * Allow upload when the bootloader "magic number" could be corrupted.
@@ -801,7 +801,7 @@ class Arduboy2Core
      *
      * \see Arduboy2Base::flashlight() boot()
      */
-    void static safeMode();
+    static void safeMode();
 
     /** \brief
      * Delay for the number of milliseconds, specified as a 16 bit value.
@@ -814,7 +814,7 @@ class Arduboy2Core
      * 65535 milliseconds (about 65.5 seconds). Using this function instead
      * of Arduino `delay()` will save a few bytes of code.
      */
-    void static delayShort(uint16_t ms) __attribute__ ((noinline));
+    static void delayShort(uint16_t ms) __attribute__ ((noinline));
 
     /** \brief
      * Exit the sketch and start the bootloader
@@ -832,20 +832,20 @@ class Arduboy2Core
      *
      * \see ARDUBOY_NO_USB
      */
-    void static exitToBootloader();
+    static void exitToBootloader();
 
     // Replacement main() that eliminates the USB stack code.
     // Used by the ARDUBOY_NO_USB macro. This should not be called
     // directly from a sketch.
-    void static mainNoUSB();
+    static void mainNoUSB();
 
   protected:
     // internals
-    void static setCPUSpeed8MHz();
-    void static bootSPI();
-    void static bootOLED();
-    void static bootPins();
-    void static bootPowerSaving();
+    static void setCPUSpeed8MHz();
+    static void bootSPI();
+    static void bootOLED();
+    static void bootPins();
+    static void bootPowerSaving();
 };
 
 #endif
