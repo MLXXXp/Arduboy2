@@ -1096,7 +1096,7 @@ uint8_t Arduboy2Base::readUnitName(char* name)
   return dest;
 }
 
-void Arduboy2Base::writeUnitName(char* name)
+void Arduboy2Base::writeUnitName(const char* name)
 {
   bool done = false;
   uint8_t dest = EEPROM_UNIT_NAME;
