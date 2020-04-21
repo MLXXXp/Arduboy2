@@ -1111,6 +1111,49 @@ class Arduboy2Base : public Arduboy2Core
   /** \brief
    * Read the unit name from system EEPROM.
    *
+   * \param name A char array variable where the unit name will be placed.
+   * The array will be up to 6 characters and terminated with a
+   * null (0x00) character, so the provided array must be at least 7 bytes long.
+   * This template enforces the size restriction with a `static_assert`.
+   *
+   * \return The length of the string (0-6).
+   *
+   * \details
+   * This function reads the unit name that has been set in system EEPROM. The
+   * name is in ASCII and can contain any values except 0xFF and the
+   * null (0x00) terminator value.
+   *
+   * The name can be used for any purpose. It could identify the owner or
+   * give the unit itself a nickname. A sketch could use it to automatically
+   * fill in a name or initials in a high score table, or display it as the
+   * "player" when the opponent is the computer.
+   *
+   * \note
+   * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
+   * hard coding a 6 when working with the unit name. For example, to allocate
+   * a buffer and read the unit name into it:
+   * \code{.cpp}
+   * // Buffer for maximum name length plus the terminator
+   * char unitName[ARDUBOY_UNIT_NAME_LEN + 1];
+   *
+   * // The actual name length
+   * byte unitNameLength;
+   *
+   * unitNameLength = arduboy.readUnitName(unitName);
+   * \endcode
+   *
+   * \see readUnitName() writeUnitName() readUnitID() Arduboy2::bootLogoExtra()
+   */
+  template<size_t size>
+  uint8_t readUnitName(char (&name)[size])
+  {
+    static_assert(size >= (ARDUBOY_UNIT_NAME_LEN + 1), "Provided array is not large enough to hold a unit name");
+    return readUnitName(&name[0]);
+  }
+
+  /** \brief
+   * Read the unit name from system EEPROM.
+   *
    * \param name A pointer to a string array variable where the unit name will
    * be placed. The string will be up to 6 characters and terminated with a
    * null (0x00) character, so the provided array must be at least 7 bytes long.
