@@ -233,7 +233,7 @@ void Arduboy2Core::bootSPI()
 }
 
 // Write to the SPI bus (MOSI pin)
-void Arduboy2Core::SPItransfer(uint8_t data)
+uint8_t Arduboy2Core::SPItransfer(uint8_t data)
 {
   SPDR = data;
   /*
@@ -244,6 +244,7 @@ void Arduboy2Core::SPItransfer(uint8_t data)
    */
   asm volatile("nop");
   while (!(SPSR & _BV(SPIF))) { } // wait
+  return SPDR;
 }
 
 void Arduboy2Core::safeMode()

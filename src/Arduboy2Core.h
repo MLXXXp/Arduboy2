@@ -400,7 +400,7 @@ class Arduboy2Core
      *
      * \see LCDDataMode() LCDCommandMode() sendLCDCommand()
      */
-    void static SPItransfer(uint8_t data);
+    uint8_t static SPItransfer(uint8_t data);
 
     /** \brief
      * Turn the display off.

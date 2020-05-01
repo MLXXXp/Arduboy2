@@ -53,6 +53,8 @@
 #define SYS_FLAG_SHOW_LOGO_MASK _BV(SYS_FLAG_SHOW_LOGO)
 #define SYS_FLAG_SHOW_LOGO_LEDS 2  // Flash the RGB led during the boot logo
 #define SYS_FLAG_SHOW_LOGO_LEDS_MASK _BV(SYS_FLAG_SHOW_LOGO_LEDS)
+#define SYS_FLAG_POWERON_MENU 7  // Start with FX loader menu after power on
+#define SYS_FLAG_POWERON_MENU_MASK _BV(SYS_FLAG_POWERON_MENU)
 
 /** \brief
  * Start of EEPROM storage space for sketches.
