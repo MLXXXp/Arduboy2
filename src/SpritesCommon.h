@@ -1,7 +1,7 @@
 /**
  * @file SpritesCommon.h
  * \brief
- * Common header file for sprite functions
+ * Common header file for sprite functions.
  */
 
 #ifndef SpritesCommon_h

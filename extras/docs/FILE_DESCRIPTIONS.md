@@ -1,6 +1,6 @@
 # File Descriptions
 
-Documentation for files contained in this repository which aren't self explanatory.
+Documentation for files contained in this repository that aren't self explanatory.
 
 ### /library.properties
 

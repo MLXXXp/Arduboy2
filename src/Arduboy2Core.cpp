@@ -8,7 +8,7 @@
 
 #include <avr/wdt.h>
 
-const uint8_t PROGMEM lcdBootProgram[] = {
+const PROGMEM uint8_t lcdBootProgram[] = {
   // boot defaults are commented out but left here in case they
   // might prove useful for reference
   //
@@ -238,7 +238,7 @@ void Arduboy2Core::SPItransfer(uint8_t data)
   SPDR = data;
   /*
    * The following NOP introduces a small delay that can prevent the wait
-   * loop form iterating when running at the maximum speed. This gives
+   * loop from iterating when running at the maximum speed. This gives
    * about 10% more speed, even if it seems counter-intuitive. At lower
    * speeds it is unnoticed.
    */

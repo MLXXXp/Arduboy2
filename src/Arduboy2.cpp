@@ -504,13 +504,13 @@ void Arduboy2Base::drawLine
   // bresenham's algorithm - thx wikpedia
   bool steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
-    swap(x0, y0);
-    swap(x1, y1);
+    swapInt16(x0, y0);
+    swapInt16(x1, y1);
   }
 
   if (x0 > x1) {
-    swap(x0, x1);
-    swap(y0, y1);
+    swapInt16(x0, x1);
+    swapInt16(y0, y1);
   }
 
   int16_t dx, dy;
@@ -719,15 +719,15 @@ void Arduboy2Base::fillTriangle
   // Sort coordinates by Y order (y2 >= y1 >= y0)
   if (y0 > y1)
   {
-    swap(y0, y1); swap(x0, x1);
+    swapInt16(y0, y1); swapInt16(x0, x1);
   }
   if (y1 > y2)
   {
-    swap(y2, y1); swap(x2, x1);
+    swapInt16(y2, y1); swapInt16(x2, x1);
   }
   if (y0 > y1)
   {
-    swap(y0, y1); swap(x0, x1);
+    swapInt16(y0, y1); swapInt16(x0, x1);
   }
 
   if(y0 == y2)
@@ -787,7 +787,7 @@ void Arduboy2Base::fillTriangle
 
     if(a > b)
     {
-      swap(a,b);
+      swapInt16(a,b);
     }
 
     drawFastHLine(a, y, b-a+1, color);
@@ -807,7 +807,7 @@ void Arduboy2Base::fillTriangle
 
     if(a > b)
     {
-      swap(a,b);
+      swapInt16(a,b);
     }
 
     drawFastHLine(a, y, b-a+1, color);
@@ -879,7 +879,7 @@ void Arduboy2Base::drawSlowXYBitmap
 
 
 // Helper for drawCompressed()
-struct BitStreamReader
+struct Arduboy2Base::BitStreamReader
 {
   const uint8_t *source;
   uint16_t sourceIndex;
@@ -1149,7 +1149,7 @@ void Arduboy2Base::writeShowBootLogoLEDsFlag(bool val)
   EEPROM.update(EEPROM_SYS_FLAGS, flags);
 }
 
-void Arduboy2Base::swap(int16_t& a, int16_t& b)
+void Arduboy2Base::swapInt16(int16_t& a, int16_t& b)
 {
   int16_t temp = a;
   a = b;

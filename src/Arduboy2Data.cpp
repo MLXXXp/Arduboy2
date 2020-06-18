@@ -78,7 +78,7 @@ const PROGMEM uint8_t Arduboy2Base::arduboy_logo_sprite[] = {
   0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00
 };
 
-// Standard ASCII 5x7 font
+// ASCII based 5x7 font
 // IBM PC code page 437
 const PROGMEM uint8_t Arduboy2::font5x7[] = {
   0x00, 0x00, 0x00, 0x00, 0x00,

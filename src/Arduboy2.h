@@ -29,22 +29,47 @@
  * \code{.cpp}
  * // If the library is version 2.1.0 or higher
  * #if ARDUBOY_LIB_VER >= 20100
- *   // ... code that make use of a new feature added to V2.1.0
+ *   // ... code that makes use of a new feature added to V2.1.0
  * #endif
  * \endcode
  */
 #define ARDUBOY_LIB_VER 50201
 
 // EEPROM settings
-#define ARDUBOY_UNIT_NAME_LEN 6 /**< The maximum length of the unit name string. */
+/** \brief
+ * The maximum number of characters in an unterminated unit name.
+ *
+ * \details
+ * This value represents the maximum number of characters in a unit name
+ * **NOT including** the necessary null character required to store the
+ * unit name as a C-style null-terminated string. To specify the size of a
+ * `char` array large enough to store a null-terminated string holding a
+ * unit name, please use `ARDUBOY_UNIT_NAME_BUFFER_SIZE` instead.
+ *
+ * \see ARDUBOY_UNIT_NAME_BUFFER_SIZE
+ */
+#define ARDUBOY_UNIT_NAME_LEN 6
+
+/** \brief
+ * The mininum number of characters required to store a
+ * null-terminated unit name.
+ *
+ * \details
+ * This value should be used to specify the size of a `char` array large enough
+ * to store a C-style null-terminated string holding a unit name.
+ *
+ * \see Arduboy2Base::readUnitName() Arduboy2Base::writeUnitName()
+ * ARDUBOY_UNIT_NAME_LEN
+ */
+#define ARDUBOY_UNIT_NAME_BUFFER_SIZE (ARDUBOY_UNIT_NAME_LEN + 1)
 
 #define EEPROM_VERSION 0
 #define EEPROM_SYS_FLAGS 1
 #define EEPROM_AUDIO_ON_OFF 2
 #define EEPROM_UNIT_ID 8    // A uint16_t binary unit ID
-#define EEPROM_UNIT_NAME 10 // An up to 6 character unit name. Cannot contain
-                            // 0x00 or 0xFF. Lengths less than 6 are padded
-                            // with 0x00
+#define EEPROM_UNIT_NAME 10 // An up to 6 character unit name
+                            // Cannot contain 0x00, 0xFF, 0x0A, 0x0D
+                            // Lengths less than 6 are padded with 0x00
 
 // EEPROM_SYS_FLAGS values
 #define SYS_FLAG_UNAME 0           // Display the unit name on the logo screen
@@ -506,10 +531,6 @@ class Arduboy2Base : public Arduboy2Core
    */
   void drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
 
-  // Draw one or more "corners" of a circle.
-  // (Not officially part of the API)
-  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, uint8_t color = WHITE);
-
   /** \brief
    * Draw a filled-in circle of a given radius.
    *
@@ -519,11 +540,6 @@ class Arduboy2Base : public Arduboy2Core
    * \param color The circle's color (optional; defaults to WHITE).
    */
   void fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
-
-  // Draw one or both vertical halves of a filled-in circle or
-  // rounded rectangle edge.
-  // (Not officially part of the API)
-  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, uint8_t color = WHITE);
 
   /** \brief
    * Draw a line between two specified points.
@@ -768,9 +784,6 @@ class Arduboy2Base : public Arduboy2Core
    */
   void initRandomSeed();
 
-  // Swap the values of two int16_t variables passed by reference.
-  void swap(int16_t& a, int16_t& b);
-
   /** \brief
    * Set the frame rate used by the frame control functions.
    *
@@ -935,7 +948,7 @@ class Arduboy2Base : public Arduboy2Core
    * Read the state of the buttons and return `true` if all the buttons in the
    * specified mask are being pressed.
    *
-   * Example: `if (pressed(LEFT_BUTTON + A_BUTTON))`
+   * Example: `if (pressed(LEFT_BUTTON | A_BUTTON))`
    *
    * \note
    * This function does not perform any button debouncing.
@@ -1111,16 +1124,24 @@ class Arduboy2Base : public Arduboy2Core
   /** \brief
    * Read the unit name from system EEPROM.
    *
-   * \param name A pointer to a string array variable where the unit name will
-   * be placed. The string will be up to 6 characters and terminated with a
-   * null (0x00) character, so the provided array must be at least 7 bytes long.
+   * \param name A pointer to the first element of a `char` array in which the
+   * unit name will be written. The name will be up to `ARDUBOY_UNIT_NAME_LEN`
+   * characters in length and additionally terminated with a null (0x00)
+   * character, so **the provided array MUST be at least
+   * `ARDUBOY_UNIT_NAME_BUFFER_SIZE` characters long**.
+   * Using `ARDUBOY_UNIT_NAME_BUFFER_SIZE` to specify the array length is the
+   * proper way to do this, although any array larger than
+   * `ARDUBOY_UNIT_NAME_BUFFER_SIZE` is also acceptable.
    *
-   * \return The length of the string (0-6).
+   * \return  The length of the string (between 0 and
+   * `ARDUBOY_UNIT_NAME_LEN` *inclusive*).
    *
    * \details
-   * This function reads the unit name that has been set in system EEPROM. The
-   * name is in ASCII and can contain any values except 0xFF and the
-   * null (0x00) terminator value.
+   * This function reads the unit name that has been set in system EEPROM.
+   * The name represents characters in the library's `font5x7` font. It can
+   * contain any values except 0xFF and the null (0x00) terminator value, plus
+   * the ASCII newline/line feed character (`\n`, 0x0A, inverse white circle)
+   * and ASCII carriage return character (`\r`, 0x0D, musical eighth note).
    *
    * The name can be used for any purpose. It could identify the owner or
    * give the unit itself a nickname. A sketch could use it to automatically
@@ -1128,35 +1149,39 @@ class Arduboy2Base : public Arduboy2Core
    * "player" when the opponent is the computer.
    *
    * \note
-   * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
-   * hard coding a 6 when working with the unit name. For example, to allocate
-   * a buffer and read the unit name into it:
+   * The defined value `ARDUBOY_UNIT_NAME_BUFFER_SIZE` should be used to
+   * allocate an array to hold the unit name string, instead of using a
+   * hard coded value for the size.
+   * For example, to allocate a buffer and read the unit name into it:
    * \code{.cpp}
-   * // Buffer for maximum name length plus the terminator
-   * char unitName[ARDUBOY_UNIT_NAME_LEN + 1];
+   * // Buffer large enough to hold the unit name and a null terminator
+   * char unitName[ARDUBOY_UNIT_NAME_BUFFER_SIZE];
    *
-   * // The actual name length
-   * byte unitNameLength;
-   *
-   * unitNameLength = arduboy.readUnitName(unitName);
+   * // After the call, unitNameLength will contain the actual name length,
+   * // not including the null terminator.
+   * uint8_t unitNameLength = arduboy.readUnitName(unitName);
    * \endcode
    *
    * \see writeUnitName() readUnitID() Arduboy2::bootLogoExtra()
+   * ARDUBOY_UNIT_NAME_BUFFER_SIZE ARDUBOY_UNIT_NAME_LEN Arduboy2::font5x7
    */
   uint8_t readUnitName(char* name);
 
   /** \brief
    * Write a unit name to system EEPROM.
    *
-   * \param name A pointer to a string array variable containing the unit name
-   * to be saved. The string can be up to 6 characters and must be terminated
-   * with a null (0x00) character. It can contain any values except 0xFF.
+   * \param name A pointer to the first element of a C-style null-terminated
+   * string containing the unit name to be saved. The name can be up to
+   * `ARDUBOY_UNIT_NAME_LEN` characters long and must be terminated with a
+   * null (0x00) character.
    *
    * \details
    * This function writes a unit name to a reserved area in system EEPROM.
-   * The name is in ASCII and can contain any values except 0xFF and the
-   * null (0x00) terminator value. The newline character (LF, \\n, 0x0A) and
-   * carriage return character (CR, \\r, 0x0D) should also be avoided.
+   * The name represents characters in the library's `font5x7` font. It can
+   * contain any values except 0xFF and the null (0x00) terminator value, plus
+   * the ASCII newline/line feed character (`\n`, 0x0A, inverse white circle)
+   * and ASCII carriage return character (`\r`, 0x0D, musical eighth note)
+   * because of their special use by the library's text handling functions.
    *
    * The name can be used for any purpose. It could identify the owner or
    * give the unit itself a nickname. A sketch could use it to automatically
@@ -1164,10 +1189,12 @@ class Arduboy2Base : public Arduboy2Core
    * "player" when the opponent is the computer.
    *
    * \note
-   * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
-   * hard coding a 6 when working with the unit name.
+   * The defined value `ARDUBOY_UNIT_NAME_BUFFER_SIZE` should be used to
+   * allocate an array to hold the unit name string, instead of using a
+   * hard coded value for the size.
    *
    * \see readUnitName() writeUnitID() Arduboy2::bootLogoExtra()
+   * ARDUBOY_UNIT_NAME_BUFFER_SIZE ARDUBOY_UNIT_NAME_LEN Arduboy2::font5x7
    */
   void writeUnitName(char* name);
 
@@ -1350,11 +1377,26 @@ class Arduboy2Base : public Arduboy2Core
   static void drawLogoSpritesBSelfMasked(int16_t y);
   static void drawLogoSpritesBOverwrite(int16_t y);
 
+  // draw one or more "corners" of a circle
+  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners,
+                        uint8_t color = WHITE);
+
+  // draw one or both vertical halves of a filled-in circle or
+  // rounded rectangle edge
+  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r,
+                        uint8_t sides, int16_t delta, uint8_t color = WHITE);
+
+  // helper for drawCompressed()
+  struct BitStreamReader;
+
+  // swap the values of two int16_t variables passed by reference
+  void swapInt16(int16_t& a, int16_t& b);
+
   // For button handling
   uint8_t currentButtonState;
   uint8_t previousButtonState;
 
-  // For frame funcions
+  // For frame functions
   uint8_t eachFrameMillis;
   uint8_t thisFrameStart;
   bool justRendered;
@@ -1401,7 +1443,15 @@ class Arduboy2 : public Print, public Arduboy2Base
    * as the Arduino `Serial.print()`, etc., functions.
    *
    * Print will use the `write()` function to actually draw each character
-   * in the screen buffer.
+   * in the screen buffer, using the library's `font5x7` font.
+   * Two character values are handled specially (and thus the font symbols that
+   * they represent can't be displayed):
+   *
+   * - ASCII newline or line feed (`\n`, 0x0A, inverse white circle).
+   *   This will move the text cursor position to the start of the next line,
+   *   based on the current text size.
+   * - ASCII carriage return (`\r`, 0x0D, musical eighth note).
+   *   This character will be ignored.
    *
    * See:
    * https://www.arduino.cc/en/Serial/Print
@@ -1412,12 +1462,13 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * arduboy.println("Hello World"); // Prints "Hello World" and then moves the
    *                                 // text cursor to the start of the next line
-   * arduboy.print(value);  // Prints "42"
-   * arduboy.print('\n');   // Moves the text cursor to the start of the next line
-   * arduboy.print(78, HEX) // Prints "4E" (78 in hexadecimal)
+   * arduboy.print(value);       // Prints "42"
+   * arduboy.print('\n');        // Moves the text cursor to the start of the next line
+   * arduboy.print(78, HEX);     // Prints "4E" (78 in hexadecimal)
+   * arduboy.print("\x03\xEA");  // Prints a heart symbol and a Greek uppercase omega
    * \endcode
    *
-   * \see Arduboy2::write()
+   * \see Arduboy2::write() Arduboy2::font5x7
    */
   using Print::write;
 
@@ -1475,50 +1526,55 @@ class Arduboy2 : public Print, public Arduboy2Base
   virtual void bootLogoExtra();
 
   /** \brief
-   * Write a single ASCII character at the current text cursor location.
+   * Write a single character at the current text cursor position.
    *
-   * \param c The ASCII value of the character to be written.
+   * \param c The value of the character to be written.
    *
    * \return The number of characters written (will always be 1).
    *
    * \details
    * This is the Arduboy implemetation of the Arduino virtual `write()`
-   * function. The single ASCII character specified is written to the
-   * the screen buffer at the current text cursor. The text cursor is then
+   * function. The single character specified is written to the the screen
+   * buffer at the current text cursor position. The text cursor is then
    * moved to the next character position in the screen buffer. This new cursor
    * position will depend on the current text size and possibly the current
    * wrap mode.
    *
-   * Two special characters are handled:
+   * Characters are rendered using the library's `font5x7` font.
+   * Two character values are handled specially (and thus the font symbols that
+   * they represent can't be displayed):
    *
-   * - The newline character `\n`. This will move the text cursor to the start
-   *   of the next line based on the current text size.
-   * - The carriage return character `\r`. This character will be ignored.
+   * - ASCII newline or line feed (`\n`, 0x0A, inverse white circle).
+   *   This will move the text cursor position to the start of the next line,
+   *   based on the current text size.
+   * - ASCII carriage return (`\r`, 0x0D, musical eighth note).
+   *   This character will be ignored.
    *
    * \note
    * This function is rather low level and, although it's available as a public
    * function, it wouldn't normally be used. In most cases the Arduino Print
    * class should be used for writing text.
    *
-   * \see Print setTextSize() setTextWrap()
+   * \see Print setTextSize() setTextWrap() drawChar()
    */
   virtual size_t write(uint8_t);
 
   /** \brief
-   * Draw a single ASCII character at the specified location in the screen
+   * Draw a single character at the specified location in the screen
    * buffer.
    *
    * \param x The X coordinate, in pixels, for where to draw the character.
    * \param y The Y coordinate, in pixels, for where to draw the character.
-   * \param c The ASCII value of the character to be drawn.
+   * \param c The value of the character to be drawn.
    * \param color the forground color of the character.
    * \param bg the background color of the character.
    * \param size The size of the character to draw.
    *
    * \details
-   * The specified ASCII character is drawn starting at the provided
+   * The specified character is drawn starting at the provided
    * coordinate. The point specified by the X and Y coordinates will be the
-   * top left corner of the character.
+   * top left corner of the character. The character will be rendered using the
+   * library's `font5x7` font.
    *
    * \note
    * This is a low level function used by the `write()` function to draw a
@@ -1542,8 +1598,8 @@ class Arduboy2 : public Print, public Arduboy2Base
    * The coordinates are in pixels. Since the coordinates can specify any pixel
    * location, the text does not have to be placed on specific rows.
    * As with all drawing functions, location 0, 0 is the top left corner of
-   * the display. The cursor location will be the top left corner of the next
-   * character written.
+   * the display. The cursor location represents the top left corner of the
+   * next character written.
    *
    * \see getCursorX() getCursorY()
    */
@@ -1648,7 +1704,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * cursor will be moved to the start of the next line (based on the current
    * text size) if the following character wouldn't fit entirely at the end of
    * the current line.
-
+   *
    * If wrap mode is disabled, characters will continue to be written to the
    * same line. A character at the right edge of the screen may only be
    * partially displayed and additional characters will be off screen.
@@ -1682,17 +1738,34 @@ class Arduboy2 : public Print, public Arduboy2Base
    * size 1 will occupy a 6 x 8 pixel area when drawn.
    *
    * The character set represented is code page 437, also known as OEM 437,
-   * OEM-US, PC-8 or DOS Latin US.
+   * OEM-US, PC-8 or DOS Latin US. This is an 8 bit set which includes all
+   * printable ASCII characters plus many accented characters, symbols and
+   * line drawing characters. 
    *
    * The data for this font is from file `glcdfont.c` in the
    * [Adafruit GFX graphics library](https://github.com/adafruit/Adafruit-GFX-Library).
    *
    * \note
-   * Because of the extra blank pixel added to the right of each character,
-   * the line drawing characters in the font won't touch on the left and right
-   * sides, as originally intended.
+   * \parblock
+   * With the library's text functions, the line drawing characters in the font
+   * won't touch on the left and right sides, as originally intended, because
+   * of the extra blank pixel added to the right of each character.
+   * \endparblock
    *
-   * \see drawChar()
+   * \note
+   * \parblock
+   * The library's text functions, except `drawChar()`, handle two character
+   * values specially (and thus the font symbols that they represent can't be
+   * displayed using these functions):
+   *
+   * - ASCII newline or line feed (`\n`, 0x0A, inverse white circle).
+   *   This will move the text cursor position to the start of the next line,
+   *   based on the current text size.
+   * - ASCII carriage return (`\r`, 0x0D, musical eighth note).
+   *   This character will be ignored.
+   * \endparblock
+   *
+   * \see Print write() readUnitName() writeUnitName()
    */
   static const PROGMEM uint8_t font5x7[];
 

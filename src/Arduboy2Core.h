@@ -134,12 +134,6 @@
 #define RST_PORT PORTD  // Display reset port
 #define RST_BIT PORTD6  // Display reset physical bit number
 
-#define SPI_MOSI_PORT PORTB
-#define SPI_MOSI_BIT PORTB2
-
-#define SPI_SCK_PORT PORTB
-#define SPI_SCK_BIT PORTB1
-
 // map all LEDs to the single TX LED on DEVKIT
 #define RED_LED 17
 #define GREEN_LED 17
@@ -715,16 +709,16 @@ class Arduboy2Core
      *
      * The colors are as follows:
      *
-     *     RED LED   GREEN_LED   BLUE_LED   COLOR
-     *     -------   ---------  --------    -----
-     *     RGB_OFF    RGB_OFF    RGB_OFF    OFF
-     *     RGB_OFF    RGB_OFF    RGB_ON     Blue
-     *     RGB_OFF    RGB_ON     RGB_OFF    Green
-     *     RGB_OFF    RGB_ON     RGB_ON     Cyan
-     *     RGB_ON     RGB_OFF    RGB_OFF    Red
-     *     RGB_ON     RGB_OFF    RGB_ON     Magenta
-     *     RGB_ON     RGB_ON     RGB_OFF    Yellow
-     *     RGB_ON     RGB_ON     RGB_ON     White
+     * | RED LED | GREEN LED | BLUE LED |  COLOR  |
+     * | ------- | --------- | -------- | :-----: |
+     * | RGB_OFF |  RGB_OFF  | RGB_OFF  | OFF     |
+     * | RGB_OFF |  RGB_OFF  | RGB_ON   | Blue    |
+     * | RGB_OFF |  RGB_ON   | RGB_OFF  | Green   |
+     * | RGB_OFF |  RGB_ON   | RGB_ON   | Cyan    |
+     * | RGB_ON  |  RGB_OFF  | RGB_OFF  | Red     |
+     * | RGB_ON  |  RGB_OFF  | RGB_ON   | Magenta |
+     * | RGB_ON  |  RGB_ON   | RGB_OFF  | Yellow  |
+     * | RGB_ON  |  RGB_ON   | RGB_ON   | White   |
      *
      * \note
      * \parblock

@@ -298,7 +298,7 @@ void screenSaveName(), screenSaveID(), screenResetSys(), screenResetUser();
 
 Arduboy2 arduboy;
 
-char unitName[ARDUBOY_UNIT_NAME_LEN + 1];
+char unitName[ARDUBOY_UNIT_NAME_BUFFER_SIZE];
 byte nameIndex;
 
 uint16_t unitID;
