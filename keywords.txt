@@ -20,6 +20,7 @@ SpritesB	KEYWORD1
 #######################################
 
 allPixelsOn	KEYWORD2
+anyPressed	KEYWORD2
 begin	KEYWORD2
 blank	KEYWORD2
 boot	KEYWORD2
@@ -96,6 +97,8 @@ readUnitName	KEYWORD2
 safeMode	KEYWORD2
 saveOnOff	KEYWORD2
 setCursor	KEYWORD2
+setCursorX	KEYWORD2
+setCursorY	KEYWORD2
 setFrameDuration	KEYWORD2
 setFrameRate	KEYWORD2
 setRGBled	KEYWORD2

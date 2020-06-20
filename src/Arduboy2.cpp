@@ -1027,6 +1027,11 @@ bool Arduboy2Base::pressed(uint8_t buttons)
   return (buttonsState() & buttons) == buttons;
 }
 
+bool Arduboy2Base::anyPressed(uint8_t buttons)
+{
+  return (buttonsState() & buttons) != 0;
+}
+
 bool Arduboy2Base::notPressed(uint8_t buttons)
 {
   return (buttonsState() & buttons) == 0;
@@ -1314,6 +1319,16 @@ void Arduboy2::drawChar
 void Arduboy2::setCursor(int16_t x, int16_t y)
 {
   cursor_x = x;
+  cursor_y = y;
+}
+
+void Arduboy2::setCursorX(int16_t x)
+{
+  cursor_x = x;
+}
+
+void Arduboy2::setCursorY(int16_t y)
+{
   cursor_y = y;
 }
 

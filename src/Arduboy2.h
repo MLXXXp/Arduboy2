@@ -937,7 +937,7 @@ class Arduboy2Base : public Arduboy2Core
   int cpuLoad();
 
   /** \brief
-   * Test if the specified buttons are pressed.
+   * Test if the all of the specified buttons are pressed.
    *
    * \param buttons A bit mask indicating which buttons to test.
    * (Can be a single button)
@@ -945,15 +945,39 @@ class Arduboy2Base : public Arduboy2Core
    * \return `true` if *all* buttons in the provided mask are currently pressed.
    *
    * \details
-   * Read the state of the buttons and return `true` if all the buttons in the
-   * specified mask are being pressed.
+   * Read the state of the buttons and return `true` if all of the buttons in
+   * the specified mask are being pressed.
    *
    * Example: `if (pressed(LEFT_BUTTON | A_BUTTON))`
    *
    * \note
    * This function does not perform any button debouncing.
+   *
+   * \see anyPressed() notPressed()
    */
   bool pressed(uint8_t buttons);
+
+  /** \brief
+   * Test if any of the specified buttons are pressed.
+   *
+   * \param buttons A bit mask indicating which buttons to test.
+   * (Can be a single button)
+   *
+   * \return `true` if *one or more* of the buttons in the provided mask are
+   * currently pressed.
+   *
+   * \details
+   * Read the state of the buttons and return `true` if one or more of the
+   * buttons in the specified mask are being pressed.
+   *
+   * Example: `if (anyPressed(RIGHT_BUTTON | LEFT_BUTTON))`
+   *
+   * \note
+   * This function does not perform any button debouncing.
+   *
+   * \see pressed() notPressed()
+   */
+  bool anyPressed(uint8_t buttons);
 
   /** \brief
    * Test if the specified buttons are not pressed.
@@ -972,6 +996,8 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \note
    * This function does not perform any button debouncing.
+   *
+   * \see pressed() anyPressed()
    */
   bool notPressed(uint8_t buttons);
 
@@ -1590,8 +1616,10 @@ class Arduboy2 : public Print, public Arduboy2Base
   /** \brief
    * Set the location of the text cursor.
    *
-   * \param x The X coordinate, in pixels, for the new location of the text cursor.
-   * \param y The Y coordinate, in pixels, for the new location of the text cursor.
+   * \param x The X (horizontal) coordinate, in pixels, for the new location of
+   * the text cursor.
+   * \param y The Y (vertical) coordinate, in pixels, for the new location of
+   * the text cursor.
    *
    * \details
    * The location of the text cursor is set the the specified coordinates.
@@ -1601,9 +1629,39 @@ class Arduboy2 : public Print, public Arduboy2Base
    * the display. The cursor location represents the top left corner of the
    * next character written.
    *
-   * \see getCursorX() getCursorY()
+   * \see setCursorX() setCursorY() getCursorX() getCursorY()
    */
   void setCursor(int16_t x, int16_t y);
+
+  /** \brief
+   * Set the X coordinate of the text cursor location.
+   *
+   * \param x The X (horizontal) coordinate, in pixels, for the new location of
+   * the text cursor.
+   *
+   * \details
+   * The X coordinate for the location of the text cursor is set to the
+   * specified value, leaving the Y coordinate unchanged. For more details
+   * about the text cursor, see the `setCursor()` function.
+   *
+   * \see setCursor() setCursorY() getCursorX() getCursorY()
+   */
+  void setCursorX(int16_t x);
+
+  /** \brief
+   * Set the Y coordinate of the text cursor location.
+   *
+   * \param y The Y (vertical) coordinate, in pixels, for the new location of
+   * the text cursor.
+   *
+   * \details
+   * The Y coordinate for the location of the text cursor is set to the
+   * specified value, leaving the X coordinate unchanged. For more details
+   * about the text cursor, see the `setCursor()` function.
+   *
+   * \see setCursor() setCursorX() getCursorX() getCursorY()
+   */
+  void setCursorY(int16_t y);
 
   /** \brief
    * Get the X coordinate of the current text cursor position.
@@ -1614,7 +1672,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * The X coordinate returned is a pixel location with 0 indicating the
    * leftmost column.
    *
-   * \see getCursorY() setCursor()
+   * \see getCursorY() setCursor() setCursorX() setCursorY()
    */
   int16_t getCursorX();
 
@@ -1627,7 +1685,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * The Y coordinate returned is a pixel location with 0 indicating the
    * topmost row.
    *
-   * \see getCursorX() setCursor()
+   * \see getCursorX() setCursor() setCursorX() setCursorY()
    */
   int16_t getCursorY();
 
