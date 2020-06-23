@@ -819,7 +819,7 @@ void Arduboy2Base::drawBitmap
  uint8_t color)
 {
   // no need to draw at all if we're offscreen
-  if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
+  if (x + w <= 0 || x > WIDTH - 1 || y + h <= 0 || y > HEIGHT - 1)
     return;
 
   int yOffset = abs(y) % 8;
@@ -864,7 +864,7 @@ void Arduboy2Base::drawSlowXYBitmap
 (int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color)
 {
   // no need to draw at all of we're offscreen
-  if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
+  if (x + w <= 0 || x > WIDTH - 1 || y + h <= 0 || y > HEIGHT - 1)
     return;
 
   int16_t xi, yi, byteWidth = (w + 7) / 8;
@@ -923,7 +923,7 @@ void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap,
   uint8_t spanColour = (uint8_t)cs.readBits(1); // starting colour
 
   // no need to draw at all if we're offscreen
-  if ((sx + width < 0) || (sx > WIDTH - 1) || (sy + height < 0) || (sy > HEIGHT - 1))
+  if ((sx + width <= 0) || (sx > WIDTH - 1) || (sy + height <= 0) || (sy > HEIGHT - 1))
     return;
 
   // sy = sy - (frame * height);
