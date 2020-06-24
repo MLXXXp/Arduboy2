@@ -5,7 +5,6 @@
  */
 
 #include "Arduboy2.h"
-#include "Arduboy2Audio.h"
 
 bool Arduboy2Audio::audio_enabled = false;
 
@@ -43,12 +42,12 @@ void Arduboy2Audio::toggle()
 
 void Arduboy2Audio::saveOnOff()
 {
-  EEPROM.update(EEPROM_AUDIO_ON_OFF, audio_enabled);
+  EEPROM.update(Arduboy2Base::eepromAudioOnOff, audio_enabled);
 }
 
 void Arduboy2Audio::begin()
 {
-  if (EEPROM.read(EEPROM_AUDIO_ON_OFF))
+  if (EEPROM.read(Arduboy2Base::eepromAudioOnOff))
     on();
   else
     off();

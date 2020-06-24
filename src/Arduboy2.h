@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 #include "Arduboy2Core.h"
+#include "Arduboy2Audio.h"
 #include "Arduboy2Beep.h"
 #include "Sprites.h"
 #include "SpritesB.h"
@@ -63,22 +64,6 @@
  */
 #define ARDUBOY_UNIT_NAME_BUFFER_SIZE (ARDUBOY_UNIT_NAME_LEN + 1)
 
-#define EEPROM_VERSION 0
-#define EEPROM_SYS_FLAGS 1
-#define EEPROM_AUDIO_ON_OFF 2
-#define EEPROM_UNIT_ID 8    // A uint16_t binary unit ID
-#define EEPROM_UNIT_NAME 10 // An up to 6 character unit name
-                            // Cannot contain 0x00, 0xFF, 0x0A, 0x0D
-                            // Lengths less than 6 are padded with 0x00
-
-// EEPROM_SYS_FLAGS values
-#define SYS_FLAG_UNAME 0           // Display the unit name on the logo screen
-#define SYS_FLAG_UNAME_MASK _BV(SYS_FLAG_UNAME)
-#define SYS_FLAG_SHOW_LOGO 1       // Show the logo sequence during boot up
-#define SYS_FLAG_SHOW_LOGO_MASK _BV(SYS_FLAG_SHOW_LOGO)
-#define SYS_FLAG_SHOW_LOGO_LEDS 2  // Flash the RGB led during the boot logo
-#define SYS_FLAG_SHOW_LOGO_LEDS_MASK _BV(SYS_FLAG_SHOW_LOGO_LEDS)
-
 /** \brief
  * Start of EEPROM storage space for sketches.
  *
@@ -88,9 +73,6 @@
  * Sketches can use locations from here to the end of EEPROM space.
  */
 #define EEPROM_STORAGE_SPACE_START 16
-
-// eeprom settings above are neded for audio
-#include "Arduboy2Audio.h"
 
 // If defined, it is safe to draw outside of the screen boundaries.
 // Pixels that would exceed the display limits will be ignored.
@@ -233,6 +215,7 @@ struct Point
 class Arduboy2Base : public Arduboy2Core
 {
  friend class Arduboy2Ex;
+ friend class Arduboy2Audio;
 
  public:
   Arduboy2Base();
@@ -411,10 +394,10 @@ class Arduboy2Base : public Arduboy2Core
    * developers who wish to quickly start testing, or anyone else who is
    * impatient and wants to go straight to the actual sketch.
    *
-   * If the SYS_FLAG_SHOW_LOGO_LEDS flag in system EEPROM is cleared,
+   * If the "Show LEDs with boot logo" flag in system EEPROM is cleared,
    * the RGB LEDs will not be flashed during the logo display sequence.
    *
-   * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
+   * If the "Show Boot Logo" flag in system EEPROM is cleared, this function
    * will return without executing the logo display sequence.
    *
    * The prototype for the function provided to draw the logo is:
@@ -1427,6 +1410,35 @@ class Arduboy2Base : public Arduboy2Core
   uint8_t thisFrameStart;
   bool justRendered;
   uint8_t lastFrameDurationMs;
+
+  // ----- Map of EEPROM addresses for system use-----
+
+  // EEPROM address 0 is reserved for bootloader use
+  // This library will not touch it
+
+    // Control flags
+  static constexpr uint16_t eepromSysFlags = 1;
+    // Audio mute control. 0 = audio off, non-zero = audio on
+  static constexpr uint16_t eepromAudioOnOff = 2;
+    // -- Addresses 3-7 are currently reserved for future use --
+    // A uint16_t binary unit ID
+  static constexpr uint16_t eepromUnitID = 8; // A uint16_t binary unit ID
+    // An up to 6 character unit name
+    // The name cannot contain 0x00, 0xFF, 0x0A, 0x0D
+    // Lengths less than 6 are padded with 0x00
+  static constexpr uint16_t eepromUnitName = 10;
+    // -- User EEPROM space starts at address 16 --
+
+  // --- map of the bits in the eepromSysFlags byte --
+    // Display the unit name on the logo screen
+  static constexpr uint8_t sysFlagUnameBit = 0;
+  static constexpr uint8_t sysFlagUnameMask = _BV(sysFlagUnameBit);
+    // Show the logo sequence during boot up
+  static constexpr uint8_t sysFlagShowLogoBit = 1;
+  static constexpr uint8_t sysFlagShowLogoMask = _BV(sysFlagShowLogoBit);
+    // Flash the RGB led during the boot logo
+  static constexpr uint8_t sysFlagShowLogoLEDsBit = 2;
+  static constexpr uint8_t sysFlagShowLogoLEDsMask = _BV(sysFlagShowLogoLEDsBit);
 };
 
 
@@ -1519,10 +1531,10 @@ class Arduboy2 : public Print, public Arduboy2Base
    * developers who wish to quickly start testing, or anyone else who is
    * impatient and wants to go straight to the actual sketch.
    *
-   * If the SYS_FLAG_SHOW_LOGO_LEDS flag in system EEPROM is cleared,
+   * If the "Show LEDs with boot logo" flag in system EEPROM is cleared,
    * the RGB LEDs will not be flashed during the logo display sequence.
    *
-   * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
+   * If the "Show Boot Logo" flag in system EEPROM is cleared, this function
    * will return without executing the logo display sequence.
    *
    * \see bootLogo() boot() Arduboy2::bootLogoExtra()
@@ -1539,7 +1551,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * the bottom of the screen. This function pauses for a short time to allow
    * the name to be seen.
    *
-   * If the SYS_FLAG_UNAME flag in system EEPROM is cleared, this function
+   * If the "Show Unit Name" flag in system EEPROM is cleared, this function
    * will return without showing the unit name or pausing.
    *
    * \note
