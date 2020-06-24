@@ -171,7 +171,7 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
     digitalWriteRGB(RED_LED, RGB_ON);
   }
 
-  for (int16_t y = -16; y <= 24; y++) {
+  for (int16_t y = -15; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
       digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
       return;
