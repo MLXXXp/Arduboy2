@@ -8,15 +8,15 @@ Provides information so that this library can be installed and updated in the Ar
 
 The value of *version* must be set to the latest stable tagged release. This should be changed and commited just before tagging the new release.
 
-See the [Arduino IDE 1.5: Library specification](https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5:-Library-specification) for details.
+See the [Arduino IDE 1.5: Library specification](https://arduino.github.io/arduino-cli/library-specification/) for details.
 
 ### /library.json
 
-This JSON file is a manifest used by the [PlatformIO IDE](http://platformio.org/) to make this library available in its [Library Manager](http://docs.platformio.org/en/latest/librarymanager/index.html).
+This JSON file is a manifest used by the [PlatformIO IDE](https://platformio.org/) to make this library available in its [Library Manager](https://docs.platformio.org/en/latest/librarymanager/index.html).
 
 The value of *version* must be set to the latest stable tagged release. This should be changed and commited just before tagging the new release.
 
-See the [PlatformIO library.json](http://docs.platformio.org/en/latest/librarymanager/config.html) documentation for details.
+See the [PlatformIO library.json](https://docs.platformio.org/en/latest/librarymanager/config.html) documentation for details.
 
 ### /extras/assets/arduboy_logo.png<br>/extras/assets/arduboy_screen.png
 

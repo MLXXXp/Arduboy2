@@ -87,7 +87,6 @@ https://github.com/yyyc514/ArduboyExtra
 Copyright (c) 2015 Josh Goebel
 
 Code for drawing compressed bitmaps:
-https://github.com/TEAMarg/drawCompressed
 Copyright (c) 2016 TEAM a.r.g.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

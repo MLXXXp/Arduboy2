@@ -702,9 +702,6 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * Draw a bitmap starting at the given coordinates from an array that has
    * been compressed using an algorthm implemented by Team A.R.G.
-   * For more information see:
-   * https://github.com/TEAMarg/drawCompressed
-   * https://github.com/TEAMarg/Cabi
    *
    * Bits set to 1 in the provided bitmap array will have their corresponding
    * pixel set to the specified color. For bits set to 0 in the array, the
@@ -1492,7 +1489,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    *   This character will be ignored.
    *
    * See:
-   * https://www.arduino.cc/en/Serial/Print
+   * https://www.arduino.cc/reference/en/language/functions/communication/serial/print/
    *
    * Example:
    * \code{.cpp}
