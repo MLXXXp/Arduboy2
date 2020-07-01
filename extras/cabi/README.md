@@ -10,7 +10,7 @@ https://github.com/TEAMarg/drawCompressed
 
 to build:
 ```Bash
-gcc cabi.c lodepng.c -o cabi
+gcc cabi.c lodepng/lodepng.c -o cabi
 ```
 
 to use:

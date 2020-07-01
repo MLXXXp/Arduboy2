@@ -25,7 +25,7 @@ cabi in.png [array_name_prefix]
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
-#include "lodepng.h"
+#include "lodepng/lodepng.h"
 
 // alternative pixel order mapping
 //#define READING_ORDER 1
