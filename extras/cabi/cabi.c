@@ -1,12 +1,25 @@
 /*
-	abe.c
+cabi - Compress Arduboy Image
 
-	arduboy encoder	
-	monochrome rle encoding by zep
-	License: CC-0
+A command line program to read a PNG file containing a bitmap image, compress
+it using RLE encoding and convert it to C/C++ code suitable for use with the
+Team A.R.G. drawCompressed() function. This function is included in the
+Arduboy2 library.
 
-	cabi in.png [array_name_prefix]
-	
+Written by zep
+https://www.lexaloffle.com/bbs/?uid=1
+https://twitter.com/lexaloffle
+Contributed to Team A.R.G.
+
+To the extent possible under law, the author(s) have dedicated all copyright
+and related and neighboring rights to this software to the public domain
+worldwide. This software is distributed without any warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication along with
+this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+Usage:
+cabi in.png [array_name_prefix]
 */
 
 #include <stdlib.h>
