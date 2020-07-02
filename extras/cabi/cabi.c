@@ -11,6 +11,8 @@ https://www.lexaloffle.com/bbs/?uid=1
 https://twitter.com/lexaloffle
 Contributed to Team A.R.G.
 
+Modifications by Scott Allen - July 2016
+
 To the extent possible under law, the author(s) have dedicated all copyright
 and related and neighboring rights to this software to the public domain
 worldwide. This software is distributed without any warranty.
@@ -24,35 +26,24 @@ cabi in.png [array_name_prefix]
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <memory.h>
 #include "lodepng/lodepng.h"
 
 // alternative pixel order mapping
 //#define READING_ORDER 1
 
-int reading_order = 0;
-
-typedef unsigned char uint8_t;
-
-#ifndef WIDTH
-	#define WIDTH 128
-	#define HEIGHT 64
-	#define PROGMEM
-#endif
+unsigned reading_order = 0;
 
 // one byte encodes a 1x8 stick; low byte at top
 
 
 
-
 // for testing
-void draw_sprite_ascii(const uint8_t *dat, int w, int h)
+void draw_sprite_ascii(const uint8_t *dat, unsigned w, unsigned h)
 {
-	int x, y;
-	int row, bit;
-	int rows;
-	
-	rows = (h+7)/8;
+	unsigned x, y;
+	unsigned row, bit;
 	
 	for (y = 0; y < h; y ++)
 	{
@@ -79,21 +70,21 @@ void draw_sprite_ascii(const uint8_t *dat, int w, int h)
 // compression / decompression session state
 
 typedef struct CSESSION{
-	int byte;
-	int bit;
+	unsigned byte;
+	unsigned bit;
 	const uint8_t *src;
 	uint8_t *dest;
-	int src_pos;
-	int out_pos;
-	int w, h;
+	unsigned src_pos;
+	unsigned out_pos;
+	unsigned w, h;
 }CSESSION;
 static CSESSION cs;
 
 // get an n-bit number from the compressed data stream
-static int getval(int bits)
+static unsigned getval(unsigned bits)
 {
-	int val = 0;
-	int i;
+	unsigned val = 0;
+	unsigned i;
 	for (i = 0; i < bits; i++)
 	{
 		if (cs.bit == 0x100)
@@ -114,13 +105,12 @@ static int getval(int bits)
 // if not NULL, w and h give back the size of the sprite.
 void draw_compressed_sprite_ascii(const uint8_t *src)
 {
-	int col;
-	int pos;
-	int bl, len;
-	int i;
-	int w, h;
-	int x, y;
-	int total = 0;
+	unsigned col;
+	unsigned bl, len;
+	unsigned i;
+	unsigned w, h;
+	unsigned x, y;
+	unsigned total = 0;
 	
 	memset(&cs, 0, sizeof(cs));
 	cs.src = src;
@@ -163,14 +153,10 @@ void draw_compressed_sprite_ascii(const uint8_t *src)
 		
 		col = 1-col; // toggle
 	}
-	printf("\ntotal: %d\n", total);
+	printf("\ntotal: %u\n", total);
 }
 
 
-#if 0
-
-
-#endif
 
 // ----------------------------------------------------------------------------
 // :: Compress
@@ -181,9 +167,9 @@ void draw_compressed_sprite_ascii(const uint8_t *src)
 	
 	pos is the index of the pixel:  0 .. w*h-1
 */
-static int getcol(int pos)
+static unsigned getcol(unsigned pos)
 {
-	int x, y;
+	unsigned x, y;
 	
 	// display order
 
@@ -203,10 +189,10 @@ static int getcol(int pos)
 
 }
 
-static int find_rlen(int pos, int plen) 
+static unsigned find_rlen(unsigned pos, unsigned plen) 
 {
-	int col;
-	int pos0;
+	unsigned col;
+	unsigned pos0;
 	
 	col = getcol(pos);
 	pos0 = pos;
@@ -218,7 +204,7 @@ static int find_rlen(int pos, int plen)
 }
 
 // write a bit to the stream. non-zero val means 1, otherwise 0.
-static void putbit(int val)
+static void putbit(unsigned val)
 {
 	if (val) cs.byte |= cs.bit;
 	cs.bit <<= 1;
@@ -237,9 +223,9 @@ static void putbit(int val)
 }
 
 // write an n-bit (bits) number (val) to the output steam
-static void putval(int val, int bits)
+static void putval(unsigned val, unsigned bits)
 {
-	int i;
+	unsigned i;
 	
 	if (bits <= 0) return;
 	for (i = 0; i < bits; i++)
@@ -249,11 +235,12 @@ static void putval(int val, int bits)
 // write a span length
 // a string of bits encoding the number of bits needed to encode the length,
 // and then the length.
-static int putsplen(int len)
+static void putsplen(unsigned len)
 {
-	int blen = 1; // how bits needed to encode length
-	while ((1 << blen) <= len)
+	unsigned blen = 1; // how bits needed to encode length
+	while ((unsigned)(1 << blen) <= len) {
 		blen += 2;
+	}
 	// write number of bits (1-terminated string of zeroes)
 	putval(0,(blen-1)/2);
 	putval(1,1);          // terminator
@@ -267,13 +254,12 @@ static int putsplen(int len)
 	compress plen 1-bit pixels from src to dest
 	
 */
-int compress_rle(const uint8_t *src, int w, int h, char *prefix, char *suffix)
+unsigned compress_rle(const uint8_t *src, unsigned w, unsigned h, char *prefix, char *suffix)
 {
-	int pos;
-	int rlen;
-	int len;
+	unsigned pos;
+	unsigned rlen;
 	
-	printf("const uint8_t PROGMEM %s%s[] = {", prefix, suffix);
+	printf("const PROGMEM uint8_t %s%s[] = {", prefix, suffix);
 	fflush(stdout);
 	
 	memset(&cs, 0, sizeof(cs));
@@ -311,33 +297,39 @@ int compress_rle(const uint8_t *src, int w, int h, char *prefix, char *suffix)
 
 int main(int argc, char **argv)
 {
-	int compressed_len;
-	int pixels;
-	int w,h;
+	unsigned compressed_len;
+	unsigned w, h;
 	unsigned char *bmp = NULL;
 	unsigned char *bmp0 = NULL;
 	unsigned char *bmp1 = NULL;
-	int result;
-	int rawlen;
-	int x, y;
-	int row,bit;
-	char prefix[256] = "out";
+	unsigned result;
+	unsigned rawlen;
+	unsigned x, y;
+	unsigned row, bit;
+	char default_prefix[] = "compressed_image";
+	char *prefix = default_prefix;
 	
 	
 	if (argc < 2)
 	{
+		printf("cabi - Compress Arduboy Image\n");
+		printf("Convert a PNG file into RLE encoded C/C++ source\n");
+		printf("for use with Arduboy2 drawCompressed()\n\n");
+
 		printf("usage: cabi in.png [array_name_prefix]\n");
+		exit(1);
+	}
+
+	if (argc >= 3) {
+		prefix = argv[2];
 	}
 	
-	if (argc >= 3)
-		strcpy(prefix, argv[2]);
+	result = lodepng_decode32_file(&bmp, &w, &h, argv[1]);
 	
-	result = lodepng_decode_file(&bmp, &w, &h, argv[1], 6, 8);
-	
-	if (result != 0)
-	{
-		printf("could not load %s\n", argv[1]);
-		exit(0);
+	if (result != 0) {
+		printf("error %u: file %s: %s\n", result, argv[1], lodepng_error_text(result));
+		free(bmp);
+		exit(result);
 	}
 	
 	// generate sprite and mask
@@ -347,7 +339,7 @@ int main(int argc, char **argv)
 	bmp0 = malloc(rawlen); memset(bmp0, 0, rawlen);
 	bmp1 = malloc(rawlen); memset(bmp1, 0, rawlen);
 	
-	printf("// %s  width: %d height: %d\n", argv[1], w, h);
+	printf("// %s  width: %u height: %u\n", argv[1], w, h);
 	
 	for (y = 0; y < h; y++)
 	{
@@ -356,14 +348,14 @@ int main(int argc, char **argv)
 			row = y/8;
 			bit = y&7;
 			
-			if (bmp[(x+y*w)*4 + 3] > 128) // need to be opaque to count
-			if (bmp[(x+y*w)*4 + 0] > 128)
+			if (bmp[(x+y*w)*4 + 3] > 127) // need to be opaque to count
+			if (bmp[(x+y*w)*4 + 0] > 127)
 			{
 				// set sprite
 				bmp0[x + (row*w)] |= (1 << bit);
 			}
 			
-			if (bmp[(x+y*w)*4 + 3] > 128)
+			if (bmp[(x+y*w)*4 + 3] > 127)
 			{
 				// set mask
 				bmp1[x + (row*w)] |= (1 << bit);
@@ -373,12 +365,13 @@ int main(int argc, char **argv)
 	}
 	
 	compressed_len = compress_rle(bmp0, w, h, prefix, "");
-	printf("// bytes:%d ratio: %3.3f\n\n", compressed_len, (float)(compressed_len * 8)/ (float)(w*h));
+	printf("// bytes:%u ratio: %3.3f\n\n", compressed_len, (float)(compressed_len * 8)/ (float)(w*h));
 
 	compressed_len = compress_rle(bmp1, w, h, prefix, "_mask");
-	printf("// bytes:%d ratio: %3.3f\n\n", compressed_len, (float)(compressed_len * 8)/ (float)(w*h));
+	printf("// bytes:%u ratio: %3.3f\n\n", compressed_len, (float)(compressed_len * 8)/ (float)(w*h));
 	
 
+	free(bmp);
 	free(bmp0);
 	free(bmp1);
 	
