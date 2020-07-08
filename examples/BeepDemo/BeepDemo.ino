@@ -1,11 +1,19 @@
 /*
+BeepDemo.ino
+
 This sketch provides an example of using the Arduboy2 library's BeepPin1 class
 to play simple tones.
 */
 
 /*
-To the extent possible under law, Scott Allen has waived all copyright and
-related or neighboring rights to this BeepDemo program.
+Written in 2018 by Scott Allen saydisp-git@yahoo.ca
+
+To the extent possible under law, the author(s) have dedicated all copyright
+and related and neighboring rights to this software to the public domain
+worldwide. This software is distributed without any warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication along with
+this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
 
 // Comments are only provided for code dealing with tone generation or control.

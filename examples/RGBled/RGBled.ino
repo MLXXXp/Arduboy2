@@ -1,11 +1,19 @@
 /*
+RGBled
+
 This sketch demonstrates controlling the Arduboy's RGB LED,
 in both analog and digital modes.
 */
 
 /*
-To the extent possible under law, Scott Allen has waived all copyright and
-related or neighboring rights to this BeepDemo program.
+Written in 2018 by Scott Allen saydisp-git@yahoo.ca
+
+To the extent possible under law, the author(s) have dedicated all copyright
+and related and neighboring rights to this software to the public domain
+worldwide. This software is distributed without any warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication along with
+this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
 
 #include <Arduboy2.h>
