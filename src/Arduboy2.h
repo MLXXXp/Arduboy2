@@ -700,14 +700,19 @@ class Arduboy2Base : public Arduboy2Core
    *              (optional; defaults to WHITE).
    *
    * \details
-   * Draw a bitmap starting at the given coordinates from an array that has
-   * been compressed using an algorthm implemented by Team A.R.G.
+   * Draw a bitmap starting at the given coordinates using an array that has
+   * been compressed using an RLE algorthm implemented by Team A.R.G.
    *
-   * Bits set to 1 in the provided bitmap array will have their corresponding
-   * pixel set to the specified color. For bits set to 0 in the array, the
-   * corresponding pixel will be left unchanged.
+   * Bits set to 1 in the provided bitmap array (after decoding) will have
+   * their corresponding pixel set to the specified color. For bits set to 0
+   * in the array, the corresponding pixel will be left unchanged.
    *
    * The array must be located in program memory by using the PROGMEM modifier.
+   *
+   * \note
+   * C source code for a command line program named `Cabi`, which can convert
+   * a PNG bitmap image file to source code suitable for use with
+   * `drawCompressed()`, is included in the `extras` directory of the library.
    */
   static void drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color = WHITE);
 
