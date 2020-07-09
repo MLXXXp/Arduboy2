@@ -73,6 +73,10 @@ const PROGMEM uint8_t lcdBootProgram[] = {
 };
 
 
+//========================================
+//========== class Arduboy2Core ==========
+//========================================
+
 Arduboy2Core::Arduboy2Core() { }
 
 void Arduboy2Core::boot()
@@ -572,11 +576,12 @@ void Arduboy2Core::exitToBootloader()
   while (true) { }
 }
 
-// Replacement main() that eliminates the USB stack code.
-// Used by the ARDUBOY_NO_USB macro. This should not be called
-// directly from a sketch.
 
-void Arduboy2Core::mainNoUSB()
+//=========================================
+//========== class Arduboy2NoUSB ==========
+//=========================================
+
+void Arduboy2NoUSB::mainNoUSB()
 {
   // disable USB
   UDCON = _BV(DETACH);
@@ -598,11 +603,11 @@ void Arduboy2Core::mainNoUSB()
   bitClear(DOWN_BUTTON_DDR, DOWN_BUTTON_BIT);
 
   // Delay to give time for the pin to be pulled high if it was floating
-  delayShort(10);
+  Arduboy2Core::delayShort(10);
 
   // if the DOWN button is pressed
   if (bitRead(DOWN_BUTTON_PORTIN, DOWN_BUTTON_BIT) == 0) {
-    exitToBootloader();
+    Arduboy2Core::exitToBootloader();
   }
 
   // The remainder is a copy of the Arduino main() function with the

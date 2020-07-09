@@ -248,9 +248,9 @@
 /** \brief
  * Eliminate the USB stack to free up code space.
  *
- * \note
- * **WARNING:** Removing the USB code will make it impossible for sketch
- * uploader programs to automatically force a reset into the bootloader!
+ * \warning
+ * Removing the USB code will make it impossible for sketch uploader
+ * programs to automatically force a reset into the bootloader!
  * This means that a user will manually have to invoke a reset in order to
  * upload a new sketch, after one without USB has be been installed.
  * Be aware that the timing for the point that a reset must be initiated can
@@ -303,9 +303,19 @@
  */
 #define ARDUBOY_NO_USB int main() __attribute__ ((OS_main)); \
 int main() { \
-  Arduboy2Core::mainNoUSB(); \
+  Arduboy2NoUSB::mainNoUSB(); \
   return 0; \
 }
+
+// A replacement for the Arduino main() function that eliminates the USB code.
+// Used by the ARDUBOY_NO_USB macro.
+class Arduboy2NoUSB
+{
+  friend int main();
+
+  private:
+    static void mainNoUSB();
+};
 
 
 /** \brief
@@ -322,7 +332,7 @@ int main() { \
  * that this may eliminate the need to create an entire local copy of the
  * library, in order to extend the functionality, in most circumstances.
  */
-class Arduboy2Core
+class Arduboy2Core : public Arduboy2NoUSB
 {
   friend class Arduboy2Ex;
 
@@ -827,11 +837,6 @@ class Arduboy2Core
      * \see ARDUBOY_NO_USB
      */
     static void exitToBootloader();
-
-    // Replacement main() that eliminates the USB stack code.
-    // Used by the ARDUBOY_NO_USB macro. This should not be called
-    // directly from a sketch.
-    static void mainNoUSB();
 
   protected:
     // internals
