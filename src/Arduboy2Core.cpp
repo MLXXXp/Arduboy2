@@ -8,7 +8,15 @@
 
 #include <avr/wdt.h>
 
-const PROGMEM uint8_t lcdBootProgram[] = {
+
+//========================================
+//========== class Arduboy2Core ==========
+//========================================
+
+Arduboy2Core::Arduboy2Core() { }
+
+// Commands sent to the OLED display to initialize it
+const PROGMEM uint8_t Arduboy2Core::lcdBootProgram[] = {
   // boot defaults are commented out but left here in case they
   // might prove useful for reference
   //
@@ -71,13 +79,6 @@ const PROGMEM uint8_t lcdBootProgram[] = {
   // set page address range
   // 0x22, 0x00, PAGE_ADDRESS_END
 };
-
-
-//========================================
-//========== class Arduboy2Core ==========
-//========================================
-
-Arduboy2Core::Arduboy2Core() { }
 
 void Arduboy2Core::boot()
 {

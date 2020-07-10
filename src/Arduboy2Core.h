@@ -845,6 +845,8 @@ class Arduboy2Core : public Arduboy2NoUSB
     static void bootOLED();
     static void bootPins();
     static void bootPowerSaving();
+
+    static const PROGMEM uint8_t lcdBootProgram[];
 };
 
 #endif
