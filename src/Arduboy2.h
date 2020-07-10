@@ -1207,7 +1207,7 @@ class Arduboy2Base : public Arduboy2Core
    * \see readUnitName() writeUnitID() Arduboy2::bootLogoExtra()
    * ARDUBOY_UNIT_NAME_BUFFER_SIZE ARDUBOY_UNIT_NAME_LEN Arduboy2::font5x7
    */
-  void writeUnitName(char* name);
+  void writeUnitName(const char* name);
 
   /** \brief
    * Read the "Show Boot Logo" flag in system EEPROM.
