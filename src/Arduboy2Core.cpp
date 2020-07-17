@@ -251,6 +251,13 @@ void Arduboy2Core::SPItransfer(uint8_t data)
   while (!(SPSR & _BV(SPIF))) { } // wait
 }
 
+// Write to and read from the SPI bus (out to MOSI pin, in from MISO pin)
+uint8_t Arduboy2Core::SPItransferAndRead(uint8_t data)
+{
+  SPItransfer(data);
+  return SPDR;
+}
+
 void Arduboy2Core::safeMode()
 {
   if (buttonsState() == UP_BUTTON)

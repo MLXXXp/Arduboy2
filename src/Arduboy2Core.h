@@ -402,9 +402,31 @@ class Arduboy2Core : public Arduboy2NoUSB
      * or as data to be placed on the screen, depending on the command/data
      * mode.
      *
-     * \see LCDDataMode() LCDCommandMode() sendLCDCommand()
+     * \see LCDDataMode() LCDCommandMode() sendLCDCommand() SPItransferAndRead()
      */
     static void SPItransfer(uint8_t data);
+
+    /** \brief
+     * Transfer a byte to, and read a byte from, the SPI bus.
+     *
+     * \param data The byte to be sent.
+     *
+     * \return The byte that was received.
+     *
+     * \details
+     * This function does the same as the `SPItransfer()` function but also
+     * reads and returns the byte of data that was received during the
+     * transfer.
+     *
+     * This function is of no use for a standard Arduboy, since only the
+     * display is connected to the SPI bus and data cannot be received from
+     * the display. It has been provided for use with homemade or expanded
+     * units that have had additional peripherals added to the SPI bus that
+     * are capable of sending data.
+     *
+     * \see SPItransfer()
+     */
+    static uint8_t SPItransferAndRead(uint8_t data);
 
     /** \brief
      * Turn the display off.

@@ -107,6 +107,7 @@ setTextColor	KEYWORD2
 setTextSize	KEYWORD2
 setTextWrap	KEYWORD2
 SPItransfer	KEYWORD2
+SPItransferAndRead	KEYWORD2
 systemButtons	KEYWORD2
 toggle	KEYWORD2
 waitNoButtons	KEYWORD2
