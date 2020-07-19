@@ -23,9 +23,24 @@
 Arduboy2 arduboy;
 BeepPin1 beep;
 
-const unsigned int FRAME_RATE = 40; // Frame rate in frames per second
-const unsigned int COLUMNS = 13; //Columns of bricks
-const unsigned int ROWS = 4;     //Rows of bricks
+constexpr uint8_t frameRate = 40; // Frame rate in frames per second
+
+// Tone frequencies. Converted to count values for the beep class
+constexpr uint16_t tonePaddle = beep.freq(200); // Ball hits paddle
+constexpr uint16_t toneBrick = beep.freq(261); // Ball hits a brick
+constexpr uint16_t toneEdge = beep.freq(523); // Ball hits top or sides
+constexpr uint16_t toneMiss = beep.freq(175); // Ball misses paddle, lose life
+constexpr uint16_t toneInitialsChange = beep.freq(523); // Change initials
+constexpr uint16_t toneInitialsMove = beep.freq(1046); // Select initials
+// Tone durations
+constexpr uint8_t toneTimeBeep = 250 / (1000 / frameRate); // Game (frames)
+constexpr uint16_t toneTimeMiss = 500; // Miss paddle (milliseconds)
+constexpr uint16_t toneTimeInitials = 80; // Initials entry (milliseconds)
+
+
+constexpr unsigned int columns = 13; //Columns of bricks
+constexpr unsigned int rows = 4;     //Rows of bricks
+
 int dx = -1;        //Initial movement of ball
 int dy = -1;        //Initial movement of ball
 int xb;           //Ball's starting position
@@ -33,7 +48,7 @@ int yb;           //Ball's starting position
 boolean released;     //If the ball has been released by the player
 boolean paused = false;   //If the game has been paused
 byte xPaddle;       //X position of paddle
-boolean isHit[ROWS][COLUMNS];   //Array of if bricks are hit or not
+boolean isHit[rows][columns];   //Array of if bricks are hit or not
 boolean bounced=false;  //Used to fix double bounce glitch
 byte lives = 3;       //Amount of lives
 byte level = 1;       //Current level
@@ -64,7 +79,7 @@ void setup()
 {
   arduboy.begin();
   beep.begin();
-  arduboy.setFrameRate(FRAME_RATE);
+  arduboy.setFrameRate(frameRate);
   arduboy.initRandomSeed();
 }
 
@@ -117,7 +132,7 @@ void loop()
     oldpad = pad;
     drawBall();
 
-    if(brickCount == ROWS * COLUMNS)
+    if(brickCount == rows * columns)
     {
       level++;
       newLevel();
@@ -192,7 +207,7 @@ void moveBall()
     {
       yb = 2;
       dy = -dy;
-      playTone(523, 250);
+      playTone(toneEdge, toneTimeBeep);
     }
 
     //Lose a life if bottom edge hit
@@ -203,7 +218,7 @@ void moveBall()
       yb=60;
       released = false;
       lives--;
-      playToneTimed(175, 500);
+      playToneTimed(toneMiss, toneTimeMiss);
       if (random(0, 2) == 0)
       {
         dx = 1;
@@ -219,7 +234,7 @@ void moveBall()
     {
       xb = 2;
       dx = -dx;
-      playTone(523, 250);
+      playTone(toneEdge, toneTimeBeep);
     }
 
     //Bounce off right side
@@ -227,7 +242,7 @@ void moveBall()
     {
       xb = WIDTH - 4;
       dx = -dx;
-      playTone(523, 250);
+      playTone(toneEdge, toneTimeBeep);
     }
 
     //Bounce off paddle
@@ -240,13 +255,13 @@ void moveBall()
       {
         dx = (random(0, 2) == 1) ? 1 : -1;
       }
-      playTone(200, 250);
+      playTone(tonePaddle, toneTimeBeep);
     }
 
     //Bounce off Bricks
-    for (byte row = 0; row < ROWS; row++)
+    for (byte row = 0; row < rows; row++)
     {
-      for (byte column = 0; column < COLUMNS; column++)
+      for (byte column = 0; column < columns; column++)
       {
         if (!isHit[row][column])
         {
@@ -274,7 +289,7 @@ void moveBall()
                 dy =- dy;
                 yb += dy;
                 bounced = true;
-                playTone(261, 250);
+                playTone(toneBrick, toneTimeBeep);
               }
             }
 
@@ -287,7 +302,7 @@ void moveBall()
                 dx =- dx;
                 xb += dx;
                 bounced = true;
-                playTone(261, 250);
+                playTone(toneBrick, toneTimeBeep);
               }
             }
           }
@@ -364,6 +379,8 @@ void drawGameOver()
 void pause()
 {
   paused = true;
+  //Stop tone if playing
+  beep.noTone();
   //Draw pause to the screen
   arduboy.setCursor(52, 45);
   arduboy.print("PAUSE");
@@ -568,7 +585,7 @@ void enterInitials()
       if (index > 0)
       {
         index--;
-        playToneTimed(1046, 80);
+        playToneTimed(toneInitialsMove, toneTimeInitials);
       }
     }
 
@@ -577,14 +594,14 @@ void enterInitials()
       if (index < 2)
       {
         index++;
-        playToneTimed(1046, 80);
+        playToneTimed(toneInitialsMove, toneTimeInitials);
       }
     }
 
     if (arduboy.pressed(UP_BUTTON))
     {
       initials[index]++;
-      playToneTimed(523, 80);
+      playToneTimed(toneInitialsChange, toneTimeInitials);
       // A-Z 0-9 :-? !-/ ' '
       if (initials[index] == '0')
       {
@@ -607,7 +624,7 @@ void enterInitials()
     if (arduboy.pressed(DOWN_BUTTON))
     {
       initials[index]--;
-      playToneTimed(523, 80);
+      playToneTimed(toneInitialsChange, toneTimeInitials);
       if (initials[index] == ' ')
       {
         initials[index] = '?';
@@ -628,7 +645,7 @@ void enterInitials()
 
     if (arduboy.pressed(A_BUTTON))
     {
-      playToneTimed(1046, 80);
+      playToneTimed(toneInitialsMove, toneTimeInitials);
       if (index < 2)
       {
         index++;
@@ -712,18 +729,19 @@ void enterHighScore(byte file)
   }
 }
 
-// Play a tone at the specified frequency for the specified duration.
-void playTone(unsigned int frequency, unsigned int duration)
+// Play a tone at a frequency coresponding to the specified precomputed count,
+// for the specified number of frames.
+void playTone(uint16_t count, uint8_t frames)
 {
-  beep.tone(beep.freq(frequency), duration / (1000 / FRAME_RATE));
+  beep.tone(count, frames);
 }
 
-// Play a tone at the specified frequency for the specified duration using
-// a delay to time the tone.
+// Play a tone at a frequency coresponding to the specified precomputed count,
+// for the specified duration in milliseconds, using a delay.
 // Used when beep.timer() isn't being called.
-void playToneTimed(unsigned int frequency, unsigned int duration)
+void playToneTimed(uint16_t count, uint16_t duration)
 {
-  beep.tone(beep.freq(frequency));
+  beep.tone(count);
   arduboy.delayShort(duration);
   beep.noTone();
 }
