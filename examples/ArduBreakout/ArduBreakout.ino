@@ -3,7 +3,8 @@
  Copyright (C) 2011 Sebastian Goscik
  All rights reserved.
 
- Modifications by Scott Allen 2016 (after previous changes by ???)
+ Modifications by Scott Allen 2016, 2018, 2020
+ after previous changes by person(s) unknown.
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +17,9 @@
 // block in EEPROM to save high scores
 #define EE_FILE 2
 
+// EEPROM space used: 35 bytes (7*(3+2)) starting at
+// EEPROM_STORAGE_SPACE_START + (EE_FILE * 35)
+
 Arduboy2 arduboy;
 BeepPin1 beep;
 
@@ -24,8 +28,8 @@ const unsigned int COLUMNS = 13; //Columns of bricks
 const unsigned int ROWS = 4;     //Rows of bricks
 int dx = -1;        //Initial movement of ball
 int dy = -1;        //Initial movement of ball
-int xb;           //Balls starting possition
-int yb;           //Balls starting possition
+int xb;           //Ball's starting position
+int yb;           //Ball's starting position
 boolean released;     //If the ball has been released by the player
 boolean paused = false;   //If the game has been paused
 byte xPaddle;       //X position of paddle
@@ -164,12 +168,15 @@ void moveBall()
   if(released)
   {
     //Move ball
-    if (abs(dx)==2) {
+    if (abs(dx)==2)
+    {
       xb += dx/2;
       // 2x speed is really 1.5 speed
       if (tick%2==0)
         xb += dx/2;
-    } else {
+    }
+    else
+    {
       xb += dx;
     }
     yb=yb + dy;
@@ -191,7 +198,7 @@ void moveBall()
     //Lose a life if bottom edge hit
     if (yb >= 64)
     {
-      arduboy.drawRect(xPaddle, 63, 11, 1, 0);
+      arduboy.drawRect(xPaddle, 63, 11, 1, BLACK);
       xPaddle = 54;
       yb=60;
       released = false;
@@ -229,8 +236,9 @@ void moveBall()
       dy = -dy;
       dx = ((xb-(xPaddle+6))/3); //Applies spin on the ball
       // prevent straight bounce
-      if (dx == 0) {
-        dx = (random(0,2) == 1) ? 1 : -1;
+      if (dx == 0)
+      {
+        dx = (random(0, 2) == 1) ? 1 : -1;
       }
       playTone(200, 250);
     }
@@ -255,7 +263,7 @@ void moveBall()
             Score();
             brickCount++;
             isHit[row][column] = true;
-            arduboy.drawRect(10*column, 2+6*row, 8, 4, 0);
+            arduboy.drawRect(10*column, 2+6*row, 8, 4, BLACK);
 
             //Vertical collision
             if (bottomBall > bottomBrick || topBall < topBrick)
@@ -318,35 +326,32 @@ void moveBall()
 
 void drawBall()
 {
-  // arduboy.setCursor(0,0);
-  // arduboy.print(arduboy.cpuLoad());
-  // arduboy.print("  ");
-  arduboy.drawPixel(xb,   yb,   0);
-  arduboy.drawPixel(xb+1, yb,   0);
-  arduboy.drawPixel(xb,   yb+1, 0);
-  arduboy.drawPixel(xb+1, yb+1, 0);
+  arduboy.drawPixel(xb,   yb,   BLACK);
+  arduboy.drawPixel(xb+1, yb,   BLACK);
+  arduboy.drawPixel(xb,   yb+1, BLACK);
+  arduboy.drawPixel(xb+1, yb+1, BLACK);
 
   moveBall();
 
-  arduboy.drawPixel(xb,   yb,   1);
-  arduboy.drawPixel(xb+1, yb,   1);
-  arduboy.drawPixel(xb,   yb+1, 1);
-  arduboy.drawPixel(xb+1, yb+1, 1);
+  arduboy.drawPixel(xb,   yb,   WHITE);
+  arduboy.drawPixel(xb+1, yb,   WHITE);
+  arduboy.drawPixel(xb,   yb+1, WHITE);
+  arduboy.drawPixel(xb+1, yb+1, WHITE);
 }
 
 void drawPaddle()
 {
-  arduboy.drawRect(xPaddle, 63, 11, 1, 0);
+  arduboy.drawRect(xPaddle, 63, 11, 1, BLACK);
   movePaddle();
-  arduboy.drawRect(xPaddle, 63, 11, 1, 1);
+  arduboy.drawRect(xPaddle, 63, 11, 1, WHITE);
 }
 
 void drawGameOver()
 {
-  arduboy.drawPixel(xb,   yb,   0);
-  arduboy.drawPixel(xb+1, yb,   0);
-  arduboy.drawPixel(xb,   yb+1, 0);
-  arduboy.drawPixel(xb+1, yb+1, 0);
+  arduboy.drawPixel(xb,   yb,   BLACK);
+  arduboy.drawPixel(xb+1, yb,   BLACK);
+  arduboy.drawPixel(xb,   yb+1, BLACK);
+  arduboy.drawPixel(xb+1, yb+1, BLACK);
   arduboy.setCursor(37, 42);
   arduboy.print("Game Over");
   arduboy.setCursor(31, 56);
@@ -370,7 +375,7 @@ void pause()
     pad2 = arduboy.pressed(A_BUTTON) || arduboy.pressed(B_BUTTON);
     if (pad2 == true && oldpad2 == false && released)
     {
-        arduboy.fillRect(52, 45, 30, 11, 0);
+        arduboy.fillRect(52, 45, 30, 11, BLACK);
 
         paused=false;
     }
@@ -383,15 +388,16 @@ void Score()
   score += (level*10);
 }
 
-void newLevel(){
+void newLevel()
+{
   //Undraw paddle
-  arduboy.drawRect(xPaddle, 63, 11, 1, 0);
+  arduboy.drawRect(xPaddle, 63, 11, 1, BLACK);
 
   //Undraw ball
-  arduboy.drawPixel(xb,   yb,   0);
-  arduboy.drawPixel(xb+1, yb,   0);
-  arduboy.drawPixel(xb,   yb+1, 0);
-  arduboy.drawPixel(xb+1, yb+1, 0);
+  arduboy.drawPixel(xb,   yb,   BLACK);
+  arduboy.drawPixel(xb+1, yb,   BLACK);
+  arduboy.drawPixel(xb,   yb+1, BLACK);
+  arduboy.drawPixel(xb+1, yb+1, BLACK);
 
   //Alter various variables to reset the game
   xPaddle = 54;
@@ -400,11 +406,12 @@ void newLevel(){
   released = false;
 
   //Draws new bricks and resets their values
-  for (byte row = 0; row < 4; row++) {
+  for (byte row = 0; row < 4; row++)
+  {
     for (byte column = 0; column < 13; column++)
     {
       isHit[row][column] = false;
-      arduboy.drawRect(10*column, 2+6*row, 8, 4, 1);
+      arduboy.drawRect(10*column, 2+6*row, 8, 4, WHITE);
     }
   }
 
@@ -445,7 +452,7 @@ boolean displayHighScores(byte file)
   for(int i = 0; i < 7; i++)
   {
     sprintf(text_buffer, "%2d", i+1);
-    arduboy.setCursor(x,y+(i*8));
+    arduboy.setCursor(x, y+(i*8));
     arduboy.print(text_buffer);
     arduboy.display();
     hi = EEPROM.read(address + (5*i));
@@ -484,7 +491,7 @@ boolean titleScreen()
 {
   //Clears the screen
   arduboy.clear();
-  arduboy.setCursor(16,22);
+  arduboy.setCursor(16, 22);
   arduboy.setTextSize(2);
   arduboy.print("BREAKOUT");
   arduboy.setTextSize(1);
@@ -537,7 +544,7 @@ void enterInitials()
     arduboy.display();
     arduboy.clear();
 
-    arduboy.setCursor(16,0);
+    arduboy.setCursor(16, 0);
     arduboy.print("HIGH SCORE");
     sprintf(text_buffer, "%u", score);
     arduboy.setCursor(88, 0);
@@ -550,10 +557,10 @@ void enterInitials()
     arduboy.print(initials[2]);
     for(byte i = 0; i < 3; i++)
     {
-      arduboy.drawLine(56 + (i*8), 27, 56 + (i*8) + 6, 27, 1);
+      arduboy.drawLine(56 + (i*8), 27, 56 + (i*8) + 6, 27, WHITE);
     }
-    arduboy.drawLine(56, 28, 88, 28, 0);
-    arduboy.drawLine(56 + (index*8), 28, 56 + (index*8) + 6, 28, 1);
+    arduboy.drawLine(56, 28, 88, 28, BLACK);
+    arduboy.drawLine(56 + (index*8), 28, 56 + (index*8) + 6, 28, WHITE);
     arduboy.delayShort(70);
 
     if (arduboy.pressed(LEFT_BUTTON) || arduboy.pressed(B_BUTTON))
@@ -601,16 +608,20 @@ void enterInitials()
     {
       initials[index]--;
       playToneTimed(523, 80);
-      if (initials[index] == ' ') {
+      if (initials[index] == ' ')
+      {
         initials[index] = '?';
       }
-      if (initials[index] == '/') {
+      if (initials[index] == '/')
+      {
         initials[index] = 'Z';
       }
-      if (initials[index] == 31) {
+      if (initials[index] == 31)
+      {
         initials[index] = '/';
       }
-      if (initials[index] == '@') {
+      if (initials[index] == '@')
+      {
         initials[index] = ' ';
       }
     }
@@ -621,7 +632,9 @@ void enterInitials()
       if (index < 2)
       {
         index++;
-      } else {
+      }
+      else
+      {
         return;
       }
     }
@@ -648,7 +661,8 @@ void enterHighScore(byte file)
       // The values are uninitialized, so treat this entry
       // as a score of 0.
       tmpScore = 0;
-    } else
+    }
+    else
     {
       tmpScore = (hi << 8) | lo;
     }
