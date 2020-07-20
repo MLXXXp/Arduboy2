@@ -111,9 +111,9 @@ void loop()
     //Selects Font
     //Draws the new level
     level = 1;
+    initialDraw=true;
     newLevel();
     score = 0;
-    initialDraw=true;
   }
 
   if (lives>0)
@@ -432,7 +432,14 @@ void newLevel()
     }
   }
 
-  arduboy.display();
+  if (!initialDraw)
+  {
+    arduboy.clear();
+  }
+  else
+  {
+    arduboy.display();
+  }
 }
 
 //Used to delay images while reading button input
