@@ -202,7 +202,7 @@
 
 // ----- Pins common on Arduboy and DevKit -----
 
-// Unconnected analog input used for noise by initRandomSeed()
+// Unconnected analog input used for noise by generateRandomSeed()
 #define RAND_SEED_IN A4
 #define RAND_SEED_IN_PORT PORTF
 #define RAND_SEED_IN_BIT PORTF1
@@ -828,6 +828,25 @@ class Arduboy2Core : public Arduboy2NoUSB
      * \see Arduboy2Base::flashlight() boot()
      */
     static void safeMode();
+
+    /** \brief
+     * Create a seed suitable for use with a pseudorandom number generator.
+     *
+     * \return A random value that can be used to seed a
+     * pseudorandom number generator.
+     *
+     * \details
+     * The returned value will be a random value derived from entropy from an
+     * ADC reading of a floating pin combined with the microseconds since boot.
+     *
+     * \note
+     * This function will be more effective if called after a semi-random time,
+     * such as after waiting for the user to press a button to start a game, or
+     * another event that takes a variable amount of time after boot.
+     *
+     * \see Arduboy2Base::initRandomSeed()
+     */
+    static unsigned long generateRandomSeed();
 
     /** \brief
      * Delay for the number of milliseconds, specified as a 16 bit value.
