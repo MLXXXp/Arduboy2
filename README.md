@@ -305,11 +305,11 @@ Arduboy2 arduboy;
 
 If the sketch doesn't use any *tunes* functions, there's a good chance this is all that has to be done to make it compile.
 
-### Sketch uses only *tunes.tone()* for sound
+### Sketch uses only tunes.tone() for sound
 
 If the sketch has sound but only uses *tunes.tone()*, solutions are:
 
-#### Solution 1: Switch to using Arduino *tone()*
+#### Solution 1: Switch to using Arduino tone()
 
 An easy change is to use the Arduino built in *tone()* function. You can add a function to the sketch that wraps *tone()* so that it works like *tunes.tone()*, like so:
 
@@ -372,7 +372,7 @@ See the [ArduboyTones](https://github.com/MLXXXp/ArduboyTones) README file for m
 
 See the following for how to do this:
 
-### Sketch uses *tunes.playScore()*
+### Sketch uses tunes.playScore()
 
 If the sketch uses *tunes.playScore()*, probably the easiest solution is to use the *ArduboyPlaytune* library. *ArduboyPlaytune* is essentially the code that was in the Arduboy V1.1 *tunes* subclass, which has been removed from Arduboy2. It's been cleaned up and a few enhancements have been added, but all the Arduboy V1.1 *tunes* functions are available.
 
@@ -422,7 +422,7 @@ If you don't need to play scores containing two parts, and don't require tones t
 
 The benefit of using *ArduboyTones* would be reduced code size and possibly easier addition of new sequences without the need of a MIDI to Playtune format converter.
 
-### Sketch uses the *beginNoLogo()* function instead of *begin()*
+### Sketch uses the beginNoLogo() function instead of begin()
 
 The *beginNoLogo()* function has been removed. Instead, *boot()* can be used with additional functions following it to add back in desired boot functionality. See the information above, under the heading *Remove boot up features*, for more details. Assuming the object is named *arduboy*, a direct replacement for *beginNoLogo()* would be:
 
