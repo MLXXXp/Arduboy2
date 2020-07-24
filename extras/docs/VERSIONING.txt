@@ -1,0 +1,15 @@
+The following files contain the Arduboy2 library version number.
+They must be updated to match the release tag before a new version is released.
+
+library.properties
+  version=
+
+library.json
+  "version":
+
+src/Arduboy2.h
+  #define ARDUBOY_LIB_VER
+
+extras/Doxyfile
+  PROJECT_NUMBER =
+
