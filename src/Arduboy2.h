@@ -704,8 +704,8 @@ class Arduboy2Base : public Arduboy2Core
    * Draw a bitmap starting at the given coordinates from an array that has
    * been compressed using an algorthm implemented by Team A.R.G.
    * For more information see:
-   * https://github.com/TEAMarg/drawCompressed
-   * https://github.com/TEAMarg/Cabi
+   * https://github.com/Team-ARG-Museum/drawCompressed
+   * https://github.com/Team-ARG-Museum/Cabi
    *
    * Bits set to 1 in the provided bitmap array will have their corresponding
    * pixel set to the specified color. For bits set to 0 in the array, the
