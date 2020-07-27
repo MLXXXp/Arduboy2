@@ -33,11 +33,11 @@ This sketch also allows:
 ------------------------------------------------------------------------------
 */
 
-// Version 2.0
+// Version 2.1
 
 /*
 ------------------------------------------------------------------------------
-Copyright (c) 2018, Scott Allen
+Copyright (c) 2018-2020, Scott Allen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -299,26 +299,26 @@ void screenSaveName(), screenSaveID(), screenResetSys(), screenResetUser();
 Arduboy2 arduboy;
 
 char unitName[ARDUBOY_UNIT_NAME_BUFFER_SIZE];
-byte nameIndex;
+uint8_t nameIndex;
 
 uint16_t unitID;
-byte idIndex;
+uint8_t idIndex;
 
-boolean showLogoFlag;
-boolean showLEDsFlag;
-boolean showNameFlag;
+bool showLogoFlag;
+bool showLEDsFlag;
+bool showNameFlag;
 
 // Selected flag
-enum SelectedFlag : byte {
+enum class SelectedFlag : uint8_t {
   selFlagLogo,
   selFlagLEDs,
   selFlagName
 };
 
-byte currentFlag;
+SelectedFlag currentFlag;
 
 // Assign numbers for each state/screen
-enum State : byte {
+enum class State : uint8_t {
   sMain,
   sName,
   sID,
@@ -331,10 +331,10 @@ enum State : byte {
   sMAX = sResetUser
 };
 
-byte currentState;
+State currentState;
 
 // Function pointer array for button handling
-void (*stateFunc[sMAX + 1])() = {
+void (*stateFunc[static_cast<uint8_t>(State::sMAX) + 1])() = {
   stateMain,
   stateName,
   stateID,
@@ -347,7 +347,7 @@ void (*stateFunc[sMAX + 1])() = {
 };
 
 // Function pointer array for screen drawing
-void (*screenFunc[sMAX + 1])() = {
+void (*screenFunc[static_cast<uint8_t>(State::sMAX) + 1])() = {
   screenMain,
   screenName,
   screenID,
@@ -360,14 +360,14 @@ void (*screenFunc[sMAX + 1])() = {
 };
 
 unsigned int delayCount = 0;
-boolean repeating = false;
+bool repeating = false;
 
 
 // ============================= SETUP ===================================
 void setup() {
   arduboy.begin();
   arduboy.setFrameRate(FRAME_RATE);
-  setState(sMain);
+  setState(State::sMain);
 }
 // =======================================================================
 
@@ -380,7 +380,7 @@ void loop() {
 
   arduboy.pollButtons();
 
-  (*stateFunc[currentState])();
+  (*stateFunc[static_cast<uint8_t>(currentState)])();
 
   if ((delayCount != 0) && (--delayCount == 0)) {
     repeating = true;
@@ -393,7 +393,7 @@ void loop() {
 
 // Set to the given state and display the screen for that state
 // Can be called with the current state to update the current screen
-void setState(byte newState) {
+void setState(State newState) {
   currentState = newState;
   stopButtonRepeat();
   drawScreen();
@@ -402,16 +402,16 @@ void setState(byte newState) {
 // STATE: Main selection screen
 void stateMain() {
   if (arduboy.justPressed(UP_BUTTON)) {
-    setState(sName);
+    setState(State::sName);
   }
   else if (arduboy.justPressed(DOWN_BUTTON)) {
-    setState(sID);
+    setState(State::sID);
   }
   else if (arduboy.justPressed(LEFT_BUTTON)) {
-    setState(sFlags);
+    setState(State::sFlags);
   }
   else if (arduboy.justPressed(RIGHT_BUTTON)) {
-    setState(sReset);
+    setState(State::sReset);
   }
 }
 
@@ -438,10 +438,10 @@ void stateName() {
     nameCursorLeft();
   }
   else if (arduboy.justPressed(A_BUTTON)) {
-    setState(sMain);
+    setState(State::sMain);
   }
   else if (arduboy.justPressed(B_BUTTON)) {
-    setState(sSaveName);
+    setState(State::sSaveName);
   }
   else if (repeating) {
     stopButtonRepeat();
@@ -475,10 +475,10 @@ void stateID() {
     idCursorLeft();
   }
   else if (arduboy.justPressed(A_BUTTON)) {
-    setState(sMain);
+    setState(State::sMain);
   }
   else if (arduboy.justPressed(B_BUTTON)) {
-    setState(sSaveID);
+    setState(State::sSaveID);
   }
   else if (repeating) {
     stopButtonRepeat();
@@ -496,8 +496,8 @@ void stateFlags() {
     else {
       displayNoLogo();
     }
-    currentFlag = selFlagLogo;
-    setState(sFlags);
+    currentFlag = SelectedFlag::selFlagLogo;
+    setState(State::sFlags);
   }
   else if (arduboy.justPressed(UP_BUTTON)) {
     flagsCursorUp();
@@ -510,24 +510,24 @@ void stateFlags() {
     flagToggle();
   }
   else if (arduboy.justPressed(A_BUTTON)) {
-    setState(sMain);
+    setState(State::sMain);
   }
   else if (arduboy.justPressed(B_BUTTON)) {
     saveFlags();
-    setState(sFlags);
+    setState(State::sFlags);
   }
 }
 
 // STATE: Reset EEPROM areas
 void stateReset() {
   if (arduboy.justPressed(UP_BUTTON)) {
-    setState(sResetSys);
+    setState(State::sResetSys);
   }
   else if (arduboy.justPressed(DOWN_BUTTON)) {
-    setState(sResetUser);
+    setState(State::sResetUser);
   }
   else if (arduboy.justPressed(A_BUTTON)) {
-    setState(sMain);
+    setState(State::sMain);
   }
 }
 
@@ -535,10 +535,10 @@ void stateReset() {
 void stateSaveName() {
   if (arduboy.justPressed(A_BUTTON)) {
     arduboy.writeUnitName(unitName);
-    setState(sMain);
+    setState(State::sMain);
   }
   else if (arduboy.justPressed(B_BUTTON)) {
-    setState(sName);
+    setState(State::sName);
   }
 }
 
@@ -546,10 +546,10 @@ void stateSaveName() {
 void stateSaveID() {
   if (arduboy.justPressed(A_BUTTON)) {
     arduboy.writeUnitID(unitID);
-    setState(sMain);
+    setState(State::sMain);
   }
   else if (arduboy.justPressed(B_BUTTON)) {
-    setState(sID);
+    setState(State::sID);
   }
 }
 
@@ -557,13 +557,13 @@ void stateSaveID() {
 void stateResetSys() {
   if (arduboy.justPressed(B_BUTTON) && arduboy.pressed(A_BUTTON)) {
     resetSysEEPROM();
-    setState(sReset);
+    setState(State::sReset);
   }
   else if (arduboy.justPressed(UP_BUTTON) ||
            arduboy.justPressed(DOWN_BUTTON) ||
            arduboy.justPressed(RIGHT_BUTTON) ||
            arduboy.justPressed(LEFT_BUTTON)) {
-    setState(sReset);
+    setState(State::sReset);
   }
 }
 
@@ -571,13 +571,13 @@ void stateResetSys() {
 void stateResetUser() {
   if (arduboy.justPressed(B_BUTTON) && arduboy.pressed(A_BUTTON)) {
     resetUserEEPROM();
-    setState(sReset);
+    setState(State::sReset);
   }
   else if (arduboy.justPressed(UP_BUTTON) ||
            arduboy.justPressed(DOWN_BUTTON) ||
            arduboy.justPressed(RIGHT_BUTTON) ||
            arduboy.justPressed(LEFT_BUTTON)) {
-    setState(sReset);
+    setState(State::sReset);
   }
 }
 
@@ -586,7 +586,7 @@ void stateResetUser() {
 // Display the screen for the current state
 void drawScreen() {
   arduboy.clear();
-  (*screenFunc[currentState])();
+  (*screenFunc[static_cast<uint8_t>(currentState)])();
   arduboy.display();
 }
 
@@ -594,7 +594,7 @@ void drawScreen() {
 void screenMain() {
   readEEPROM();
   nameIndex = idIndex = 0;
-  currentFlag = selFlagLogo;
+  currentFlag = SelectedFlag::selFlagLogo;
 
   printStr_P(MENU_BTN_CHANGE_NAME_X, MENU_BTN_CHANGE_NAME_Y, StrBtnChangeName);
   printName(MENU_NAME_X, MENU_NAME_Y);
@@ -745,7 +745,7 @@ void printNameScreenCommon() {
   printNameDecimal(NAME_DECIMAL_X, NAME_DECIMAL_Y);
 }
 
-// Print the name entry screen common information
+// Print the ID entry screen common information
 void printIDScreenCommon() {
   printStr_P(ID_TITLE_X, ID_TITLE_Y, StrID);
   printIDDecimalBytes(ID_2_DECIMAL_X, ID_2_DECIMAL_Y);
@@ -789,7 +789,7 @@ void printIDCursors() {
 // Print the values and cursor for the flags
 void printFlagSettings() {
   int cursorY;
-  byte cursorLen = strlen_P(StrYes) * CHAR_WIDTH - 1 ;
+  uint8_t cursorLen = strlen_P(StrYes) * CHAR_WIDTH - 1 ;
 
   if (showLogoFlag) {
     printStr_P(FLAGS_SET_X, FLAGS_LOGO_Y, StrYes);
@@ -813,13 +813,13 @@ void printFlagSettings() {
   }
 
   switch (currentFlag) {
-   case selFlagLEDs:
+   case SelectedFlag::selFlagLEDs:
     cursorY = FLAGS_LEDS_Y;
     if (!showLEDsFlag) {
       cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
     }
     break;
-   case selFlagName:
+   case SelectedFlag::selFlagName:
     cursorY = FLAGS_NAME_Y;
     if (!showNameFlag) {
       cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
@@ -845,7 +845,7 @@ void printName(int x, int y) {
   printStr(x, y, unitName);
 
   y += (CHAR_HEIGHT + 1);
-  for (byte i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++, x += CHAR_WIDTH) {
+  for (uint8_t i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++, x += CHAR_WIDTH) {
     arduboy.drawFastHLine(x, y, CHAR_WIDTH - 1);
   }
 }
@@ -874,7 +874,7 @@ void printNameUnderline(int x, int y) {
 
 // Print the unit name in hex at the given location
 void printNameHex(int x, int y) {
-  for (byte i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++) {
+  for (uint8_t i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++) {
     printHex8(x, y, unitName[i]);
     x += CHAR_WIDTH * 3 + SMALL_SPACE;
   }
@@ -882,7 +882,7 @@ void printNameHex(int x, int y) {
 
 // Print the unit name in decimal at the given location
 void printNameDecimal(int x, int y) {
-  for (byte i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++) {
+  for (uint8_t i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++) {
     printDecimal8(x, y, unitName[i]);
     x += CHAR_WIDTH * 3 + SMALL_SPACE;
   }
@@ -918,7 +918,7 @@ void printIDBinary(int x, int y) {
   arduboy.print('b');
   x += CHAR_WIDTH + SMALL_SPACE;
   for (char i = 3 * 4; i >= 0; i -= 4) {
-    printBinaryNybble(x, y, (byte)(unitID >> i));
+    printBinaryNybble(x, y, static_cast<uint8_t>(unitID >> i));
     x += CHAR_WIDTH * 4 + SMALL_SPACE;
   }
 }
@@ -947,18 +947,18 @@ void printStr_P(int x, int y, const char* str) {
 }
 
 // Print an 8 bit number in decimal, right justified with leading spaces
-void printDecimal8(int x, int y, byte val) {
+void printDecimal8(int x, int y, uint8_t val) {
   printDecimalHelper(x, y, 2, 100, val);
 }
 
 // Print a 16 bit number in decimal, right justified with leading spaces
-void printDecimal16(int x, int y, unsigned int val) {
+void printDecimal16(int x, int y, uint16_t val) {
   printDecimalHelper(x, y, 4, 10000, val);
 }
 
 // Print a right justified decimal number, given width-1 and (width-1)^10
-void printDecimalHelper(int x, int y, byte width, unsigned int pwr10,
-                        unsigned int val) {
+void printDecimalHelper(int x, int y, uint8_t width, uint16_t pwr10,
+                        uint16_t val) {
   arduboy.setCursor(x, y);
   while (width > 0) {
     if (val >= pwr10) {
@@ -972,7 +972,7 @@ void printDecimalHelper(int x, int y, byte width, unsigned int pwr10,
 }
 
 // Print an 8 bit hex number with leading x and zeros
-void printHex8(int x, int y, byte val) {
+void printHex8(int x, int y, uint8_t val) {
   arduboy.setCursor(x, y);
   arduboy.print('x');
   if (val < 16) {
@@ -982,7 +982,7 @@ void printHex8(int x, int y, byte val) {
 }
 
 // Print a 16 bit hex number with leading x and zeros
-void printHex16(int x, int y, unsigned int val) {
+void printHex16(int x, int y, uint16_t val) {
   arduboy.setCursor(x, y);
   arduboy.print('x');
   for (char i = 3 * 4; i >= 0; i -= 4) {
@@ -991,7 +991,7 @@ void printHex16(int x, int y, unsigned int val) {
 }
 
 // Print a nybble in binary from the lowest 4 bits of the provided byte
-void printBinaryNybble(int x, int y, byte val) {
+void printBinaryNybble(int x, int y, uint8_t val) {
   arduboy.setCursor(x, y);
 
   for (char i = 3; i >= 0; i--) {
@@ -1037,8 +1037,8 @@ void nameCharDec() {
 }
 
 // Return true if the given character is not allowed
-boolean invalidChar(char c) {
-  return (c == '\n') || (c == '\r') || ((byte)c == 0xFF);
+bool invalidChar(char c) {
+  return (c == '\n') || (c == '\r') || (static_cast<uint8_t>(c) == 0xFF);
 }
 
 // Move the name cursor right
@@ -1100,14 +1100,14 @@ void idCursorLeft() {
 // Move the Flags cursor down
 void flagsCursorDown() {
   switch (currentFlag) {
-   case selFlagLogo:
-    currentFlag = selFlagLEDs;
+   case SelectedFlag::selFlagLogo:
+    currentFlag = SelectedFlag::selFlagLEDs;
     break;
-   case selFlagLEDs:
-    currentFlag = selFlagName;
+   case SelectedFlag::selFlagLEDs:
+    currentFlag = SelectedFlag::selFlagName;
     break;
-   case selFlagName:
-    currentFlag = selFlagLogo;
+   case SelectedFlag::selFlagName:
+    currentFlag = SelectedFlag::selFlagLogo;
     break;
   }
   drawScreen();
@@ -1116,14 +1116,14 @@ void flagsCursorDown() {
 // Move the Flags cursor up
 void flagsCursorUp() {
   switch (currentFlag) {
-   case selFlagName:
-    currentFlag = selFlagLEDs;
+   case SelectedFlag::selFlagName:
+    currentFlag = SelectedFlag::selFlagLEDs;
     break;
-   case selFlagLEDs:
-    currentFlag = selFlagLogo;
+   case SelectedFlag::selFlagLEDs:
+    currentFlag = SelectedFlag::selFlagLogo;
     break;
-   case selFlagLogo:
-    currentFlag = selFlagName;
+   case SelectedFlag::selFlagLogo:
+    currentFlag = SelectedFlag::selFlagName;
     break;
   }
   drawScreen();
@@ -1132,13 +1132,13 @@ void flagsCursorUp() {
 // Toggle the currently selected flag
 void flagToggle() {
   switch (currentFlag) {
-   case selFlagLogo:
+   case SelectedFlag::selFlagLogo:
     showLogoFlag = !showLogoFlag;
     break;
-   case selFlagLEDs:
+   case SelectedFlag::selFlagLEDs:
     showLEDsFlag = !showLEDsFlag;
     break;
-   case selFlagName:
+   case SelectedFlag::selFlagName:
     showNameFlag = !showNameFlag;
     break;
   }
