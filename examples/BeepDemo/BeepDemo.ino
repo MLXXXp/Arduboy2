@@ -52,6 +52,8 @@ void loop() {
 
   arduboy.pollButtons();
 
+  arduboy.clear();
+
   if (arduboy.justPressed(LEFT_BUTTON)) {
     // Play a 523.251Hz tone (piano note C5) for 5 frames (200ms at 25 FPS)
     // beep.freq(523.251) is used to convert 523.251Hz to the required count
@@ -127,7 +129,7 @@ void loop() {
     objectX = 0;
   }
 
-  arduboy.display(CLEAR_BUFFER);
+  arduboy.display();
 }
 
 void commandText(const char* text) {
