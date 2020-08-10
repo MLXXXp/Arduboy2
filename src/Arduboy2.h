@@ -973,7 +973,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \details
    * Read and save the current state of the buttons and also keep track of the
-   * button state when this function was previouly called. These states are
+   * button state when this function was previously called. These states are
    * used by the `justPressed()` and `justReleased()` functions to determine
    * if a button has changed state between now and the previous call to
    * `pollButtons()`.
@@ -1413,7 +1413,7 @@ class Arduboy2Base : public Arduboy2Core
   static constexpr uint16_t eepromUnitName = 10;
     // -- User EEPROM space starts at address 16 --
 
-  // --- map of the bits in the eepromSysFlags byte --
+  // --- Map of the bits in the eepromSysFlags byte --
     // Display the unit name on the logo screen
   static constexpr uint8_t sysFlagUnameBit = 0;
   static constexpr uint8_t sysFlagUnameMask = _BV(sysFlagUnameBit);
@@ -1777,7 +1777,7 @@ class Arduboy2 : public Print, public Arduboy2Base
   bool getTextWrap();
 
   /** \brief
-   * Clear the display buffer and set the text cursor to location 0, 0
+   * Clear the display buffer and set the text cursor to location 0, 0.
    */
   void clear();
 
