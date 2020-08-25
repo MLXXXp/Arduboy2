@@ -1157,6 +1157,7 @@ Arduboy2::Arduboy2()
   textBackground = 0;
   textSize = 1;
   textWrap = 0;
+  textRaw = 0;
 }
 
 // bootLogoText() should be kept in sync with bootLogoShell()
@@ -1237,64 +1238,106 @@ void Arduboy2::bootLogoExtra()
 
 size_t Arduboy2::write(uint8_t c)
 {
-  if (c == '\n')
+  if ((c == '\r') && !textRaw)
   {
-    cursor_y += textSize * 8;
+    return 1;
+  }
+
+  if (((c == '\n') && !textRaw) ||
+      (textWrap && (cursor_x > (WIDTH - (characterWidth * textSize)))))
+  {
     cursor_x = 0;
+    cursor_y += fullCharacterHeight * textSize;
   }
-  else if (c == '\r')
-  {
-    // skip em
-  }
-  else
+
+  if ((c != '\n') || textRaw)
   {
     drawChar(cursor_x, cursor_y, c, textColor, textBackground, textSize);
-    cursor_x += textSize * 6;
-    if (textWrap && (cursor_x > (WIDTH - textSize * 6)))
-    {
-      // calling ourselves recursively for 'newline' is
-      // 12 bytes smaller than doing the same math here
-      write('\n');
-    }
+    cursor_x += fullCharacterWidth * textSize;
   }
+
   return 1;
 }
 
 void Arduboy2::drawChar
-  (int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size)
+  (int16_t x, int16_t y, uint8_t c, uint8_t color, uint8_t bg, uint8_t size)
 {
-  uint8_t line;
-  bool draw_background = bg != color;
-  const uint8_t* bitmap = font5x7 + c * 5;
-
+// It is assumed that rendering characters fully off screen will be rare,
+// so let drawPixel() handle off screen checks, to reduce code size at the
+// expense of slower off screen character handling.
+#if 0
   if ((x >= WIDTH) ||              // Clip right
       (y >= HEIGHT) ||             // Clip bottom
-      ((x + 5 * size - 1) < 0) ||  // Clip left
-      ((y + 8 * size - 1) < 0)     // Clip top
+      ((x + characterWidth * size - 1) < 0) ||  // Clip left
+      ((y + characterHeight * size - 1) < 0)    // Clip top
      )
   {
     return;
   }
+#endif
 
-  for (uint8_t i = 0; i < 6; i++ )
+  bool drawBackground = bg != color;
+  const uint8_t* bitmap =
+    &font5x7[c * characterWidth * ((characterHeight + 8 - 1) / 8)];
+
+  for (uint8_t i = 0; i < fullCharacterWidth; i++)
   {
-    line = pgm_read_byte(bitmap++);
-    if (i == 5) {
-      line = 0x0;
+    uint8_t column;
+
+    if (characterHeight <= 8)
+    {
+      column = (i < characterWidth) ? pgm_read_byte(bitmap++) : 0;
+    }
+    else
+    {
+      column = 0;
     }
 
-    for (uint8_t j = 0; j < 8; j++)
+    // draw the character by columns. Top to bottom, left to right
+    // including character spacing on the right
+    for (uint8_t j = 0; j < characterHeight; j++)
     {
-      uint8_t draw_color = (line & 0x1) ? color : bg;
+      if (characterHeight > 8)
+      {
+        // at this point variable "column" will be 0, either from initialization
+        // or by having eight 0 bits shifted in by the >>= operation below
+        if ((j % 8 == 0) && (i < characterWidth))
+        {
+          column = pgm_read_byte(bitmap++);
+        }
+      }
 
-      if (draw_color || draw_background) {
-        for (uint8_t a = 0; a < size; a++ ) {
-          for (uint8_t b = 0; b < size; b++ ) {
-            drawPixel(x + (i * size) + a, y + (j * size) + b, draw_color);
+      // pixelIsSet should be a bool but at the time of writing,
+      // the GCC AVR compiler generates less code if it's a uint8_t
+      uint8_t pixelIsSet = column & 0x01;
+
+      if (pixelIsSet || drawBackground)
+      {
+        for (uint8_t a = 0; a < size; a++)
+        {
+          for (uint8_t b = 0; b < size; b++)
+          {
+            drawPixel(x + (i * size) + a, y + (j * size) + b,
+                      pixelIsSet ? color : bg);
           }
         }
       }
-      line >>= 1;
+      column >>= 1;
+    }
+
+    // draw the inter-line spacing pixels for this column if required
+    if (drawBackground)
+    {
+      for (uint8_t j = characterHeight; j < fullCharacterHeight; j++)
+      {
+        for (uint8_t a = 0; a < size; a++)
+        {
+          for (uint8_t b = 0; b < size; b++)
+          {
+            drawPixel(x + (i * size) + a, y + (j * size) + b, bg);
+          }
+        }
+      }
     }
   }
 }
@@ -1364,6 +1407,16 @@ void Arduboy2::setTextWrap(bool w)
 bool Arduboy2::getTextWrap()
 {
   return textWrap;
+}
+
+void Arduboy2::setTextRawMode(bool raw)
+{
+  textRaw = raw;
+}
+
+bool Arduboy2::getTextRawMode()
+{
+  return textRaw;
 }
 
 void Arduboy2::clear()

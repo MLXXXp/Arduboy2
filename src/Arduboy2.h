@@ -1466,14 +1466,17 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * Print will use the `write()` function to actually draw each character
    * in the screen buffer, using the library's `font5x7` font.
-   * Two character values are handled specially (and thus the font symbols that
-   * they represent can't be displayed):
+   * Two character values are handled specially:
    *
-   * - ASCII newline or line feed (`\n`, 0x0A, inverse white circle).
+   * - ASCII newline/line feed (`\n`, 0x0A, inverse white circle).
    *   This will move the text cursor position to the start of the next line,
    *   based on the current text size.
    * - ASCII carriage return (`\r`, 0x0D, musical eighth note).
    *   This character will be ignored.
+   *
+   * To override the special handling of the above values, to allow the
+   * characters they represent to be printed, text _raw_ mode can be selected
+   * using the `setTextRawMode()` function.
    *
    * See:
    * https://www.arduino.cc/reference/en/language/functions/communication/serial/print/
@@ -1482,15 +1485,23 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \code{.cpp}
    * int value = 42;
    *
-   * arduboy.println("Hello World"); // Prints "Hello World" and then moves the
+   * arduboy.println("Hello World"); // Prints "Hello World" and then sets the
    *                                 // text cursor to the start of the next line
-   * arduboy.print(value);       // Prints "42"
-   * arduboy.print('\n');        // Moves the text cursor to the start of the next line
-   * arduboy.print(78, HEX);     // Prints "4E" (78 in hexadecimal)
-   * arduboy.print("\x03\xEA");  // Prints a heart symbol and a Greek uppercase omega
+   * arduboy.print(value);      // Prints "42"
+   * arduboy.print('\n');       // Sets the text cursor to the start of the next line
+   * arduboy.print(78, HEX);    // Prints "4E" (78 in hexadecimal)
+   * arduboy.print("\x03\xEA"); // Prints a heart symbol and a Greek uppercase omega
+   *
+   * arduboy.setTextRawMode(true);  // Set text "raw" mode
+   * arduboy.print("\r\n")          // Prints a "musical eighth note"
+   *                                // followed by an "inverse white circle"
+   *                                // because we're in "raw" mode
+   * arduboy.setTextRawMode(false); // Exit text "raw" mode
    * \endcode
    *
-   * \see Arduboy2::write() Arduboy2::font5x7
+   * \see Arduboy2::setTextSize() Arduboy2::setTextColor()
+   * Arduboy2::setTextBackground() Arduboy2::setTextWrap()
+   * Arduboy2::setTextRawMode() Arduboy2::write() Arduboy2::font5x7
    */
   using Print::write;
 
@@ -1557,27 +1568,31 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \details
    * This is the Arduboy implemetation of the Arduino virtual `write()`
    * function. The single character specified is written to the the screen
-   * buffer at the current text cursor position. The text cursor is then
-   * moved to the next character position in the screen buffer. This new cursor
-   * position will depend on the current text size and possibly the current
-   * wrap mode.
+   * buffer at the current text cursor position or possibly the start of the
+   * next line if text wrap mode is on. The text cursor is then set to the
+   * next character position.
    *
    * Characters are rendered using the library's `font5x7` font.
-   * Two character values are handled specially (and thus the font symbols that
-   * they represent can't be displayed):
+   * Two character values are handled specially:
    *
-   * - ASCII newline or line feed (`\n`, 0x0A, inverse white circle).
+   * - ASCII newline/line feed (`\n`, 0x0A, inverse white circle).
    *   This will move the text cursor position to the start of the next line,
    *   based on the current text size.
    * - ASCII carriage return (`\r`, 0x0D, musical eighth note).
    *   This character will be ignored.
+   *
+   * To override the special handling of the above values, to allow the
+   * characters they represent to be printed, text _raw_ mode can be selected
+   * using the `setTextRawMode()` function.
+   *
    *
    * \note
    * This function is rather low level and, although it's available as a public
    * function, it wouldn't normally be used. In most cases the Arduino Print
    * class should be used for writing text.
    *
-   * \see Print setTextSize() setTextWrap() drawChar()
+   * \see Print setTextSize() setTextColor() setTextBackground() setTextWrap()
+   * setTextRawMode() drawChar() font5x7
    */
   virtual size_t write(uint8_t);
 
@@ -1593,9 +1608,9 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \param size The size of the character to draw.
    *
    * \details
-   * The specified character is drawn starting at the provided
-   * coordinate. The point specified by the X and Y coordinates will be the
-   * top left corner of the character. The character will be rendered using the
+   * The specified character is drawn starting at the provided coordinate.
+   * The point specified by the X and Y coordinates will be the top left
+   * corner of the character. The character will be rendered using the
    * library's `font5x7` font.
    *
    * \note
@@ -1604,10 +1619,9 @@ class Arduboy2 : public Print, public Arduboy2Base
    * normally be used. In most cases the Arduino Print class should be used for
    * writing text.
    *
-   * \see Print write() setTextColor() setTextBackground() setTextSize()
-   * font5x7
+   * \see Print write() font5x7
    */
-  void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size);
+  void drawChar(int16_t x, int16_t y, uint8_t c, uint8_t color, uint8_t bg, uint8_t size);
 
   /** \brief
    * Set the location of the text cursor.
@@ -1689,6 +1703,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * Set the text foreground color.
    *
    * \param color The color to be used for following text.
+   * The values `WHITE` or `BLACK` should be used.
    *
    * \see setTextBackground() getTextColor()
    */
@@ -1699,7 +1714,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * \return The color that will be used to display any following text.
    *
-   * \see setTextColor()
+   * \see setTextColor() getTextBackground()
    */
   uint8_t getTextColor();
 
@@ -1707,6 +1722,15 @@ class Arduboy2 : public Print, public Arduboy2Base
    * Set the text background color.
    *
    * \param bg The background color to be used for following text.
+   * The values `WHITE` or `BLACK` should be used.
+   *
+   * The background pixels of following characters will be set to the
+   * specified color.
+   *
+   * However, if the background color is set to be the same as the text color,
+   * the background will be transparent. Only the foreground pixels will be
+   * drawn. The background pixels will remain as they were before the character
+   * was drawn.
    *
    * \see setTextColor() getTextBackground()
    */
@@ -1717,7 +1741,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * \return The background color that will be used to display any following text.
    *
-   * \see setTextBackground()
+   * \see setTextBackground() getTextColor()
    */
   uint8_t getTextBackground();
 
@@ -1727,15 +1751,13 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \param s The text size multiplier. Must be 1 or higher.
    *
    * \details
-   * Setting a text size of 1 will result in standard size characters which
-   * occupy 6x8 pixels (the result of 5x7 characters with spacing on the
-   * right and bottom edges).
+   * Setting a text size of 1 will result in standard size characters with
+   * one pixel for each bit in the bitmap for a character. The value specified
+   * is a multiplier. A value of 2 will double the width and height.
+   * A value of 3 will triple the dimensions, etc.
    *
-   * The value specified is a multiplier. A value of 2 will double the
-   * size so they will occupy 12x16 pixels. A value of 3 will result in
-   * 18x24, etc.
-   *
-   * \see getTextSize()
+   * \see getTextSize() getCharacterWidth() getCharacterHeight()
+   * getCharacterSpacing() getLineSpacing() font5x7
    */
   void setTextSize(uint8_t s);
 
@@ -1744,7 +1766,8 @@ class Arduboy2 : public Print, public Arduboy2Base
    *
    * \return The size that will be used for any following text.
    *
-   * \see setTextSize()
+   * \see setTextSize() getCharacterWidth() getCharacterHeight()
+   * getCharacterSpacing() getLineSpacing() font5x7
    */
   uint8_t getTextSize();
 
@@ -1754,14 +1777,15 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \param w `true` enables text wrap mode. `false` disables it.
    *
    * \details
-   * Text wrap mode is enabled by specifying `true`. In wrap mode, the text
-   * cursor will be moved to the start of the next line (based on the current
-   * text size) if the following character wouldn't fit entirely at the end of
-   * the current line.
+   * Text wrap mode is enabled by specifying `true`. In wrap mode, if a
+   * character to be drawn would end up partially or fully past the right edge
+   * of the screen (based on the current text size), it will be placed at the
+   * start of the next line. The text cursor will be adjusted accordingly.
    *
-   * If wrap mode is disabled, characters will continue to be written to the
-   * same line. A character at the right edge of the screen may only be
-   * partially displayed and additional characters will be off screen.
+   * If wrap mode is disabled, characters will always be written at the current
+   * text cursor position. A character near the right edge of the screen may
+   * only be partially displayed and characters drawn at a position past the
+   * right edge of the screen will remain off screen.
    *
    * \see getTextWrap()
    */
@@ -1777,9 +1801,136 @@ class Arduboy2 : public Print, public Arduboy2Base
   bool getTextWrap();
 
   /** \brief
+   * Set or disable text raw mode, allowing special characters to be displayed.
+   *
+   * \param raw `true` enables text raw mode. `false` disables it.
+   *
+   * \details
+   * In text _raw_ mode, character values that would normally be treated
+   * specially will instead be displayed. The special characters are:
+   *
+   * - ASCII newline/line feed (`\n`, 0x0A, inverse white circle).
+   * - ASCII carriage return (`\r`, 0x0D, musical eighth note).
+   *
+   * All other characters can be displayed regardless of whether raw mode
+   * is enabled or not.
+   *
+   * \see getTextRawMode() Print
+   */
+  void setTextRawMode(bool raw);
+
+  /** \brief
+   * Get the current state of text raw mode.
+   *
+   * \return `true` if text raw mode is enabled, `false` if disabled.
+   *
+   * \see setTextRawMode()
+   */
+  bool getTextRawMode();
+
+  /** \brief
    * Clear the display buffer and set the text cursor to location 0, 0.
    */
   void clear();
+
+  /** \brief
+   * Get the width, in pixels, of a character in the library's font.
+   *
+   * \param textSize The text size the character would be drawn at
+   * (optional; defaults to 1).
+   *
+   * \return The width, in pixels, that a character will occupy, not including
+   * inter-character spacing.
+   *
+   * \details
+   * Returns the width, in pixels, occupied by a character in the font used by
+   * the library for text functions. The result will be based on the provided
+   * text size, or size 1 if not included. Since the font is monospaced, all
+   * characters will occupy the same width for a given text size.
+   *
+   * The width does not include the spacing added after each character by the
+   * library text functions. The `getCharacterSpacing()` function can be used
+   * to obtain the character spacing value.
+   *
+   * \see getCharacterHeight() getCharacterSpacing()
+   * getTextSize() setTextSize() font5x7
+   */
+  static constexpr uint8_t getCharacterWidth(uint8_t textSize = 1)
+  {
+    return characterWidth * textSize;
+  }
+
+  /** \brief
+   * Get the number of pixels added after each character to provide spacing.
+   *
+   * \param textSize The text size the character would be drawn at
+   * (optional; defaults to 1).
+   *
+   * \return The number of pixels of space added after each character.
+   *
+   * \details
+   * Returns the number of pixels added to the right of each character,
+   * to provide spacing, when drawn by the library text functions.
+   * The result will be based on the provided text size, or size 1 if not
+   * included.
+   *
+   * \see getCharacterWidth() getLineSpacing()
+   * getTextSize() setTextSize() font5x7
+   */
+  static constexpr uint8_t getCharacterSpacing(uint8_t textSize = 1)
+  {
+    return characterSpacing * textSize;
+  }
+
+  /** \brief
+   * Get the height, in pixels, of a character in the library's font.
+   *
+   * \param textSize The text size the character would be drawn at
+   * (optional; defaults to 1).
+   *
+   * \return The height, in pixels, that a character will occupy.
+   *
+   * \details
+   * Returns the height, in pixels, that a character will occupy when drawn
+   * using the library text functions. The result will be based on the
+   * provided text size, or size 1 if not included.
+   *
+   * \see getCharacterWidth() getLineSpacing()
+   * getTextSize() setTextSize() font5x7
+   */
+  static constexpr uint8_t getCharacterHeight(uint8_t textSize = 1)
+  {
+    return characterHeight * textSize;
+  }
+
+  /** \brief
+   * Get the number of pixels added below each character to provide
+   * line spacing.
+   *
+   * \param textSize The text size the character would be drawn at
+   * (optional; defaults to 1).
+   *
+   * \return The number of pixels of space added below each character.
+   *
+   * \details
+   * Returns the number of pixels added below each character, to provide
+   * spacing for wrapped lines, when drawn by the library text functions.
+   * The result will be based on the provided text size, or size 1 if
+   * not included.
+   *
+   * \note
+   * For this library, the value returned will be 0 because no spacing is added
+   * between lines. This function is included so that it can be used to write
+   * code that would be easily portable for use with a suite of equivalent
+   * functions that rendered text with added line spacing.
+   *
+   * \see getCharacterHeight() getCharacterSpacing()
+   * getTextSize() setTextSize() font5x7
+   */
+  static constexpr uint8_t getLineSpacing(uint8_t textSize = 1)
+  {
+    return lineSpacing * textSize;
+  }
 
   /** \brief
    * The font used for text functions.
@@ -1794,7 +1945,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * The character set represented is code page 437, also known as OEM 437,
    * OEM-US, PC-8 or DOS Latin US. This is an 8 bit set which includes all
    * printable ASCII characters plus many accented characters, symbols and
-   * line drawing characters. 
+   * line drawing characters.
    *
    * The data for this font is from file `glcdfont.c` in the
    * [Adafruit GFX graphics library](https://github.com/adafruit/Adafruit-GFX-Library).
@@ -1809,17 +1960,22 @@ class Arduboy2 : public Print, public Arduboy2Base
    * \note
    * \parblock
    * The library's text functions, except `drawChar()`, handle two character
-   * values specially (and thus the font symbols that they represent can't be
-   * displayed using these functions):
+   * values specially:
    *
-   * - ASCII newline or line feed (`\n`, 0x0A, inverse white circle).
+   * - ASCII newline/line feed (`\n`, 0x0A, inverse white circle).
    *   This will move the text cursor position to the start of the next line,
    *   based on the current text size.
    * - ASCII carriage return (`\r`, 0x0D, musical eighth note).
    *   This character will be ignored.
+   *
+   * To override the special handling of the above values, to allow the
+   * characters they represent to be printed, text _raw_ mode can be selected
+   * using the `setTextRawMode()` function.
    * \endparblock
    *
-   * \see Print write() readUnitName() writeUnitName()
+   * \see Print write() drawChar() setTextRawMode()
+   * getCharacterWidth() getCharacterHeight()
+   * getCharacterSpacing() getLineSpacing() readUnitName() writeUnitName()
    */
   static const PROGMEM uint8_t font5x7[];
 
@@ -1830,6 +1986,19 @@ class Arduboy2 : public Print, public Arduboy2Base
   uint8_t textBackground;
   uint8_t textSize;
   bool textWrap;
+  bool textRaw;
+
+  // Width and height of a font5x7 character
+  // (not including inter-character spacing)
+  static constexpr uint8_t characterWidth = 5;
+  static constexpr uint8_t characterHeight = 8;
+  // Width of inter-character spacing
+  static constexpr uint8_t characterSpacing = 1;
+  // Height of inter-line spacing
+  static constexpr uint8_t lineSpacing = 0;
+  // Character sizes including spacing
+  static constexpr uint8_t fullCharacterWidth = characterWidth + characterSpacing;
+  static constexpr uint8_t fullCharacterHeight = characterHeight + lineSpacing;
 };
 
 #endif

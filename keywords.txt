@@ -67,11 +67,16 @@ flipHorizontal	KEYWORD2
 freeRGBled	KEYWORD2
 generateRandomSeed	KEYWORD2
 getBuffer	KEYWORD2
+getCharacterHeight	KEYWORD2
+getCharacterSpacing	KEYWORD2
+getCharacterWidth	KEYWORD2
 getCursorX	KEYWORD2
 getCursorY	KEYWORD2
+getLineSpacing	KEYWORD2
 getPixel	KEYWORD2
 getTextBackground	KEYWORD2
 getTextColor	KEYWORD2
+getTextRawMode	KEYWORD2
 getTextSize	KEYWORD2
 getTextWrap	KEYWORD2
 height	KEYWORD2
@@ -104,6 +109,7 @@ setFrameRate	KEYWORD2
 setRGBled	KEYWORD2
 setTextBackground	KEYWORD2
 setTextColor	KEYWORD2
+setTextRawMode	KEYWORD2
 setTextSize	KEYWORD2
 setTextWrap	KEYWORD2
 SPItransfer	KEYWORD2
