@@ -33,7 +33,7 @@ This sketch also allows:
 ------------------------------------------------------------------------------
 */
 
-// Version 2.1
+// Version 2.2
 
 /*
 ------------------------------------------------------------------------------
@@ -69,14 +69,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <EEPROM.h>
 
 // The frame rate determines the button auto-repeat rate for unit name entry
-#define FRAME_RATE 10
+constexpr uint8_t frameRate = 10;
 
 // The unit ID auto-repeat rate is slowed, compared to the unit name rate, by
 // repeating only once per the defined number of frames
-#define ID_REPEAT_FRAMES 3
+constexpr unsigned int idRepeatFrames = 3;
 
 // Delay time before button auto-repeat starts, in milliseconds
-#define REPEAT_DELAY 700
+constexpr unsigned int repeatDelay = 700;
 
 // All the constant stings
 const char StrName[] PROGMEM = "NAME";
@@ -119,24 +119,20 @@ const char StrReset[] PROGMEM = "RESET";
 const char StrHex[] PROGMEM = "hex";
 const char StrDecimal[] PROGMEM = "decimal";
 
-#define CHAR_WIDTH 6
-#define CHAR_HEIGHT 8
-#define SMALL_SPACE 4 // The number of pixels for a small space between groups
-
 // Defines for text and field locations
 #define MENU_BTN_CHANGE_NAME_X centerStr_P(StrBtnChangeName)
 #define MENU_BTN_CHANGE_NAME_Y 0
 #define MENU_NAME_X centerStrLen(ARDUBOY_UNIT_NAME_LEN)
-#define MENU_NAME_Y (MENU_BTN_CHANGE_NAME_Y + CHAR_HEIGHT + 3)
+#define MENU_NAME_Y (MENU_BTN_CHANGE_NAME_Y + charHeight + 3)
 
 #define MENU_BTN_CHANGE_ID_X centerStr_P(StrBtnChangeID)
 #define MENU_BTN_CHANGE_ID_Y 26
 #define MENU_HEADING_HEX_X (centerStr_P(StrHex) - (WIDTH / 4))
 #define MENU_HEADING_DECIMAL_X (centerStr_P(StrDecimal) + (WIDTH / 4))
-#define MENU_HEADINGS_Y (MENU_BTN_CHANGE_ID_Y + CHAR_HEIGHT + 1)
+#define MENU_HEADINGS_Y (MENU_BTN_CHANGE_ID_Y + charHeight + 1)
 #define MENU_ID_HEX_X (centerStrLen(5) - (WIDTH / 4))
 #define MENU_ID_DECIMAL_X (centerStrLen(5) + (WIDTH / 4))
-#define MENU_ID_Y (MENU_HEADINGS_Y + CHAR_HEIGHT + 1)
+#define MENU_ID_Y (MENU_HEADINGS_Y + charHeight + 1)
 
 #define MENU_BTN_FLAGS_X 0
 #define MENU_BTN_FLAGS_Y 56
@@ -165,9 +161,9 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define NAME_BTN_NO_X rightStr_P(StrBtnNo)
 #define NAME_BTN_NO_Y NAME_BTN_YES_Y
 
-#define NAME_SAVE_Q_X (centerStr_P(StrSaveQ) - ((6 * CHAR_WIDTH) + (CHAR_WIDTH / 2)))
-#define NAME_SAVE_Q_Y (NAME_LARGE_Y + (CHAR_HEIGHT / 2) + 3)
-#define NAME_SAVE_X (NAME_SAVE_Q_X + ((strlen_P(StrSaveQ) * CHAR_WIDTH) + CHAR_WIDTH))
+#define NAME_SAVE_Q_X (centerStr_P(StrSaveQ) - ((6 * charWidth) + (charWidth / 2)))
+#define NAME_SAVE_Q_Y (NAME_LARGE_Y + (charHeight / 2) + 3)
+#define NAME_SAVE_X (NAME_SAVE_Q_X + ((strlen_P(StrSaveQ) * charWidth) + charWidth))
 #define NAME_SAVE_Y (NAME_LARGE_Y + 3)
 
 
@@ -184,7 +180,7 @@ const char StrDecimal[] PROGMEM = "decimal";
 
 #define ID_2_DECIMAL_X 12
 #define ID_2_DECIMAL_Y 38
-#define ID_DECIMAL_X (WIDTH - (CHAR_WIDTH * 5 + 12))
+#define ID_DECIMAL_X (WIDTH - (charWidth * 5 + 12))
 #define ID_DECIMAL_Y ID_2_DECIMAL_Y
 
 #define ID_BINARY_X 0
@@ -195,9 +191,9 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define ID_BTN_NO_X rightStr_P(StrBtnNo)
 #define ID_BTN_NO_Y ID_BTN_YES_Y
 
-#define ID_SAVE_Q_X (centerStr_P(StrSaveQ) - ((5 * CHAR_WIDTH) + (CHAR_WIDTH / 2)))
-#define ID_SAVE_Q_Y (ID_LARGE_Y + (CHAR_HEIGHT / 2) + 1)
-#define ID_SAVE_X (ID_SAVE_Q_X + ((strlen_P(StrSaveQ) * CHAR_WIDTH) + CHAR_WIDTH))
+#define ID_SAVE_Q_X (centerStr_P(StrSaveQ) - ((5 * charWidth) + (charWidth / 2)))
+#define ID_SAVE_Q_Y (ID_LARGE_Y + (charHeight / 2) + 1)
+#define ID_SAVE_X (ID_SAVE_Q_X + ((strlen_P(StrSaveQ) * charWidth) + charWidth))
 #define ID_SAVE_Y (ID_LARGE_Y + 1)
 
 #define FLAGS_TITLE_X centerStr_P(StrFlags)
@@ -212,7 +208,7 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define FLAGS_LEDS_Y 27
 #define FLAGS_NAME_Y 40
 
-#define FLAGS_Q_X  (CHAR_WIDTH * 2)
+#define FLAGS_Q_X  (charWidth * 2)
 #define FLAGS_SET_X rightStr_P(StrYes)
 #define FLAGS_CURSOR_X 0
 
@@ -220,74 +216,74 @@ const char StrDecimal[] PROGMEM = "decimal";
 #define FLAGS_TEST_Y 56
 
 #define FLAGS_SAVED_X centerStr2_P(StrSaved)
-#define FLAGS_SAVED_Y ((HEIGHT / 2) - CHAR_HEIGHT)
+#define FLAGS_SAVED_Y ((HEIGHT / 2) - (char2Height / 2))
 
 #define FLAGS_NO_LOGO_1_X centerStr_P(StrNoLogo1)
-#define FLAGS_NO_LOGO_1_Y ((HEIGHT / 2) - CHAR_HEIGHT - 1)
+#define FLAGS_NO_LOGO_1_Y ((HEIGHT / 2) - charHeight - 1)
 #define FLAGS_NO_LOGO_2_X centerStr_P(StrNoLogo2)
-#define FLAGS_NO_LOGO_2_Y (FLAGS_NO_LOGO_1_Y + CHAR_HEIGHT + 2)
+#define FLAGS_NO_LOGO_2_Y (FLAGS_NO_LOGO_1_Y + charHeight + 2)
 
 #define RESET_BTN_MENU_X centerStr_P(StrBtnMenu)
 #define RESET_BTN_MENU_Y 0
 #define RESET_BTN_SYS_X centerStr_P(StrBtnResetSys)
 #define RESET_BTN_SYS_Y 16
 #define RESET_BTN_SYS_EEPROM_X centerStr_P(StrEEPROM)
-#define RESET_BTN_SYS_EEPROM_Y (RESET_BTN_SYS_Y + CHAR_HEIGHT)
+#define RESET_BTN_SYS_EEPROM_Y (RESET_BTN_SYS_Y + charHeight)
 #define RESET_BTN_USER_X centerStr_P(StrBtnResetUser)
 #define RESET_BTN_USER_Y 40
 #define RESET_BTN_USER_EEPROM_X centerStr_P(StrEEPROM)
-#define RESET_BTN_USER_EEPROM_Y (RESET_BTN_USER_Y + CHAR_HEIGHT)
+#define RESET_BTN_USER_EEPROM_Y (RESET_BTN_USER_Y + charHeight)
 
 #define RESET_SYS_TEXT_1_X centerStr_P(StrResetSys1)
 #define RESET_SYS_TEXT_1_Y 0
 #define RESET_SYS_TEXT_2_X centerStr_P(StrResetSys2)
-#define RESET_SYS_TEXT_2_Y (RESET_SYS_TEXT_1_Y + CHAR_HEIGHT)
+#define RESET_SYS_TEXT_2_Y (RESET_SYS_TEXT_1_Y + charHeight)
 #define RESET_SYS_TEXT_3_X centerStr_P(StrResetSys3)
-#define RESET_SYS_TEXT_3_Y (RESET_SYS_TEXT_2_Y + CHAR_HEIGHT)
+#define RESET_SYS_TEXT_3_Y (RESET_SYS_TEXT_2_Y + charHeight)
 #define RESET_SYS_SURE_Q_X centerStr_P(StrAreYouSureQ)
 #define RESET_SYS_SURE_Q_Y 32
 #define RESET_SYS_BTN_YES_X centerStr_P(StrBtnResetYes)
 #define RESET_SYS_BTN_YES_Y 48
 #define RESET_SYS_BTN_NO_X centerStr_P(StrBtnResetYes)
-#define RESET_SYS_BTN_NO_Y (RESET_SYS_BTN_YES_Y + CHAR_HEIGHT)
+#define RESET_SYS_BTN_NO_Y (RESET_SYS_BTN_YES_Y + charHeight)
 
 #define RESET_SYS_CONFIRMED_1_X centerStr2_P(StrSystem)
 #define RESET_SYS_CONFIRMED_1_Y 7
 #define RESET_SYS_CONFIRMED_2_X centerStr2_P(StrEEPROM)
-#define RESET_SYS_CONFIRMED_2_Y (RESET_SYS_CONFIRMED_1_Y + (CHAR_HEIGHT * 2) + 2)
+#define RESET_SYS_CONFIRMED_2_Y (RESET_SYS_CONFIRMED_1_Y + char2Height + 2)
 #define RESET_SYS_CONFIRMED_3_X centerStr2_P(StrReset)
-#define RESET_SYS_CONFIRMED_3_Y (RESET_SYS_CONFIRMED_2_Y + (CHAR_HEIGHT * 2) + 2)
+#define RESET_SYS_CONFIRMED_3_Y (RESET_SYS_CONFIRMED_2_Y + char2Height + 2)
 
 #define RESET_USER_TEXT_1_X centerStr_P(StrResetUser1)
 #define RESET_USER_TEXT_1_Y 0
 #define RESET_USER_TEXT_2_X centerStr_P(StrResetUser2)
-#define RESET_USER_TEXT_2_Y (RESET_USER_TEXT_1_Y + CHAR_HEIGHT)
+#define RESET_USER_TEXT_2_Y (RESET_USER_TEXT_1_Y + charHeight)
 #define RESET_USER_TEXT_3_X centerStr_P(StrResetUser3)
-#define RESET_USER_TEXT_3_Y (RESET_USER_TEXT_2_Y + CHAR_HEIGHT)
+#define RESET_USER_TEXT_3_Y (RESET_USER_TEXT_2_Y + charHeight)
 #define RESET_USER_SURE_Q_X centerStr_P(StrAreYouSureQ)
 #define RESET_USER_SURE_Q_Y 32
 #define RESET_USER_BTN_YES_X centerStr_P(StrBtnResetYes)
 #define RESET_USER_BTN_YES_Y 48
 #define RESET_USER_BTN_NO_X centerStr_P(StrBtnResetYes)
-#define RESET_USER_BTN_NO_Y (RESET_USER_BTN_YES_Y + CHAR_HEIGHT)
+#define RESET_USER_BTN_NO_Y (RESET_USER_BTN_YES_Y + charHeight)
 
 #define RESET_USER_CONFIRMED_1_X centerStr2_P(StrUser)
 #define RESET_USER_CONFIRMED_1_Y 7
 #define RESET_USER_CONFIRMED_2_X centerStr2_P(StrEEPROM)
-#define RESET_USER_CONFIRMED_2_Y (RESET_USER_CONFIRMED_1_Y + (CHAR_HEIGHT * 2) + 2)
+#define RESET_USER_CONFIRMED_2_Y (RESET_USER_CONFIRMED_1_Y + char2Height + 2)
 #define RESET_USER_CONFIRMED_3_X centerStr2_P(StrReset)
-#define RESET_USER_CONFIRMED_3_Y (RESET_USER_CONFIRMED_2_Y + (CHAR_HEIGHT * 2) + 2)
+#define RESET_USER_CONFIRMED_3_Y (RESET_USER_CONFIRMED_2_Y + char2Height + 2)
 
 #define RESET_USER_WRITING_X centerStr2_P(StrWriting)
-#define RESET_USER_WRITING_Y ((HEIGHT / 2) - (CHAR_HEIGHT - 1))
+#define RESET_USER_WRITING_Y ((HEIGHT / 2) - (char2Height / 2 - 1))
 
 // EEPROM addresses
-#define EEPROM_START     (0x0000)
-#define EEPROM_SIZE      (1024)
-#define EEPROM_END       (EEPROM_START + EEPROM_SIZE - 1)
+constexpr unsigned int EEPROMstart = 0x0000;
+constexpr unsigned int EEPROMsize = 1024;
+constexpr unsigned int EEPROMend = EEPROMstart + EEPROMsize - 1;
 
 // Calculation of the number of frames to wait before button auto-repeat starts
-#define DELAY_FRAMES (REPEAT_DELAY / (1000 / FRAME_RATE))
+constexpr unsigned int delayFrames = repeatDelay / (1000 / frameRate);
 
 // The Arduino "magic" has trouble creating prototypes for functions called
 // by pointers, so they're declared here manually
@@ -297,6 +293,18 @@ void screenMain(), screenName(), screenID(), screenFlags(), screenReset();
 void screenSaveName(), screenSaveID(), screenResetSys(), screenResetUser();
 
 Arduboy2 arduboy;
+
+constexpr uint8_t charSpacing = arduboy.getCharacterSpacing(1);
+constexpr uint8_t char2Spacing = arduboy.getCharacterSpacing(2);
+constexpr uint8_t charWidth = arduboy.getCharacterWidth(1) + charSpacing;
+constexpr uint8_t char2Width = arduboy.getCharacterWidth(2) + char2Spacing;
+constexpr uint8_t charHeight = arduboy.getCharacterHeight(1) +
+                                arduboy.getLineSpacing(1);
+constexpr uint8_t char2Height = arduboy.getCharacterHeight(2) +
+                                 arduboy.getLineSpacing(2);
+
+// The number of pixels for a small space between groups
+constexpr uint8_t smallSpace = 4;
 
 char unitName[ARDUBOY_UNIT_NAME_BUFFER_SIZE];
 uint8_t nameIndex;
@@ -366,7 +374,7 @@ bool repeating = false;
 // ============================= SETUP ===================================
 void setup() {
   arduboy.begin();
-  arduboy.setFrameRate(FRAME_RATE);
+  arduboy.setFrameRate(frameRate);
   setState(State::sMain);
 }
 // =======================================================================
@@ -459,12 +467,12 @@ void stateID() {
     startButtonDelay();
   }
   else if (repeating && arduboy.pressed(UP_BUTTON)) {
-    if (arduboy.everyXFrames(ID_REPEAT_FRAMES)) {
+    if (arduboy.everyXFrames(idRepeatFrames)) {
       idDigitInc();
     }
   }
   else if (repeating && arduboy.pressed(DOWN_BUTTON)) {
-    if (arduboy.everyXFrames(ID_REPEAT_FRAMES)) {
+    if (arduboy.everyXFrames(idRepeatFrames)) {
       idDigitDec();
     }
   }
@@ -708,7 +716,7 @@ void saveFlags() {
 
 // Reset the system EEPROM area and display the confirmation message
 void resetSysEEPROM() {
-  for (unsigned int i = EEPROM_START; i < EEPROM_STORAGE_SPACE_START; i++) {
+  for (unsigned int i = EEPROMstart; i < EEPROM_STORAGE_SPACE_START; i++) {
     EEPROM.update(i, 0xFF);
   }
   arduboy.clear();
@@ -726,7 +734,7 @@ void resetUserEEPROM() {
   printStr_P(RESET_USER_WRITING_X, RESET_USER_WRITING_Y, StrWriting);
   arduboy.setTextSize(1);
   arduboy.display(CLEAR_BUFFER);
-  for (unsigned int i = EEPROM_STORAGE_SPACE_START; i <= EEPROM_END; i++) {
+  for (unsigned int i = EEPROM_STORAGE_SPACE_START; i <= EEPROMend; i++) {
     EEPROM.update(i, 0xFF);
   }
   printStrLargeRev_P(RESET_USER_CONFIRMED_1_X, RESET_USER_CONFIRMED_1_Y, StrUser);
@@ -755,41 +763,45 @@ void printIDScreenCommon() {
 
 // Print the name screen cursors
 void printNameCursors() {
-  arduboy.fillRect(NAME_LARGE_X + (nameIndex * CHAR_WIDTH * 2),
-                   NAME_LARGE_Y + (CHAR_HEIGHT * 2) + 2,
-                   (CHAR_WIDTH * 2) - 2, 2);
+  arduboy.fillRect(NAME_LARGE_X + (nameIndex * char2Width),
+                   NAME_LARGE_Y + char2Height + 2,
+                   char2Width - char2Spacing, 2);
 
   arduboy.drawFastHLine(NAME_HEX_X +
-                         (nameIndex * (CHAR_WIDTH * 3 + SMALL_SPACE)),
-                        NAME_HEX_Y + CHAR_HEIGHT + 1, CHAR_WIDTH * 3 - 1);
+                         (nameIndex * (charWidth * 3 + smallSpace)),
+                        NAME_HEX_Y + charHeight + 1,
+                        charWidth * 3 - charSpacing);
 
   arduboy.drawFastHLine(NAME_DECIMAL_X +
-                         (nameIndex * (CHAR_WIDTH * 3 + SMALL_SPACE)),
-                        NAME_DECIMAL_Y + CHAR_HEIGHT + 1, CHAR_WIDTH * 3 - 1);
+                         (nameIndex * (charWidth * 3 + smallSpace)),
+                        NAME_DECIMAL_Y + charHeight + 1,
+                        charWidth * 3 - charSpacing);
 }
 
 // Print the ID screen cursors
 void printIDCursors() {
-  arduboy.fillRect(ID_LARGE_X + ((idIndex + 1) * (CHAR_WIDTH * 2)),
-                   ID_LARGE_Y + (CHAR_HEIGHT * 2),
-                   (CHAR_WIDTH * 2) - 2, 2);
+  arduboy.fillRect(ID_LARGE_X + ((idIndex + 1) * char2Width),
+                   ID_LARGE_Y + char2Height,
+                   char2Width - char2Spacing, 2);
 
   arduboy.drawFastHLine(ID_2_DECIMAL_X +
-                         ((idIndex / 2) * (CHAR_WIDTH * 3 + SMALL_SPACE)),
-                        ID_2_DECIMAL_Y + CHAR_HEIGHT + 1, CHAR_WIDTH * 3 - 1);
+                         ((idIndex / 2) * (charWidth * 3 + smallSpace)),
+                        ID_2_DECIMAL_Y + charHeight + 1,
+                        charWidth * 3 - charSpacing);
 
-  arduboy.drawFastHLine(ID_DECIMAL_X, ID_DECIMAL_Y + CHAR_HEIGHT + 1,
-                        CHAR_WIDTH * 5 - 1);
+  arduboy.drawFastHLine(ID_DECIMAL_X, ID_DECIMAL_Y + charHeight + 1,
+                        charWidth * 5 - 1);
 
-  arduboy.drawFastHLine((ID_BINARY_X + CHAR_WIDTH + SMALL_SPACE) +
-                         (idIndex * (CHAR_WIDTH * 4 + SMALL_SPACE)),
-                        ID_BINARY_Y + CHAR_HEIGHT + 1, CHAR_WIDTH * 4 - 1);
+  arduboy.drawFastHLine((ID_BINARY_X + charWidth + smallSpace) +
+                         (idIndex * (charWidth * 4 + smallSpace)),
+                        ID_BINARY_Y + charHeight + 1,
+                        charWidth * 4 - charSpacing);
 }
 
 // Print the values and cursor for the flags
 void printFlagSettings() {
   int cursorY;
-  uint8_t cursorLen = strlen_P(StrYes) * CHAR_WIDTH - 1 ;
+  uint8_t cursorLen = strlen_P(StrYes) * charWidth - charSpacing;
 
   if (showLogoFlag) {
     printStr_P(FLAGS_SET_X, FLAGS_LOGO_Y, StrYes);
@@ -816,19 +828,19 @@ void printFlagSettings() {
    case SelectedFlag::selFlagLEDs:
     cursorY = FLAGS_LEDS_Y;
     if (!showLEDsFlag) {
-      cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
+      cursorLen = strlen_P(StrNo) * charWidth - charSpacing;
     }
     break;
    case SelectedFlag::selFlagName:
     cursorY = FLAGS_NAME_Y;
     if (!showNameFlag) {
-      cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
+      cursorLen = strlen_P(StrNo) * charWidth - charSpacing;
     }
     break;
    default: // selFlagLogo
     cursorY = FLAGS_LOGO_Y;
     if (!showLogoFlag) {
-      cursorLen = strlen_P(StrNo) * CHAR_WIDTH - 1;
+      cursorLen = strlen_P(StrNo) * charWidth - charSpacing;
     }
     break;
 }
@@ -836,7 +848,7 @@ void printFlagSettings() {
   arduboy.setCursor(FLAGS_CURSOR_X, cursorY);
   arduboy.print('\x10');
 
-  arduboy.drawFastHLine(FLAGS_SET_X, cursorY + CHAR_HEIGHT, cursorLen);
+  arduboy.drawFastHLine(FLAGS_SET_X, cursorY + charHeight, cursorLen);
 }
 
 // Print the unit name in normal size including an extent underline
@@ -844,9 +856,9 @@ void printFlagSettings() {
 void printName(int x, int y) {
   printStr(x, y, unitName);
 
-  y += (CHAR_HEIGHT + 1);
-  for (uint8_t i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++, x += CHAR_WIDTH) {
-    arduboy.drawFastHLine(x, y, CHAR_WIDTH - 1);
+  y += (charHeight + 1);
+  for (uint8_t i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++, x += charWidth) {
+    arduboy.drawFastHLine(x, y, charWidth - charSpacing);
   }
 }
 
@@ -864,8 +876,8 @@ void printNameUnderline(int x, int y) {
 
   if (unitName[0] != 0) {
     x -= 1;
-    y += ((CHAR_HEIGHT * 2) + 6);
-    lWidth = (strlen(unitName) * (CHAR_WIDTH * 2));
+    y += (char2Height + 6);
+    lWidth = (strlen(unitName) * char2Width);
     arduboy.drawPixel(x, y);
     arduboy.drawPixel(x + lWidth - 1, y);
     arduboy.drawFastHLine(x, y + 1, lWidth);
@@ -876,7 +888,7 @@ void printNameUnderline(int x, int y) {
 void printNameHex(int x, int y) {
   for (uint8_t i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++) {
     printHex8(x, y, unitName[i]);
-    x += CHAR_WIDTH * 3 + SMALL_SPACE;
+    x += charWidth * 3 + smallSpace;
   }
 }
 
@@ -884,7 +896,7 @@ void printNameHex(int x, int y) {
 void printNameDecimal(int x, int y) {
   for (uint8_t i = 0; i < ARDUBOY_UNIT_NAME_LEN; i++) {
     printDecimal8(x, y, unitName[i]);
-    x += CHAR_WIDTH * 3 + SMALL_SPACE;
+    x += charWidth * 3 + smallSpace;
   }
 }
 
@@ -903,7 +915,7 @@ void printIDHex(int x, int y) {
 // Print the unit ID as 2 decimal bytes at the given location
 void printIDDecimalBytes(int x, int y) {
   printDecimal8(x, y, unitID >> 8);
-  printDecimal8(x + CHAR_WIDTH * 3 + SMALL_SPACE, y, unitID & 0x00FF);
+  printDecimal8(x + charWidth * 3 + smallSpace, y, unitID & 0x00FF);
 }
 
 // Print the unit ID in decimal at the given location
@@ -916,17 +928,17 @@ void printIDDecimal(int x, int y) {
 void printIDBinary(int x, int y) {
   arduboy.setCursor(x, y);
   arduboy.print('b');
-  x += CHAR_WIDTH + SMALL_SPACE;
+  x += charWidth + smallSpace;
   for (char i = 3 * 4; i >= 0; i -= 4) {
     printBinaryNybble(x, y, static_cast<uint8_t>(unitID >> i));
-    x += CHAR_WIDTH * 4 + SMALL_SPACE;
+    x += charWidth * 4 + smallSpace;
   }
 }
 
 // Print the save prompt in reverse at the given location
 void printSavePrompt(int x, int y) {
   arduboy.fillRect(x - 2, y - 2,
-                   strlen_P(StrSaveQ) * CHAR_WIDTH + 3, CHAR_HEIGHT + 3);
+                   strlen_P(StrSaveQ) * charWidth + 3, charHeight + 3);
   arduboy.setTextColor(BLACK);
   arduboy.setTextBackground(WHITE);
   printStr_P(x, y, StrSaveQ);
@@ -1002,7 +1014,7 @@ void printBinaryNybble(int x, int y, uint8_t val) {
 // Print a constant string in large size and reversed
 void printStrLargeRev_P(int x, int y, const char* string) {
   arduboy.fillRect(x - 4, y - 4,
-                   strlen_P(string) * CHAR_WIDTH * 2 + 6, CHAR_HEIGHT * 2 + 6);
+                   strlen_P(string) * char2Width + 6, char2Height + 6);
   arduboy.setTextColor(BLACK);
   arduboy.setTextBackground(WHITE);
   arduboy.setTextSize(2);
@@ -1147,7 +1159,7 @@ void flagToggle() {
 
 // Start the button auto-repeat delay
 void startButtonDelay() {
-  delayCount = DELAY_FRAMES;
+  delayCount = delayFrames;
   repeating = false;
 }
 
@@ -1159,22 +1171,22 @@ void stopButtonRepeat() {
 
 // Calculate the X coordinate to center a string of the given length
 int centerStrLen(unsigned int len) {
-  return (WIDTH / 2) - (len * CHAR_WIDTH / 2);
+  return (WIDTH / 2) - (len * charWidth / 2);
 }
 
 // Calculate the X coordinate to center a string located in program memory
 int centerStr_P(const char* str) {
-  return (WIDTH / 2) - (strlen_P(str) * CHAR_WIDTH / 2);
+  return (WIDTH / 2) - (strlen_P(str) * charWidth / 2);
 }
 
 // Calculate the X coordinate to center a size 2 string located in
 // program memory
 int centerStr2_P(const char* str) {
-  return (WIDTH / 2) - (strlen_P(str) * CHAR_WIDTH);
+  return (WIDTH / 2) - (strlen_P(str) * char2Width / 2);
 }
 
 // Calculate the X coordinate to right justify a string in program memory
 int rightStr_P(const char* str) {
-  return WIDTH - (strlen_P(str) * CHAR_WIDTH) + 1;
+  return WIDTH - (strlen_P(str) * charWidth) + charSpacing;
 }
 
