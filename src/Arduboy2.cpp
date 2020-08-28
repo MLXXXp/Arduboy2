@@ -287,12 +287,10 @@ void Arduboy2Base::clear()
 
 void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
 {
-  #ifdef PIXEL_SAFE_MODE
   if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
   {
     return;
   }
-  #endif
 
   uint16_t row_offset;
   uint8_t bit;
@@ -331,12 +329,10 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
 // For reference, this is the C++ equivalent
 void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
 {
-  #ifdef PIXEL_SAFE_MODE
   if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
   {
     return;
   }
-  #endif
 
   uint16_t row_offset;
   uint8_t bit;

@@ -74,10 +74,6 @@
  */
 #define EEPROM_STORAGE_SPACE_START 16
 
-// If defined, it is safe to draw outside of the screen boundaries.
-// Pixels that would exceed the display limits will be ignored.
-#define PIXEL_SAFE_MODE
-
 // pixel colors
 #define BLACK 0  /**< Color value for an unlit pixel for draw functions. */
 #define WHITE 1  /**< Color value for a lit pixel for draw functions. */
