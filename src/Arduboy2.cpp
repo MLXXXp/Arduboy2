@@ -856,17 +856,18 @@ void Arduboy2Base::drawSlowXYBitmap
   }
 }
 
-
 // Helper for drawCompressed()
-struct Arduboy2Base::BitStreamReader
+class Arduboy2Base::BitStreamReader
 {
+ private:
   const uint8_t *source;
   uint16_t sourceIndex;
   uint8_t bitBuffer;
   uint8_t byteBuffer;
 
-  BitStreamReader(const uint8_t *source)
-    : source(source), sourceIndex(), bitBuffer(), byteBuffer()
+ public:
+  BitStreamReader(const uint8_t *bitmap)
+    : source(bitmap), sourceIndex(), bitBuffer(), byteBuffer()
   {
   }
 
@@ -875,17 +876,17 @@ struct Arduboy2Base::BitStreamReader
     uint16_t result = 0;
     for (uint16_t i = 0; i < bitCount; i++)
     {
-      if (this->bitBuffer == 0)
+      if (bitBuffer == 0)
       {
-        this->bitBuffer = 0x1;
-        this->byteBuffer = pgm_read_byte(&this->source[this->sourceIndex]);
-        ++this->sourceIndex;
+        bitBuffer = 0x1;
+        byteBuffer = pgm_read_byte(&source[sourceIndex]);
+        ++sourceIndex;
       }
 
-      if ((this->byteBuffer & this->bitBuffer) != 0)
+      if ((byteBuffer & bitBuffer) != 0)
         result |= (1 << i);
 
-      this->bitBuffer <<= 1;
+      bitBuffer <<= 1;
     }
     return result;
   }
@@ -894,7 +895,7 @@ struct Arduboy2Base::BitStreamReader
 void Arduboy2Base::drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color)
 {
   // set up decompress state
-  BitStreamReader cs = BitStreamReader(bitmap);
+  BitStreamReader cs(bitmap);
 
   // read header
   int width = (int)cs.readBits(8) + 1;

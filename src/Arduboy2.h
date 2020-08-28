@@ -1376,7 +1376,7 @@ class Arduboy2Base : public Arduboy2Core
                         uint8_t sides, int16_t delta, uint8_t color = WHITE);
 
   // helper for drawCompressed()
-  struct BitStreamReader;
+  class BitStreamReader;
 
   // swap the values of two int16_t variables passed by reference
   void swapInt16(int16_t& a, int16_t& b);
