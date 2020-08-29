@@ -441,9 +441,18 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * The entire contents of the screen buffer are cleared to BLACK.
    *
-   * \see display(bool)
+   * \see display(bool) fillScreen()
    */
   void clear();
+
+  /** \brief
+   * Fill the screen buffer with the specified color.
+   *
+   * \param color The fill color (optional; defaults to WHITE).
+   *
+   * \see clear()
+   */
+  void fillScreen(uint8_t color = WHITE);
 
   /** \brief
    * Copy the contents of the display buffer to the display.
@@ -507,6 +516,8 @@ class Arduboy2Base : public Arduboy2Core
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to WHITE).
+   *
+   * \see fillCircle()
    */
   void drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
 
@@ -517,6 +528,8 @@ class Arduboy2Base : public Arduboy2Core
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to WHITE).
+   *
+   * \see drawCircle()
    */
   void fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
 
@@ -531,19 +544,10 @@ class Arduboy2Base : public Arduboy2Core
    * Draw a line from the start point to the end point using
    * Bresenham's algorithm.
    * The start and end points can be at any location with respect to the other.
+   *
+   * \see drawFastHLine() drawFastVLine()
    */
   void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color = WHITE);
-
-  /** \brief
-   * Draw a rectangle of a specified width and height.
-   *
-   * \param x The X coordinate of the upper left corner.
-   * \param y The Y coordinate of the upper left corner.
-   * \param w The width of the rectangle.
-   * \param h The height of the rectangle.
-   * \param color The color of the pixel (optional; defaults to WHITE).
-   */
-  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
   /** \brief
    * Draw a vertical line.
@@ -552,6 +556,8 @@ class Arduboy2Base : public Arduboy2Core
    * \param y The Y coordinate of the upper start point.
    * \param h The height of the line.
    * \param color The color of the line (optional; defaults to WHITE).
+   *
+   * \see drawFastHLine() drawLine()
    */
   void drawFastVLine(int16_t x, int16_t y, uint8_t h, uint8_t color = WHITE);
 
@@ -562,8 +568,23 @@ class Arduboy2Base : public Arduboy2Core
    * \param y The Y coordinate of the left start point.
    * \param w The width of the line.
    * \param color The color of the line (optional; defaults to WHITE).
+   *
+   * \see drawFastVLine() drawLine()
    */
   void drawFastHLine(int16_t x, int16_t y, uint8_t w, uint8_t color = WHITE);
+
+  /** \brief
+   * Draw a rectangle of a specified width and height.
+   *
+   * \param x The X coordinate of the upper left corner.
+   * \param y The Y coordinate of the upper left corner.
+   * \param w The width of the rectangle.
+   * \param h The height of the rectangle.
+   * \param color The color of the pixel (optional; defaults to WHITE).
+   *
+   * \see fillRect() drawRoundRect() fillRoundRect()
+   */
+  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
   /** \brief
    * Draw a filled-in rectangle of a specified width and height.
@@ -573,15 +594,10 @@ class Arduboy2Base : public Arduboy2Core
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to WHITE).
+   *
+   * \see drawRect() drawRoundRect() fillRoundRect()
    */
   void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color = WHITE);
-
-  /** \brief
-   * Fill the screen buffer with the specified color.
-   *
-   * \param color The fill color (optional; defaults to WHITE).
-   */
-  void fillScreen(uint8_t color = WHITE);
 
   /** \brief
    * Draw a rectangle with rounded corners.
@@ -592,6 +608,8 @@ class Arduboy2Base : public Arduboy2Core
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to WHITE).
+   *
+   * \see fillRoundRect() drawRect() fillRect()
    */
   void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color = WHITE);
 
@@ -604,6 +622,8 @@ class Arduboy2Base : public Arduboy2Core
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to WHITE).
+   *
+   * \see drawRoundRect() drawRect() fillRect()
    */
   void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color = WHITE);
 
@@ -617,6 +637,8 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to the others.
+   *
+   * \see fillTriangle()
    */
   void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
 
@@ -630,8 +652,10 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to the others.
+   *
+   * \see drawTriangle()
    */
-  void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
+  void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
 
   /** \brief
    * Draw a bitmap from an array in program memory.
@@ -654,6 +678,8 @@ class Arduboy2Base : public Arduboy2Core
    * least significant bit at the top.
    *
    * The array must be located in program memory by using the PROGMEM modifier.
+   *
+   * \see drawCompressed() drawSlowXYBitmap() Sprites
    */
   static void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
@@ -683,6 +709,8 @@ class Arduboy2Base : public Arduboy2Core
    * slower than `drawBitmap()`, which uses bitmaps that are stored in a format
    * that allows them to be directly written to the screen. It is recommended
    * you use `drawBitmap()` when possible.
+   *
+   * \see drawBitmap() drawCompressed()
    */
   void drawSlowXYBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
 
@@ -709,6 +737,8 @@ class Arduboy2Base : public Arduboy2Core
    * C source code for a command line program named `Cabi`, which can convert
    * a PNG bitmap image file to source code suitable for use with
    * `drawCompressed()`, is included in the `extras` directory of the library.
+   *
+   * \see drawBitmap() drawSlowXYBitmap()
    */
   static void drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color = WHITE);
 
@@ -755,7 +785,7 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * Set the frame rate, in frames per second, used by `nextFrame()` to update
    * frames at a given rate. If this function or `setFrameDuration()`
-   * isn't used, the default rate will be 60 (actually 62.5, see note below).
+   * isn't used, the default rate will be 60 (actually 62.5; see note below).
    *
    * Normally, the frame rate would be set to the desired value once, at the
    * start of the game, but it can be changed at any time to alter the frame
@@ -802,7 +832,8 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \details
    * When this function returns `true`, the amount of time has elapsed to
-   * display the next frame, as specified by `setFrameRate()`.
+   * display the next frame, as specified by `setFrameRate()` or
+   * `setFrameDuration()`.
    *
    * This function will normally be called at the start of the rendering loop
    * which would wait for `true` to be returned before rendering and
@@ -834,18 +865,20 @@ class Arduboy2Base : public Arduboy2Core
    * development of a sketch. It does the same thing as `nextFrame()` but
    * additionally will light the yellow TX LED (at the bottom, to the left
    * of the USB connector) whenever a frame takes longer to generate than the
-   * time allotted per frame, as determined by the `setFrameRate()` function.
+   * time allotted per frame, as determined by the `setFrameRate()` or
+   * `setFrameDuration()` function.
    *
    * Therefore, whenever the TX LED comes on (while not communicating over
    * USB), it indicates that the sketch is running slower than the desired
-   * rate set by `setFrameRate()`. In this case the developer may wish to set
-   * a slower frame rate, or reduce or optimize the code for such frames.
+   * rate set by `setFrameRate()` or `setFrameDuration()`. In this case the
+   * developer may wish to set a slower frame rate, or reduce or optimize the
+   * code for such frames.
    *
    * \note
    * Once a sketch is ready for release, it would be expected that
    * `nextFrameDEV()` calls be restored to `nextFrame()`.
    *
-   * \see nextFrame() cpuLoad() setFrameRate()
+   * \see nextFrame() cpuLoad() setFrameRate() setFrameDuration()
    */
   bool nextFrameDEV();
 
@@ -872,7 +905,7 @@ class Arduboy2Base : public Arduboy2Core
    * }
    * \endcode
    *
-   * \see setFrameRate() nextFrame()
+   * \see setFrameRate() setFrameDuration() nextFrame()
    */
   bool everyXFrames(uint8_t frames);
 
@@ -895,7 +928,7 @@ class Arduboy2Base : public Arduboy2Core
    * that the frame rate should be made slower or the frame processing code
    * should be optimized to run faster.
    *
-   * \see setFrameRate() nextFrame()
+   * \see nextFrameDEV() setFrameRate() setFrameDuration() nextFrame()
    */
   int cpuLoad();
 
