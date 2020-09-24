@@ -337,7 +337,6 @@ class Arduboy2Core : public Arduboy2NoUSB
   friend class Arduboy2Ex;
 
   public:
-    Arduboy2Core();
 
     /** \brief
      * Idle the CPU to save power.
@@ -797,14 +796,21 @@ class Arduboy2Core : public Arduboy2NoUSB
      * \details
      * This function initializes the display, buttons, etc.
      *
-     * This function is called by begin() so isn't normally called within a
+     * This function is called by `begin()` so isn't normally called within a
      * sketch. However, in order to free up some code space, by eliminating
      * some of the start up features, it can be called in place of begin().
-     * The functions that begin() would call after boot() can then be called
-     * to add back in some of the start up features, if desired.
-     * See the README file or documentation on the main page for more details.
+     * The functions that `begin()` would call after `boot()` can then be
+     * called to add back in some of the start up features as space permits.
      *
-     * \see Arduboy2Base::begin()
+     * See the README file or main page, in section
+     * _Substitute or remove boot up features_, for more details.
+     *
+     * \warning
+     * If this function is used, it is recommended that at least `flashlight()`
+     * or `safeMode()` be called after it to provide a means to upload a new
+     * sketch if the bootloader "magic number" problem is encountered.
+     *
+     * \see Arduboy2::begin() Arduboy2Base::flashlight() safeMode()
      */
     static void boot();
 
@@ -818,8 +824,8 @@ class Arduboy2Core : public Arduboy2NoUSB
      * sketch, for sketches that interfere with the bootloader "magic number".
      * The problem occurs with certain sketches that use large amounts of RAM.
      *
-     * This function should be called after `boot()` in sketches that
-     * potentially could cause the problem.
+     * This function should be called after `boot()` in sketches that don't
+     * call `flashlight()`.
      *
      * It is intended to replace the `flashlight()` function when more
      * program space is required. If possible, it is more desirable to use

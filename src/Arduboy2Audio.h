@@ -80,11 +80,8 @@ class Arduboy2Audio
    *
    * \details
    * The speaker is initialized based on the current mute setting saved in
-   * system EEPROM. This function is called by `Arduboy2Base::begin()` so it
-   * isn't normally required to call it within a sketch. However, if
-   * `Arduboy2Core::boot()` is used instead of `Arduboy2Base::begin()` and the
-   * sketch includes sound, then this function should be called after `boot()`.
-   */
+   * system EEPROM.
+  */
   static void begin();
 
   /** \brief

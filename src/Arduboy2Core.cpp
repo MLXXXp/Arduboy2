@@ -13,8 +13,6 @@
 //========== class Arduboy2Core ==========
 //========================================
 
-Arduboy2Core::Arduboy2Core() { }
-
 // Commands sent to the OLED display to initialize it
 const PROGMEM uint8_t Arduboy2Core::lcdBootProgram[] = {
   // boot defaults are commented out but left here in case they

@@ -12,20 +12,40 @@
 
 uint8_t Arduboy2Base::sBuffer[];
 
-Arduboy2Base::Arduboy2Base()
-{
-  currentButtonState = 0;
-  previousButtonState = 0;
-  // frame management
-  setFrameDuration(16);
-  frameCount = 0;
-  justRendered = false;
-}
+uint16_t Arduboy2Base::frameCount = 0;
+
+uint8_t Arduboy2Base::eachFrameMillis = 16;
+uint8_t Arduboy2Base::thisFrameStart;
+uint8_t Arduboy2Base::lastFrameDurationMs;
+bool Arduboy2Base::justRendered = false;
+
+uint8_t Arduboy2Base::currentButtonState = 0;
+uint8_t Arduboy2Base::previousButtonState = 0;
 
 // functions called here should be public so users can create their
 // own init functions if they need different behavior than `begin`
-// provides by default
+// provides by default.
+//
+// This code and it's documentation should be kept in sync with
+// Aruduboy2::begin()
 void Arduboy2Base::begin()
+{
+  beginDoFirst();
+
+  bootLogo();
+  // alternative logo functions. Work the same as bootLogo() but may reduce
+  // memory size if the sketch uses the same bitmap drawing function or
+  // `Sprites`/`SpritesB` class
+//  bootLogoCompressed();
+//  bootLogoSpritesSelfMasked();
+//  bootLogoSpritesOverwrite();
+//  bootLogoSpritesBSelfMasked();
+//  bootLogoSpritesBOverwrite();
+
+  waitNoButtons(); // wait for all buttons to be released
+}
+
+void Arduboy2Base::beginDoFirst()
 {
   boot(); // raw hardware
 
@@ -37,17 +57,6 @@ void Arduboy2Base::begin()
   systemButtons();
 
   audio.begin();
-
-  bootLogo();
-  // alternative logo functions. Work the same as bootLogo() but may reduce
-  // memory size if the sketch uses the same bitmap drawing function
-//  bootLogoCompressed();
-//  bootLogoSpritesSelfMasked();
-//  bootLogoSpritesOverwrite();
-//  bootLogoSpritesBSelfMasked();
-//  bootLogoSpritesBOverwrite();
-
-  waitNoButtons(); // wait for all buttons to be released
 }
 
 void Arduboy2Base::flashlight()
@@ -159,12 +168,12 @@ void Arduboy2Base::drawLogoSpritesBOverwrite(int16_t y)
 
 // bootLogoText() should be kept in sync with bootLogoShell()
 // if changes are made to one, equivalent changes should be made to the other
-void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
+bool Arduboy2Base::bootLogoShell(void (&drawLogo)(int16_t))
 {
   bool showLEDs = readShowBootLogoLEDsFlag();
 
   if (!readShowBootLogoFlag()) {
-    return;
+    return false;
   }
 
   if (showLEDs) {
@@ -174,7 +183,7 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
   for (int16_t y = -15; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
       digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
-      return;
+      return false;
     }
 
     if (showLEDs && y == 4) {
@@ -197,14 +206,12 @@ void Arduboy2Base::bootLogoShell(void (*drawLogo)(int16_t))
   delayShort(400);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
 
-  bootLogoExtra();
+  return true;
 }
 
-// Virtual function overridden by derived class
-void Arduboy2Base::bootLogoExtra() { }
-
 // wait for all buttons to be released
-void Arduboy2Base::waitNoButtons() {
+void Arduboy2Base::waitNoButtons()
+{
   do {
     delayShort(50); // simple button debounce
   } while (buttonsState());
@@ -1146,15 +1153,83 @@ void Arduboy2Base::swapInt16(int16_t& a, int16_t& b)
 //========== class Arduboy2 ==========
 //====================================
 
-Arduboy2::Arduboy2()
+int16_t Arduboy2::cursor_x = 0;
+int16_t Arduboy2::cursor_y = 0;
+uint8_t Arduboy2::textColor = WHITE;
+uint8_t Arduboy2::textBackground = BLACK;
+uint8_t Arduboy2::textSize = 1;
+bool Arduboy2::textWrap = false;
+bool Arduboy2::textRaw = false;
+
+// functions called here should be public so users can create their
+// own init functions if they need different behavior than `begin`
+// provides by default.
+//
+// This code and it's documentation should be kept in sync with
+// Aruduboy2Base::begin()
+void Arduboy2::begin()
 {
-  cursor_x = 0;
-  cursor_y = 0;
-  textColor = 1;
-  textBackground = 0;
-  textSize = 1;
-  textWrap = 0;
-  textRaw = 0;
+  beginDoFirst();
+
+  bootLogo();
+  // alternative logo functions. Work the same as bootLogo() but may reduce
+  // memory size if the sketch uses the same bitmap drawing function or
+  // `Sprites`/`SpritesB` class
+//  bootLogoCompressed();
+//  bootLogoSpritesSelfMasked();
+//  bootLogoSpritesOverwrite();
+//  bootLogoSpritesBSelfMasked();
+//  bootLogoSpritesBOverwrite();
+
+  waitNoButtons();
+}
+
+void Arduboy2::bootLogo()
+{
+  if (bootLogoShell(drawLogoBitmap))
+  {
+    bootLogoExtra();
+  }
+}
+
+void Arduboy2::bootLogoCompressed()
+{
+  if (bootLogoShell(drawLogoCompressed))
+  {
+    bootLogoExtra();
+  }
+}
+
+void Arduboy2::bootLogoSpritesSelfMasked()
+{
+  if (bootLogoShell(drawLogoSpritesSelfMasked))
+  {
+    bootLogoExtra();
+  }
+}
+
+void Arduboy2::bootLogoSpritesOverwrite()
+{
+  if (bootLogoShell(drawLogoSpritesOverwrite))
+  {
+    bootLogoExtra();
+  }
+}
+
+void Arduboy2::bootLogoSpritesBSelfMasked()
+{
+  if (bootLogoShell(drawLogoSpritesBSelfMasked))
+  {
+    bootLogoExtra();
+  }
+}
+
+void Arduboy2::bootLogoSpritesBOverwrite()
+{
+  if (bootLogoShell(drawLogoSpritesBOverwrite))
+  {
+    bootLogoExtra();
+  }
 }
 
 // bootLogoText() should be kept in sync with bootLogoShell()
@@ -1171,7 +1246,7 @@ void Arduboy2::bootLogoText()
     digitalWriteRGB(RED_LED, RGB_ON);
   }
 
-  for (int16_t y = -16; y <= 24; y++) {
+  for (int16_t y = -15; y <= 24; y++) {
     if (pressed(RIGHT_BUTTON)) {
       digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF); // all LEDs off
       return;

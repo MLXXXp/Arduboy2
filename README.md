@@ -4,7 +4,7 @@ The Arduboy2 library is maintained in a git repository hosted on [GitHub](https:
 
 https://github.com/MLXXXp/Arduboy2
 
-The **Arduboy2** library is a fork of the [Arduboy library](https://github.com/Arduboy/Arduboy), which provides a standard *application programming interface* (API) to the display, buttons and other hardware of the Arduino based [Arduboy miniature game system](https://www.arduboy.com/).
+The **Arduboy2** library is a fork of the [Arduboy library](https://github.com/Arduboy/Arduboy), which provides a standard *application programming interface* (API) to the display, buttons and other hardware of the Arduino based [Arduboy miniature game system](https://www.arduboy.com/). The original *Arduboy* library is no longer being maintained.
 
 The name *Arduboy2* doesn't indicate that it's for a new "next generation" of the Arduboy hardware. The name was changed so it can coexist in the Arduino IDE with the current *Arduboy* library, without conflict. This way, existing sketches can continue to use the *Arduboy* library and class, without changes, while new sketches can be written (or old ones modified) to use and take advantage of the capabilities of the *Arduboy2* class and library.
 
@@ -47,9 +47,10 @@ A user settable *unit name* can be saved in system EEPROM memory. If set, this n
 
 Once the logo display sequence completes, the sketch continues.
 
-For developers who wish to quickly begin testing, or impatient users who want to go strait to playing their game, the boot logo sequence can be bypassed by holding the *RIGHT* button while powering up, and then releasing it. Alternatively, the *RIGHT* button can be pressed while the logo is scrolling down.
+**Note:**
 
-For users who wish to always disable the displaying of the boot logo sequence on boot up, a flag in system EEPROM is available for this. The included *SetSystemEEPROM* example sketch can be used to set this flag.
+- For developers who wish to quickly begin testing, or impatient users who want to go strait to playing their game, the boot logo sequence can be bypassed by holding the *RIGHT* button while powering up, and then releasing it. Alternatively, the *RIGHT* button can be pressed while the logo is scrolling down.
+- For users who wish to always disable the displaying of the boot logo sequence on boot up, a flag in system EEPROM is available for this. The included *SetSystemEEPROM* example sketch can be used to set this flag.
 
 ### "Flashlight" mode
 
@@ -165,63 +166,99 @@ with
 Arduboy2Base arduboy;
 ```
 
-#### Remove boot up features
+#### Substitute or remove boot up features
 
-As previously described, the *begin()* function includes features that are intended to be available to all sketches during boot up. However, if you're looking to gain some code space, you can call *boot()* instead of *begin()*. This will initialize the system but not include any of the extra boot up features. If desired, you can then add back in any of these features by calling the functions that perform them. You will have to trade off between the desirability of having a feature and how much memory you can recover by not including it.
+As previously described in the _Start up features_ section, the *begin()* function includes features that are intended to be available to all sketches during boot up. However, if you're looking to gain some code space, you can call *boot()* instead of *begin()*. This will initialize the system but not include any of the extra boot up features. You can then add back in any of these features by calling the functions that perform them. You will have to trade off between the desirability of having a feature and how much memory you can recover by not including it.
 
-A good way to use *boot()* instead of *begin()* is to copy the code from the body of the *begin()* function, in file *Arduboy2.cpp*, into your sketch and then edit it to retain the *boot()* call and any feature calls desired.
+You should at least call either *flashlight()* or *safeMode()* as a safeguard to allow uploading a new sketch when the bootloader "magic key" problem is an issue.
 
-As of this writing, the begin function is:
+Here is a template that provides the equivalent of *begin()*
 
 ```cpp
-void Arduboy2Base::begin()
+void setup()
 {
-  boot(); // raw hardware
+  // Required to initialize the hardware.
+  arduboy.boot();
 
-  display(); // blank the display (sBuffer is global, so cleared automatically)
+  // This clears the display. (The screen buffer will be all zeros)
+  // It may not be needed if something clears the display later on but
+  // "garbage" will be displayed if systemButtons() is used without it.
+  arduboy.display();
 
-  flashlight(); // light the RGB LED and screen if UP button is being held.
+  // flashlight() or safeMode() should always be included to provide
+  // a method of recovering from the bootloader "magic key" problem.
+  arduboy.flashlight();
+//  arduboy.safeMode();
 
-  // check for and handle buttons held during start up for system control
-  systemButtons();
+  // This allows sound to be turned on or muted. If the sketch provides
+  // its own way of toggling sound, or doesn't produce any sound, this
+  // function may not be required.
+  arduboy.systemButtons();
 
-  audio.begin();
+  // This is required to initialize the speaker. It's not needed if
+  // the sketch doesn't produce any sounds.
+  arduboy.audio.begin();
 
-  bootLogo();
+  // This displays the boot logo sequence but note that the logo can
+  // be suppressed by the user, by pressing the RIGHT button or using
+  // a system EEPROM setting. If not removed entirely, an alternative
+  // bootLogo...() function may save some memory.
+  arduboy.bootLogo();
+//  arduboy.bootLogoCompressed();
+//  arduboy.bootLogoSpritesSelfMasked();
+//  arduboy.bootLogoSpritesOverwrite();
+//  arduboy.bootLogoSpritesBSelfMasked();
+//  arduboy.bootLogoSpritesBOverwrite();
+//  arduboy.bootLogoText();
 
-  waitNoButtons(); // wait for all buttons to be released
+  // Wait for all buttons to be released, in case a pressed one might
+  // cause problems by being acted upon when the actual sketch code
+  // starts. If neither systemButtons() nor bootLogo() is kept, this
+  // function isn't required.
+  arduboy.waitNoButtons();
+
+// Additional setup code...
+
 }
 ```
 
-To incorporate it into your sketch just keep *boot()* and whatever feature calls are desired, if any. Comment out or delete the rest. Remember to add the class object name in front of each function call, since they're now being called from outside the class itself. If your sketch uses sound, it's a good idea to keep the call to *audio.begin()*.
-
-For example: Let's say a sketch has its own code to enable, disable and save the *audio on/off* setting, and wants to keep the *flashlight* function. In *setup()* it could replace *begin()* with:
-
-```cpp
-  arduboy.boot(); // raw hardware
-
-// *** This particular sketch clears the display soon, so it doesn't need this:
-//  display(); // blank the display (sBuffer is global, so cleared automatically)
-
-  arduboy.flashlight(); // light the RGB LED and screen if UP button is being held.
-
-  // check for and handle buttons held during start up for system control
-//  systemButtons();
-
-  arduboy.audio.begin();
-
-//  bootLogo();
-
-//  waitNoButtons(); // wait for all buttons to be released
-```
-
-This saves whatever code *display()*, *systemButtons()*, *bootLogo()* and *waitNoButtons()* would use.
-
 There are a few functions provided that are roughly equivalent to the standard functions used by *begin()* but which use less code space.
 
-- *bootLogoCompressed()*, *bootLogoSpritesSelfMasked()*, *bootLogoSpritesOverwrite()*, *bootLogoSpritesBSelfMasked()* and *bootLogoSpritesBOverwrite()* will do the same as *bootLogo()* but will use *drawCompressed()*, or *Sprites* / *SpritesB* class *drawSelfMasked()* or *drawOverwrite()* functions respectively, instead of *drawBitmask()*, to render the logo. If the sketch uses one of these functions, then using the boot logo function that also uses it may reduce code size. It's best to try each of them to see which one produces the smallest size.
+- *bootLogoCompressed()*, *bootLogoSpritesSelfMasked()*, *bootLogoSpritesOverwrite()*, *bootLogoSpritesBSelfMasked()* and *bootLogoSpritesBOverwrite()* will do the same as *bootLogo()* but will use *drawCompressed()*, or *Sprites* / *SpritesB* class *drawSelfMasked()* or *drawOverwrite()* functions respectively, instead of *drawBitmap()*, to render the logo. If the sketch uses one of these functions, then using the boot logo function that also uses it may reduce code size. It's best to try each of them to see which one produces the smallest size.
 - *bootLogoText()* can be used in place *bootLogo()* in the case where the sketch uses text functions. It renders the logo as text instead of as a bitmap (so doesn't look as good).
-- *safeMode()* can be used in place of *flashlight()* for cases where it's needed to allow uploading a new sketch when the bootloader "magic key" problem is an issue. It only lights the red RGB LED, so you don't get the bright light that is the primary purpose of *flashlight()*.
+- *safeMode()* can be used in place of *flashlight()* as a safeguard to allow uploading a new sketch when the bootloader "magic key" problem is an issue. It only lights the red RGB LED, so you don't get the bright light that is the primary purpose of *flashlight()*.
+
+It is also possible to replace the boot logo drawing function with one that uses a different bitmap rendering function used elsewhere in your sketch. This may save memory by using this bitmap function for the logo, instead of the logo using a separate function that only ends up being used once. For example, if you use the *ArdBitmap* library's *drawCompressed()* function in your sketch, you could convert the **ARDUBOY** logo to *Ardbitmap* compressed format, and create *drawLogoArdCompressed()* and *bootLogoArdCompressed()* functions:
+
+```cpp
+void drawLogoArdCompressed(int16_t y)
+{
+  ardbitmap.drawCompressed(20, y, arduboy_logo_ardbitmap,
+                           WHITE, ALIGN_CENTER, MIRROR_NONE);
+}
+
+void bootLogoArdCompressed()
+{
+  if (arduboy.bootLogoShell(drawLogoArdCompressed))
+  {
+    arduboy.bootLogoExtra();
+  }
+}
+
+void setup()
+{
+  arduboy.beginDoFirst();
+  bootLogoArdCompressed();
+  arduboy.waitNoButtons();
+
+// Additional setup code...
+
+}
+```
+
+The **ARDUBOY** logo, in PNG format, is included in the library repository as file:
+
+`extras/assets/arduboy_logo.png`
 
 #### Use the SpritesB class instead of Sprites
 
@@ -245,6 +282,8 @@ The *ARDUBOY_NO_USB* macro is used to eliminate the USB code. The *exitToBootloa
 ----------
 
 ## What's different from Arduboy library V1.1
+
+(These notes apply to when the *Arduboy2* library was first released. There will have been many additional changes, enhancements and features added to *Arduboy2* since then.)
 
 A main goal of Arduboy2 is to provide ways in which more code space can be freed for use by large sketches. Another goal is to allow methods other than the *tunes* functions to be used to produce sounds. Arduboy2 remains substantially compatible with [Arduboy library V1.1](https://github.com/Arduboy/Arduboy/releases/tag/v1.1), which was the latest stable release at the time of the fork. Arduboy2 is based on the code targeted for Arduboy library V1.2, which was still in development and unreleased at the time it was forked.
 
@@ -424,13 +463,13 @@ The benefit of using *ArduboyTones* would be reduced code size and possibly easi
 
 ### Sketch uses the beginNoLogo() function instead of begin()
 
-The *beginNoLogo()* function has been removed. Instead, *boot()* can be used with additional functions following it to add back in desired boot functionality. See the information above, under the heading *Remove boot up features*, for more details. Assuming the object is named *arduboy*, a direct replacement for *beginNoLogo()* would be:
+The *beginNoLogo()* function has been removed. *beginNoLogo()* can be replaced with *begin()*, since users can choose to suppress the logo sequence using the *RIGHT* button or by setting a flag in system EEPROM.
+
+If using *begin()* results in the sketch program memory size being too large, *beginDoFirst()* or *boot()* can be used with additional functions following it to add back in desired boot functionality. See the information above, under the heading *Substitute or remove boot up features*, for more details. Assuming the object is named *arduboy*, an equivalent replacement for *beginNoLogo()* would be:
 
 ```cpp
-  arduboy.boot();
-  arduboy.display();
-  arduboy.flashlight();
-  arduboy.audio.begin();
+  arduboy.beginDoFirst();
+  arduboy.waitNoButtons();
 ```
 
 ----------

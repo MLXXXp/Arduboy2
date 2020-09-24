@@ -26,6 +26,7 @@ blank	KEYWORD2
 boot	KEYWORD2
 bootLogo	KEYWORD2
 bootLogoCompressed	KEYWORD2
+bootLogoExtra	KEYWORD2
 bootLogoShell	KEYWORD2
 bootLogoSpritesBOverwrite	KEYWORD2
 bootLogoSpritesBSelfMasked	KEYWORD2
