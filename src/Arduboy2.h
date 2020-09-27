@@ -1054,7 +1054,7 @@ class Arduboy2Base : public Arduboy2Core
    * a frame rate of 60 or lower (or possibly somewhat higher), should be
    * sufficient.
    *
-   * \see justPressed() justReleased()
+   * \see justPressed() justReleased() currentButtonState previousButtonState
    */
   static void pollButtons();
 
@@ -1377,6 +1377,76 @@ class Arduboy2Base : public Arduboy2Core
   static uint16_t frameCount;
 
   /** \brief
+   * Used by `pollButtons()` to hold the current button state.
+   *
+   * \details
+   * Holds the last button state read by the `pollButtons()` function.
+   *
+   * A sketch normally does not need to read or manipulate this variable and
+   * just lets `pollButtons()` handle it. Access to it is provided for special
+   * circumstances. See `previousButtonState` for further discussion.
+   *
+   * \see previousButtonState pollButtons() justPressed() justReleased()
+   */
+  static uint8_t currentButtonState;
+
+  /** \brief
+   * Used by `pollButtons()` to hold the previous button state.
+   *
+   * \details
+   * Holds the button state saved by the `pollButtons()` function from the
+   * previous to last call to it.
+   *
+   * A sketch normally does not need to read or manipulate this variable and
+   * just lets `pollButtons()` handle it. Access to it is provided for special
+   * circumstances.
+   *
+   * For example, the time between calls to `pollButtons()` must be long
+   * enough to allow sufficient time to "debounce" the buttons.
+   * `pollButtons()` is normally called once every frame but at a high frame
+   * rate the time between frames may be too short for this. Calling
+   * `pollButtons()` every 2nd frame could provide a long enough time but
+   * then a call to `justPressed()` in each frame would make it look like a
+   * button was pressed twice. To remedy this, after `justPressed()` detects
+   * a press, `previousButtonState` could be modified to acknowledge the
+   * button press.
+   *
+   * \code{.cpp}
+   * void setup() {
+   *   arduboy.begin();
+   *   arduboy.setFrameRate(120); // too fast for button debounce
+   * }
+   *
+   * void loop() {
+   *   if (!arduboy.nextFrame()) {
+   *     return;
+   *   }
+   *
+   *   if (arduboy.everyXFrames(2)) { // only poll every 2nd frame
+   *     arduboy.pollButtons();       // to slow down poll frequency
+   *   }
+   *
+   *   if (justPressedOnce(A_BUTTON)) {
+   *     // handle button press as normal...
+   *   }
+   *
+   *   // remainder of loop() code...
+   * }
+   *
+   * bool justPressedOnce(uint8_t button) {
+   *   bool pressed = arduboy.justPressed(button);
+   *   if (pressed) {
+   *     arduboy.previousButtonState |= button; // set state as pressed
+   *   }
+   *   return pressed;
+   * }
+   * \endcode
+   *
+   * \see currentButtonState pollButtons() justPressed() justReleased()
+   */
+  static uint8_t previousButtonState;
+
+  /** \brief
    * The display buffer array in RAM.
    *
    * \details
@@ -1439,10 +1509,6 @@ class Arduboy2Base : public Arduboy2Core
 
   // swap the values of two int16_t variables passed by reference
   static void swapInt16(int16_t& a, int16_t& b);
-
-  // For button handling
-  static uint8_t currentButtonState;
-  static uint8_t previousButtonState;
 
   // For frame functions
   static uint8_t eachFrameMillis;

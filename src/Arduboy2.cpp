@@ -14,13 +14,13 @@ uint8_t Arduboy2Base::sBuffer[];
 
 uint16_t Arduboy2Base::frameCount = 0;
 
+uint8_t Arduboy2Base::currentButtonState = 0;
+uint8_t Arduboy2Base::previousButtonState = 0;
+
 uint8_t Arduboy2Base::eachFrameMillis = 16;
 uint8_t Arduboy2Base::thisFrameStart;
 uint8_t Arduboy2Base::lastFrameDurationMs;
 bool Arduboy2Base::justRendered = false;
-
-uint8_t Arduboy2Base::currentButtonState = 0;
-uint8_t Arduboy2Base::previousButtonState = 0;
 
 // functions called here should be public so users can create their
 // own init functions if they need different behavior than `begin`
