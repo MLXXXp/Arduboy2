@@ -138,6 +138,21 @@ drawOverwrite	KEYWORD2
 drawPlusMask	KEYWORD2
 drawSelfMasked	KEYWORD2
 
+##### Public variables #####
+
+audio	KEYWORD2
+arduboy_logo	KEYWORD2
+arduboy_logo_compressed	KEYWORD2
+arduboy_logo_sprite	KEYWORD2
+currentButtonState	KEYWORD2
+font5x7	KEYWORD2
+frameCount	KEYWORD2
+previousButtonState	KEYWORD2
+sBuffer	KEYWORD2
+
+# Arduboy2Beep classes
+duration	KEYWORD2
+
 #######################################
 # Constants (LITERAL1)
 #######################################
