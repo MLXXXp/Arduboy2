@@ -164,6 +164,9 @@ https://creativecommons.org/publicdomain/zero/1.0/
 BeepDemo example sketch:
 By Scott Allen
 
+FontDemo example sketch:
+By Scott Allen
+
 RGBled example sketch:
 By Scott Allen
 
