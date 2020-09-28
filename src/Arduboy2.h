@@ -34,7 +34,7 @@
  * #endif
  * \endcode
  */
-#define ARDUBOY_LIB_VER 50300
+#define ARDUBOY_LIB_VER 60000
 
 // EEPROM settings
 /** \brief

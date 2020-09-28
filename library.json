@@ -7,7 +7,7 @@
         "type": "git",
         "url": "https://github.com/MLXXXp/Arduboy2.git"
     },
-    "version": "5.3.0",
+    "version": "6.0.0",
     "export":
     {
         "exclude": "extras"
