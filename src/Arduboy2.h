@@ -690,7 +690,7 @@ class Arduboy2Base : public Arduboy2Core
    * \param y The Y coordinate of the top left pixel affected by the bitmap.
    * \param bitmap A pointer to the bitmap array in program memory.
    * \param w The width of the bitmap in pixels.
-   * \param h The height of the bitmap in pixels.
+   * \param h The height of the bitmap in pixels. Must be a multiple of 8.
    * \param color The color of pixels for bits set to 1 in the bitmap.
    *              If the value is INVERT, bits set to 1 will invert the
    *              corresponding pixel. (optional; defaults to WHITE).
@@ -701,7 +701,8 @@ class Arduboy2Base : public Arduboy2Core
    * corresponding pixel will be left unchanged.
    *
    * Each byte in the array specifies a vertical column of 8 pixels, with the
-   * least significant bit at the top.
+   * least significant bit at the top. The height of the image must be a
+   * multiple of 8 pixels (8, 16, 24, 32, ...). The width can be any size.
    *
    * The array must be located in program memory by using the PROGMEM modifier.
    *
@@ -752,6 +753,9 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * Draw a bitmap starting at the given coordinates using an array that has
    * been compressed using an RLE algorthm implemented by Team A.R.G.
+   *
+   * The height of the image must be a multiple of 8 pixels (8, 16, 24,
+   * 32, ...). The width can be any size.
    *
    * Bits set to 1 in the provided bitmap array (after decoding) will have
    * their corresponding pixel set to the specified color. For bits set to 0
