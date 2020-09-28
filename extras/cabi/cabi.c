@@ -11,7 +11,7 @@ https://www.lexaloffle.com/bbs/?uid=1
 https://twitter.com/lexaloffle
 Contributed to Team A.R.G.
 
-Modifications by Scott Allen - July 2016
+Modifications by Scott Allen - July 2020, September 2020
 
 To the extent possible under law, the author(s) have dedicated all copyright
 and related and neighboring rights to this software to the public domain
@@ -330,6 +330,12 @@ int main(int argc, char **argv)
 		printf("error %u: file %s: %s\n", result, argv[1], lodepng_error_text(result));
 		free(bmp);
 		exit(result);
+	}
+
+	if (h % 8 != 0) {
+		printf("error 120: file %s: image height must be a multiple of 8 but is %u\n", argv[1], h);
+		free(bmp);
+		exit(120);
 	}
 
 	// generate sprite and mask

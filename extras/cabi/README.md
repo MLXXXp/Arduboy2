@@ -77,10 +77,13 @@ given and a non-zero exit code will be returned.
 
 ## Input file decoding
 
-The input file should be a PNG file containing the image to be converted. The
-image will be translated to a raw array of 32 bit RGBA (Red, Green, Blue, Alpha)
-pixels internally before being processed to output. Ideally, pixels that are to
-be drawn (represented as a 1 in the image output) should be fully white.
+The input file should be a PNG file containing the image to be converted.
+The height of the image must be a multiple of 8 pixels (8, 16, 24, 32, ...).
+The width can be any size.
+
+The image will be translated to a raw array of 32 bit RGBA (Red, Green, Blue,
+Alpha) pixels internally before being processed to output. Ideally, pixels that
+are to be drawn (represented as a 1 in the image output) should be fully white.
 Non-drawn (0) pixels should be fully black. Pixels intended to be masked out of
 the image (represented as a 0 in both the image and mask output), should be
 fully transparent and their color doesn't matter.
