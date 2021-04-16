@@ -581,10 +581,10 @@ void Arduboy2Base::drawFastHLine
   w = xEnd - x;
 
   // buffer pointer plus row offset + x offset
-  register uint8_t *pBuf = sBuffer + ((y / 8) * WIDTH) + x;
+  uint8_t *pBuf = sBuffer + ((y / 8) * WIDTH) + x;
 
   // pixel mask
-  register uint8_t mask = 1 << (y & 7);
+  uint8_t mask = 1 << (y & 7);
 
   switch (color)
   {
