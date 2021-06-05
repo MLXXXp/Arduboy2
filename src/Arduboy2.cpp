@@ -623,7 +623,7 @@ void Arduboy2Base::fillScreen(uint8_t color)
   // {
   //   color = 0xFF; // all pixels on
   // }
-  // for (int16_t i = 0; i < WIDTH * HEIGTH / 8; i++)
+  // for (int16_t i = 0; i < WIDTH * HEIGHT / 8; i++)
   // {
   //    sBuffer[i] = color;
   // }
