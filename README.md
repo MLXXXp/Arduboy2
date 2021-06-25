@@ -428,7 +428,7 @@ Arduboy2 arduboy;
 ArduboyPlaytune tunes(arduboy.audio.enabled);
 ```
 
-The sound channels must then be initialzed and assigned to the speaker pins. This code would go in the *setup()* function:
+The sound channels must then be initialized and assigned to the speaker pins. This code would go in the *setup()* function:
 
 ```cpp
   // audio setup

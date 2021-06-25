@@ -675,7 +675,7 @@ void screenSaveID() {
   printIDLarge(ID_SAVE_X, ID_SAVE_Y);
 }
 
-// DISPLAY: Propmt to reset the system EEPROM area
+// DISPLAY: Prompt to reset the system EEPROM area
 void screenResetSys() {
   printStr_P(RESET_SYS_TEXT_1_X, RESET_SYS_TEXT_1_Y, StrResetSys1);
   printStr_P(RESET_SYS_TEXT_2_X, RESET_SYS_TEXT_2_Y, StrResetSys2);
@@ -685,7 +685,7 @@ void screenResetSys() {
   printStr_P(RESET_SYS_BTN_NO_X, RESET_SYS_BTN_NO_Y, StrBtnResetNo);
 }
 
-// DISPLAY: Propmt to reset the user EEPROM area
+// DISPLAY: Prompt to reset the user EEPROM area
 void screenResetUser() {
   printStr_P(RESET_USER_TEXT_1_X, RESET_USER_TEXT_1_Y, StrResetUser1);
   printStr_P(RESET_USER_TEXT_2_X, RESET_USER_TEXT_2_Y, StrResetUser2);

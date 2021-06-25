@@ -271,7 +271,7 @@ void moveBall()
           topBrick = 6 * row + 1;
           bottomBrick = 6 * row + 7;
 
-          //If A collison has occured
+          //If A collision has occurred
           if (topBall <= bottomBrick && bottomBall >= topBrick &&
               leftBall <= rightBrick && rightBall >= leftBrick)
           {
@@ -293,7 +293,7 @@ void moveBall()
               }
             }
 
-            //Hoizontal collision
+            //Horizontal collision
             if (leftBall < leftBrick || rightBall > rightBrick)
             {
               //Only bounce once brick each ball move
@@ -459,7 +459,7 @@ boolean pollFireButton(int n)
   return false;
 }
 
-//Function by nootropic design to display highscores
+//Function by nootropic design to display high scores
 boolean displayHighScores(byte file)
 {
   byte y = 8;
@@ -736,14 +736,14 @@ void enterHighScore(byte file)
   }
 }
 
-// Play a tone at a frequency coresponding to the specified precomputed count,
+// Play a tone at a frequency corresponding to the specified precomputed count,
 // for the specified number of frames.
 void playTone(uint16_t count, uint8_t frames)
 {
   beep.tone(count, frames);
 }
 
-// Play a tone at a frequency coresponding to the specified precomputed count,
+// Play a tone at a frequency corresponding to the specified precomputed count,
 // for the specified duration in milliseconds, using a delay.
 // Used when beep.timer() isn't being called.
 void playToneTimed(uint16_t count, uint16_t duration)
