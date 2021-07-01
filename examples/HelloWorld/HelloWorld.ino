@@ -23,7 +23,7 @@ void setup() {
   // initiate arduboy instance
   arduboy.begin();
 
-  // here we set the framerate to 15, we do not need to run at
+  // here we set the frame rate to 15, we do not need to run at
   // default 60 and it saves us battery life
   arduboy.setFrameRate(15);
 }
@@ -46,6 +46,6 @@ void loop() {
   // then we print to screen what is in the Quotation marks ""
   arduboy.print(F("Hello, world!"));
 
-  // then we finaly we tell the arduboy to display what we just wrote to the display
+  // then we finally we tell the arduboy to display what we just wrote to the display
   arduboy.display();
 }

@@ -321,7 +321,7 @@ void drawBar(int y, Color color, byte value) {
   }
 }
 
-// Draw the informaton for one digital color
+// Draw the information for one digital color
 void drawDigital(int y, Color color, const char* name) {
   byte state = digitalState[(byte)color];
 

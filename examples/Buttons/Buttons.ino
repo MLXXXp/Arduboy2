@@ -22,10 +22,10 @@ char title[] = "Press Buttons!";
 byte x;
 byte y;
 
-// Width of each charcter including inter-character space
+// Width of each character including inter-character space
 #define CHAR_WIDTH 6
 
-// Height of each charater
+// Height of each character
 #define CHAR_HEIGHT 8
 
 // To get the number of characters, we subtract 1 from the length of
@@ -49,7 +49,7 @@ void setup() {
   //initiate arduboy instance
   arduboy.begin();
 
-  // here we set the framerate to 30, we do not need to run at default 60 and
+  // here we set the frame rate to 30, we do not need to run at default 60 and
   // it saves us battery life.
   arduboy.setFrameRate(30);
 
@@ -101,6 +101,6 @@ void loop() {
   // then we print to screen what is stored in our title variable we declared earlier
   arduboy.print(title);
 
-  // then we finaly we tell the arduboy to display what we just wrote to the display.
+  // then we finally we tell the arduboy to display what we just wrote to the display.
   arduboy.display();
 }
