@@ -342,8 +342,8 @@ int main(int argc, char **argv)
 
 	rawlen = w * (h+7) / 8;
 
-	bmp0 = malloc(rawlen); memset(bmp0, 0, rawlen);
-	bmp1 = malloc(rawlen); memset(bmp1, 0, rawlen);
+	bmp0 = (unsigned char *)malloc(rawlen); memset(bmp0, 0, rawlen);
+	bmp1 = (unsigned char *)malloc(rawlen); memset(bmp1, 0, rawlen);
 
 	printf("// %s  width: %u height: %u\n", argv[1], w, h);
 
