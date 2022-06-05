@@ -45,9 +45,9 @@
  * for. For example, with a rate of 60 frames per second a duration of 30
  * would be used to play a tone for half a second.
  *
- * The variable named `#duration` is the counter that times the duration of a
+ * The variable named #duration is the counter that times the duration of a
  * tone. A sketch can determine if a tone is currently playing by testing if
- * the `#duration` variable is non-zero (assuming it's a timed tone, not a
+ * the #duration variable is non-zero (assuming it's a timed tone, not a
  * continuous tone).
  *
  * To keep the code small and efficient, the frequency of a tone is specified
