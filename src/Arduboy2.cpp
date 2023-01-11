@@ -547,12 +547,28 @@ void Arduboy2Base::drawRect
 void Arduboy2Base::drawFastVLine
 (int16_t x, int16_t y, uint8_t h, uint8_t color)
 {
-  int end = y+h;
-  for (int a = max(0,y); a < min(end,HEIGHT); a++)
+  if (x < 0 || x >= WIDTH || y >= HEIGHT) return;
+
+  color = (color == WHITE ? ~0 : 0);
+
+  if (y < 0)
   {
-    drawPixel(x,a,color);
+    h += y;
+    y = 0;
   }
-}
+
+  int16_t end = y + h;
+
+  sBuffer[(y & 0xf8) * WIDTH / 8 + x] = color << (y - (y & 0xf8));
+
+  for (uint8_t i = max(y + 7, 0); i < min(end, HEIGHT); i += 8)
+  {
+    sBuffer[(i & 0xf8) * WIDTH / 8 + x] = color;
+  }
+
+  sBuffer[(min(end, HEIGHT - 1) & 0xf8) * WIDTH / 8 + x] = color >> (8 - (min(end, HEIGHT - 1) & 7));
+};
+
 
 void Arduboy2Base::drawFastHLine
 (int16_t x, int16_t y, uint8_t w, uint8_t color)
