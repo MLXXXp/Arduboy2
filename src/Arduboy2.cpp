@@ -558,15 +558,21 @@ void Arduboy2Base::drawFastVLine
   }
 
   int16_t end = y + h;
+  uint8_t data, colorUp = 0xff << (y - (y & 0xf8)),
+          colorDown = 0xff >> (8 - (min(end, HEIGHT - 1) & 7));
 
-  sBuffer[(y & 0xf8) * WIDTH / 8 + x] = color << (y - (y & 0xf8));
+  data = sBuffer[(y & 0xf8) * WIDTH / 8 + x] | colorUp;
+  if (!color) data ^= colorUp;
+  sBuffer[(y & 0xf8) * WIDTH / 8 + x] = data;
 
-  for (uint8_t i = max(y + 7, 0); i < min(end, HEIGHT); i += 8)
+  for (uint8_t i = max(y + 7, 0) & 0xf8; i <= min(end, HEIGHT - 1) - 7; i += 8)
   {
-    sBuffer[(i & 0xf8) * WIDTH / 8 + x] = color;
+    sBuffer[i * WIDTH / 8 + x] = color;
   }
 
-  sBuffer[(min(end, HEIGHT - 1) & 0xf8) * WIDTH / 8 + x] = color >> (8 - (min(end, HEIGHT - 1) & 7));
+  data = sBuffer[(min(end, HEIGHT - 1) & 0xf8) * WIDTH / 8 + x] | colorDown;
+  if (!color) data ^= colorDown;
+  sBuffer[(min(end, HEIGHT - 1) & 0xf8) * WIDTH / 8 + x] = data;
 };
 
 
