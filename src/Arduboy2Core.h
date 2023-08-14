@@ -572,7 +572,7 @@ class Arduboy2Core : public Arduboy2NoUSB
      * Invert the entire display or set it back to normal.
      *
      * \param inverse `true` will invert the display. `false` will set the
-     * display to no-inverted.
+     * display to non-inverted.
      *
      * \details
      * Calling this function with a value of `true` will set the display to
