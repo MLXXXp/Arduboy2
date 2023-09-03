@@ -1,0 +1,9 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Declare files that should be treated as text with explicit line endings
+*.cpp text eol=lf
+*.h text eol=lf
+
+# Denote all files that are truly binary (binary is a macro for -text -diff)
+*.png binary
